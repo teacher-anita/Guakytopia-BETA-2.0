@@ -23,6 +23,7 @@ interface GamificationHubProps {
   onAwardXp: (studentId: string, amount: number) => void;
   activeRole: 'student' | 'teacher';
   audienceTheme: AudienceTheme;
+  canSyncArenaLives: boolean;
 }
 
 interface DailyQuest {
@@ -41,7 +42,8 @@ export const GamificationHub: React.FC<GamificationHubProps> = ({
   students,
   onAwardXp,
   activeRole,
-  audienceTheme
+  audienceTheme,
+  canSyncArenaLives
 }) => {
   const isKids = audienceTheme === 'kids';
 
@@ -292,7 +294,7 @@ export const GamificationHub: React.FC<GamificationHubProps> = ({
       </div>
 
       {/* Arena Arcade: shared lives, word search, Scrabble Mix and Hangman */}
-      <ArenaMiniGames currentStudent={currentStudent} onAwardXp={onAwardXp} />
+      <ArenaMiniGames currentStudent={currentStudent} onAwardXp={onAwardXp} canSyncCloud={canSyncArenaLives} />
 
       {/* Quest Modal */}
       {activeQuest && (
