@@ -147,3 +147,15 @@ test('Language Practice Lab supports feedback, retry, and moving to the next dri
   await page.getByRole('button', { name: 'Next Drill' }).click();
   await expect(page.getByText('It is 2:30 PM. You enter the classroom. What greeting should you use?')).toBeVisible();
 });
+
+test('Arena offers English mini-games and displays five rechargeable lives', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: /Arena/ }).click();
+
+  await expect(page.getByRole('heading', { name: 'Play in English. Come back for more!' })).toBeVisible();
+  await expect(page.getByRole('button', { name: /Word Search/ })).toBeVisible();
+  await expect(page.getByRole('button', { name: /Scrabble Mix/ })).toBeVisible();
+  await expect(page.getByRole('button', { name: /Hangman/ })).toBeVisible();
+  await expect(page.getByText('5/5')).toBeVisible();
+  await expect(page.getByText('One life recharges every 30 minutes.')).toBeVisible();
+});
