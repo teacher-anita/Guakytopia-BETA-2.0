@@ -822,8 +822,8 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
                 👑 Sesión: Rectoría General
               </span>
               <span className="bg-amber-100 text-amber-950 text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1.5 shadow-2xs border border-amber-300">
-                <ShieldCheck className="w-3.5 h-3.5 text-amber-700" />
-                <span>Acceso Seguro Verificado</span>
+                <Settings className="w-3.5 h-3.5 text-amber-700" />
+                <span>Panel de dirección</span>
               </span>
             </div>
 
@@ -841,7 +841,7 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
             <div className="flex items-center justify-between text-xs font-bold text-amber-300">
               <span className="flex items-center gap-1.5">
                 <ArrowRightLeft className="w-3.5 h-3.5" />
-                Conmutador de Vista (Impersonate)
+                Vista de demostración
               </span>
               <span className="text-[10px] text-slate-400">Ver como:</span>
             </div>
@@ -913,9 +913,10 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
       </div>
 
       {/* 3. TABS NAVIGATION */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-1 border-b border-slate-200 text-xs font-bold">
+      <div role="group" aria-label="Secciones del panel de dirección" className="flex items-center gap-2 overflow-x-auto pb-1 border-b border-slate-200 text-xs font-bold">
         <button
           onClick={() => setActiveTab('payments')}
+          aria-pressed={activeTab === 'payments'}
           className={`flex items-center gap-2 px-4 py-3 rounded-2xl whitespace-nowrap transition-all relative ${
             activeTab === 'payments'
               ? 'bg-slate-900 text-white shadow-md'
@@ -933,6 +934,7 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
 
         <button
           onClick={() => setActiveTab('lounge')}
+          aria-pressed={activeTab === 'lounge'}
           className={`flex items-center gap-2 px-4 py-3 rounded-2xl whitespace-nowrap transition-all ${
             activeTab === 'lounge'
               ? 'bg-amber-700 text-white shadow-md'
@@ -945,6 +947,7 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
 
         <button
           onClick={() => setActiveTab('teachers')}
+          aria-pressed={activeTab === 'teachers'}
           className={`flex items-center gap-2 px-4 py-3 rounded-2xl whitespace-nowrap transition-all ${
             activeTab === 'teachers'
               ? 'bg-slate-900 text-white shadow-md'
@@ -957,6 +960,7 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
 
         <button
           onClick={() => setActiveTab('students')}
+          aria-pressed={activeTab === 'students'}
           className={`flex items-center gap-2 px-4 py-3 rounded-2xl whitespace-nowrap transition-all ${
             activeTab === 'students'
               ? 'bg-slate-900 text-white shadow-md'
@@ -969,6 +973,7 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
 
         <button
           onClick={() => setActiveTab('classrooms')}
+          aria-pressed={activeTab === 'classrooms'}
           className={`flex items-center gap-2 px-4 py-3 rounded-2xl whitespace-nowrap transition-all ${
             activeTab === 'classrooms'
               ? 'bg-slate-900 text-white shadow-md'
@@ -981,6 +986,7 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
 
         <button
           onClick={() => setActiveTab('coupons')}
+          aria-pressed={activeTab === 'coupons'}
           className={`flex items-center gap-2 px-4 py-3 rounded-2xl whitespace-nowrap transition-all ${
             activeTab === 'coupons'
               ? 'bg-amber-500 text-slate-950 font-black shadow-md'
@@ -993,6 +999,7 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
 
         <button
           onClick={() => setActiveTab('profile')}
+          aria-pressed={activeTab === 'profile'}
           className={`flex items-center gap-2 px-4 py-3 rounded-2xl whitespace-nowrap transition-all ${
             activeTab === 'profile'
               ? 'bg-gradient-to-r from-amber-600 to-amber-700 text-white font-black shadow-md'
