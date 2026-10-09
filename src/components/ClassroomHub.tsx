@@ -9,7 +9,31 @@ interface ClassroomHubProps {
 }
 
 export const ClassroomHub: React.FC<ClassroomHubProps> = ({ activeRole }) => {
-  const [materials, setMaterials] = useState<ClassroomMaterial[]>(INITIAL_MATERIALS);
+  const [materials, setMaterials] = useState<ClassroomMaterial[]>(() => {
+    try {
+      const saved = localStorage.getItem('cokito_classroom_materials');
+      if (!saved) return INITIAL_MATERIALS;
+
+      const parsed: unknown = JSON.parse(saved);
+      if (!Array.isArray(parsed)) return INITIAL_MATERIALS;
+
+      const storedMaterials = parsed.filter((item): item is ClassroomMaterial =>
+        !!item &&
+        typeof item === 'object' &&
+        typeof item.id === 'string' &&
+        typeof item.title === 'string' &&
+        typeof item.levelId === 'string' &&
+        typeof item.url === 'string'
+      );
+      const storedIds = new Set(storedMaterials.map(material => material.id));
+      return [
+        ...storedMaterials,
+        ...INITIAL_MATERIALS.filter(material => !storedIds.has(material.id))
+      ];
+    } catch {
+      return INITIAL_MATERIALS;
+    }
+  });
   const [selectedCategory, setSelectedCategory] = useState<'All' | 'Super Goal' | 'Mega Goal'>('All');
   const [selectedLevelFilter, setSelectedLevelFilter] = useState<string>('All');
   const [searchTerm, setSearchTerm] = useState('');
@@ -32,6 +56,16 @@ export const ClassroomHub: React.FC<ClassroomHubProps> = ({ activeRole }) => {
   useEffect(() => {
     loadLiveCourses();
   }, []);
+
+  // Keep teacher-added Hub materials across refreshes in this browser.
+  // This is local persistence only; it does not imply cross-device/cloud sync.
+  useEffect(() => {
+    try {
+      localStorage.setItem('cokito_classroom_materials', JSON.stringify(materials));
+    } catch (error) {
+      console.warn('Could not persist Classroom Hub materials', error);
+    }
+  }, [materials]);
 
   const loadLiveCourses = async () => {
     setIsLoadingLiveCourses(true);
