@@ -35,6 +35,18 @@ test('Language Practice Lab loads its exercise interface', async ({ page }) => {
   await expect(page.getByText(/Güakytalkie • 100 High-Yield Practice Drills/)).toBeVisible();
 });
 
+test('Language Practice Lab search filters the exercise jump grid', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: /Lab/ }).click();
+  await page.getByRole('button', { name: 'All 100 Grid' }).click();
+
+  const search = page.getByPlaceholder('Search drill or number...');
+  await search.fill('2');
+
+  await expect(page.getByRole('button', { name: '2', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: '1', exact: true })).toHaveCount(0);
+});
+
 test('Language Practice Lab can jump directly to incorrectly answered drills', async ({ page }) => {
   await page.goto('/');
   await page.getByRole('button', { name: /Lab/ }).click();
