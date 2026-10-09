@@ -51,8 +51,8 @@ export const UnitQuizModal: React.FC<UnitQuizModalProps> = ({
   const handleNext = () => {
     if (isLastQuestion) {
       setIsCompleted(true);
-      onQuizFinished(finalScore, unit.quizQuestions.length);
       const finalScore = correctCount + (selectedOption === currentQ.correctIndex ? 1 : 0);
+      onQuizFinished(finalScore, unit.quizQuestions.length);
       // Capture the assessment result only for a Firebase-authenticated student.
       // The writer remains disabled by default until database/rules authorization is reviewed.
       if (currentStudent && user && activeRole === 'student') {
