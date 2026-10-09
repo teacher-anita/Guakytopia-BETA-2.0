@@ -68,8 +68,28 @@ export const LanguageLab: React.FC<LanguageLabProps> = ({
   // Filter by Station or All
   const [activeStationFilter, setActiveStationFilter] = useState<string>('all');
 
-  // Currently focused exercise index (0-based)
-  const [currentExerciseIndex, setCurrentExerciseIndex] = useState<number>(0);
+  // Resume point is stored separately so older answer maps remain compatible.
+  const resumeStorageKey = `${storageKey}_resume`;
+  const [currentExerciseIndex, setCurrentExerciseIndex] = useState<number>(() => {
+    try {
+      const saved = localStorage.getItem(resumeStorageKey);
+      const parsed = saved ? JSON.parse(saved) : null;
+      return Number.isInteger(parsed?.currentExerciseIndex) && parsed.currentExerciseIndex >= 0
+        ? parsed.currentExerciseIndex
+        : 0;
+    } catch {
+      return 0;
+    }
+  });
+  const [lastSavedAt, setLastSavedAt] = useState<string>(() => {
+    try {
+      const saved = localStorage.getItem(resumeStorageKey);
+      const parsed = saved ? JSON.parse(saved) : null;
+      return typeof parsed?.lastSavedAt === 'string' ? parsed.lastSavedAt : '';
+    } catch {
+      return '';
+    }
+  });
 
   // Student answers mapping: { [exerciseId]: { selectedAnswer: string, isCorrect: boolean } }
   const [userAnswers, setUserAnswers] = useState<Record<number, { selectedAnswer: string; isCorrect: boolean }>>(() => {
@@ -98,14 +118,21 @@ export const LanguageLab: React.FC<LanguageLabProps> = ({
   // Search filter
   const [searchQuery, setSearchQuery] = useState<string>('');
 
-  // Save progress to localStorage
+  // Save answers and the resume point locally. Learners can stop and return later
+  // on the same browser without losing completed answers or their place.
   useEffect(() => {
     try {
       localStorage.setItem(storageKey, JSON.stringify(userAnswers));
+      const savedAt = new Date().toISOString();
+      localStorage.setItem(resumeStorageKey, JSON.stringify({
+        currentExerciseIndex,
+        lastSavedAt: savedAt,
+      }));
+      setLastSavedAt(savedAt);
     } catch (e) {
-      console.warn('Could not persist lab answers', e);
+      console.warn('Could not persist lab progress', e);
     }
-  }, [userAnswers, storageKey]);
+  }, [userAnswers, currentExerciseIndex, storageKey, resumeStorageKey]);
 
   // Filtered exercises based on station and search query
   const filteredExercises = UNIT_1_LAB_EXERCISES.filter(ex => {
@@ -468,10 +495,14 @@ export const LanguageLab: React.FC<LanguageLabProps> = ({
 
           {/* Quick Mastery Trophy & Progress Radial */}
           <div className="bg-white/10 backdrop-blur-md rounded-2xl p-5 border border-white/15 w-full lg:w-72 shrink-0 space-y-4 text-center">
-            <div className="flex items-center justify-between text-xs font-semibold text-slate-300">
+            <div className="flex items-center justify-between text-xs font-semibold text-slate-300 gap-3">
               <span>Unit 1 Lab Progress</span>
               <span className="font-mono text-emerald-300 font-bold">{totalCorrect}/100 Completed</span>
             </div>
+            <p className="text-[11px] text-slate-300 text-left" role="status" aria-live="polite">
+              Progress saves automatically on this device. You can return another day and continue.
+              {lastSavedAt ? ` Last saved: ${new Date(lastSavedAt).toLocaleString()}.` : ''}
+            </p>
 
             {/* Big Progress Bar */}
             <div className="w-full bg-slate-800/80 rounded-full h-4 p-0.5 border border-white/20 overflow-hidden">
