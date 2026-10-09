@@ -18,7 +18,6 @@ export const SCOPES = [
 
 SCOPES.forEach(scope => googleProvider.addScope(scope));
 
-let isSigningIn = false;
 let cachedAccessToken: string | null = null;
 
 export const initAuth = (
@@ -40,7 +39,6 @@ export const initAuth = (
 
 export const googleSignIn = async (): Promise<{ user: User; accessToken: string } | null> => {
   try {
-    isSigningIn = true;
     const result = await signInWithPopup(auth, googleProvider);
     const credential = GoogleAuthProvider.credentialFromResult(result);
     cachedAccessToken = credential?.accessToken || null;
@@ -48,8 +46,6 @@ export const googleSignIn = async (): Promise<{ user: User; accessToken: string 
   } catch (error: any) {
     console.error('Error al iniciar sesión con Google:', error);
     throw error;
-  } finally {
-    isSigningIn = false;
   }
 };
 
