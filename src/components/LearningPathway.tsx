@@ -341,13 +341,14 @@ ${unit.owlCulture.culturalStory}
         </div>
 
         {/* Level Switcher Pills */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 border-t border-white/10 pt-4 text-xs font-bold">
-          <span className="text-slate-400 uppercase text-[10px] tracking-wider shrink-0">Level:</span>
+        <div role="group" aria-label="Seleccionar nivel curricular" className="flex items-center gap-2 overflow-x-auto pb-1 border-t border-white/10 pt-4 text-xs font-bold">
+          <span className="text-slate-400 uppercase text-[10px] tracking-wider shrink-0">Nivel:</span>
           {PATHWAY_LEVELS.map(lvl => (
             <button
               key={lvl.levelId}
               onClick={() => setSelectedLevelId(lvl.levelId)}
-              className={`px-3.5 py-1.5 rounded-xl whitespace-nowrap transition-all ${
+              aria-pressed={selectedLevelId === lvl.levelId}
+              className={``px-3.5 py-1.5 rounded-xl whitespace-nowrap transition-all ${
                 selectedLevelId === lvl.levelId
                   ? 'bg-amber-400 text-slate-950 shadow-md font-black'
                   : 'bg-white/10 text-white hover:bg-white/20'
