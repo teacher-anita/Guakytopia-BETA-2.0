@@ -452,6 +452,7 @@ export default function App() {
             onAwardXp={handleAwardXp}
             activeRole={isTeacherAuthenticated ? 'teacher' : 'student'}
             audienceTheme={audienceTheme}
+            canSyncArenaLives={!isTeacherAuthenticated && Boolean(currentStudent && (isStudentAuthenticated || (user && user.email?.toLowerCase() === currentStudent.email.toLowerCase())))}
           />
         )}
 
