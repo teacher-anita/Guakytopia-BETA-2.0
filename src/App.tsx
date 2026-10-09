@@ -22,6 +22,7 @@ import { LanguageLab } from './components/LanguageLab';
 import { PrincipalDashboard } from './components/PrincipalDashboard';
 import { ThemeSelectorModal, StudyThemeId } from './components/ThemeSelectorModal';
 import { UnitOneMasterClass } from './components/UnitOneMasterClass';
+import { ClassroomHub } from './components/ClassroomHub';
 import { Student, ScheduleSlot, AudienceTheme, Teacher, StaffRole } from './types';
 import { INITIAL_STUDENTS, INITIAL_SCHEDULE_SLOTS } from './data/curriculumData';
 import { INITIAL_TEACHERS } from './data/teachersData';
@@ -43,6 +44,7 @@ import { CyberOwlChatbot } from './components/CyberOwlChatbot';
 export default function App() {
   // Navigation & Theme State
   const [activeTab, setActiveTab] = useState<string>('landing');
+  const [classroomView, setClassroomView] = useState<'interactive' | 'hub'>('interactive');
   const [audienceTheme, setAudienceTheme] = useState<AudienceTheme>('adults');
   const [studyTheme, setStudyTheme] = useState<StudyThemeId>(() => {
     const saved = localStorage.getItem('guakytopia_study_theme');
@@ -456,16 +458,38 @@ export default function App() {
           />
         )}
 
-        {/* TAB 6: CLASSROOM (AULA INTERACTIVA) */}
+        {/* TAB 6: CLASSROOM (AULA INTERACTIVA + HUB DE MATERIALES) */}
         {activeTab === 'classroom' && (
           (isTeacherAuthenticated || (currentStudent && currentStudent.status === 'enrolled')) ? (
             <div className="max-w-7xl mx-auto py-6 px-4 space-y-4">
-              <UnitOneMasterClass
-                currentStudent={currentStudent}
-                activeRole={isTeacherAuthenticated ? 'teacher' : 'student'}
-                onAwardXp={handleAwardXp}
-                onClose={() => setActiveTab('pathway')}
-              />
+              <div className="flex flex-wrap gap-2 border-b border-slate-200 pb-3">
+                <button
+                  type="button"
+                  onClick={() => setClassroomView('interactive')}
+                  aria-pressed={classroomView === 'interactive'}
+                  className={`rounded-xl px-4 py-2 text-sm font-bold transition-colors ${classroomView === 'interactive' ? 'bg-indigo-700 text-white' : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50'}`}
+                >
+                  Aula interactiva
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setClassroomView('hub')}
+                  aria-pressed={classroomView === 'hub'}
+                  className={`rounded-xl px-4 py-2 text-sm font-bold transition-colors ${classroomView === 'hub' ? 'bg-indigo-700 text-white' : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50'}`}
+                >
+                  Classroom y nuestro Hub
+                </button>
+              </div>
+              {classroomView === 'interactive' ? (
+                <UnitOneMasterClass
+                  currentStudent={currentStudent}
+                  activeRole={isTeacherAuthenticated ? 'teacher' : 'student'}
+                  onAwardXp={handleAwardXp}
+                  onClose={() => setActiveTab('pathway')}
+                />
+              ) : (
+                <ClassroomHub activeRole={isTeacherAuthenticated ? 'teacher' : 'student'} />
+              )}
             </div>
           ) : (
             <LearningPathway
