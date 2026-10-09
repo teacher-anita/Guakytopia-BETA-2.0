@@ -170,7 +170,7 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
       categoryLabel: categoryLabels[newCouponData.category] || 'General',
       benefitType: newCouponData.benefitType,
       title: newCouponData.title.trim() || `Pase Institucional ${cleanCode}`,
-      description: newCouponData.description.trim() || 'Acceso y beneficio institucional autorizado por Rectoría de Güakytopia.',
+      description: newCouponData.description.trim() || "Official Güakytopia Academy benefit authorized by the Principal's Office.",
       maxUses: isNaN(maxU as number) ? null : maxU,
       currentUses: 0,
       isActive: true,
@@ -819,7 +819,7 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
                 The Principal • Directora General
               </span>
               <span className="bg-white/90 text-slate-900 text-xs font-bold px-3 py-1 rounded-full border border-amber-300">
-                👑 Sesión: Rectoría General
+                👑 Office Session
               </span>
               <span className="bg-amber-100 text-amber-950 text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1.5 shadow-2xs border border-amber-300">
                 <Settings className="w-3.5 h-3.5 text-amber-700" />
@@ -828,11 +828,11 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
             </div>
 
             <h1 className="text-2xl sm:text-4xl font-black tracking-tight text-slate-950">
-              Despacho Institucional Güakytopia • Rectoría General
+              Güakytopia Academy • Principal's Office
             </h1>
 
             <p className="text-xs sm:text-sm text-slate-900 font-medium leading-relaxed">
-              Control maestro de rectoría: emite y controla cupones y becas, edita perfiles de alumnos, gestiona profesores, aprueba pagos y supervisa toda la institución como Directora Waky.
+              Lead the academy from one place: manage scholarships and rewards, support students and teachers, review payments, and keep learning moving forward with Waky, The Principal.
             </p>
           </div>
 
@@ -1860,7 +1860,7 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <span className="bg-amber-100 text-amber-900 text-xs font-black px-2.5 py-0.5 rounded-full border border-amber-300">
-                  🎟️ Rectoría Güakytopia
+                  🎟️ Güakytopia • Principal's Office
                 </span>
                 <span className="text-xs text-slate-500 font-bold">Validación en tiempo real</span>
               </div>
@@ -2139,7 +2139,7 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
               <div className="w-10 h-10 rounded-2xl bg-amber-100 text-amber-800 flex items-center justify-center font-bold">
                 📜
               </div>
-              <h3 className="font-black text-slate-900 text-base">Misión de Rectoría</h3>
+              <h3 className="font-black text-slate-900 text-base">Our Mission</h3>
               <p className="text-xs text-slate-600 leading-relaxed">
                 Transformar el aprendizaje del inglés en Venezuela y Latinoamérica eliminando el miedo a hablar, mediante inmersión lúdica y acompañamiento humano de alta categoría.
               </p>
