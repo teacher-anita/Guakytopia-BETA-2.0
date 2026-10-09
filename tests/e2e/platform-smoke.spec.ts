@@ -31,6 +31,23 @@ test('Student account does not expose a selected profile before sign-in', async 
   await expect(page.getByText('Mi Cuenta de Alumno')).toHaveCount(0);
 });
 
+test('A remembered Ana profile is ignored when no student session exists', async ({ page }) => {
+  await page.addInitScript(() => {
+    sessionStorage.removeItem('cokito_teacher_auth');
+    sessionStorage.removeItem('cokito_staff_role');
+    sessionStorage.removeItem('cokito_student_auth');
+    localStorage.setItem('cokito_active_student_id', 'student_ana_sandoval');
+  });
+
+  await page.goto('/');
+  await expect(page.getByTitle('Ver mi perfil')).toBeVisible();
+  await page.getByTitle('Ver mi perfil').click();
+
+  await expect(page.getByRole('heading', { name: 'Acceso & Sesión' })).toBeVisible();
+  await expect(page.getByText('Mi Cuenta de Alumno')).toHaveCount(0);
+  await expect(page.getByRole('img', { name: 'Ana Sandoval' })).toHaveCount(0);
+});
+
 test('Classroom switches between interactive classroom and materials Hub', async ({ page }) => {
   await page.goto('/');
   await page.getByRole('button', { name: /Classroom/ }).click();
