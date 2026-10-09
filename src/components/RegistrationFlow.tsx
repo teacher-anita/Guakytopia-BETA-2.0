@@ -194,6 +194,11 @@ export const RegistrationFlow: React.FC<RegistrationFlowProps> = ({
   const [bcvRate, setBcvRate] = useState<number>(() => getBcvExchangeRate());
   useEffect(() => {
     fetchLiveBcvRate().then(rate => setBcvRate(rate));
+    const handleBcvUpdate = () => {
+      setBcvRate(getBcvExchangeRate());
+    };
+    window.addEventListener('bcv_rate_updated', handleBcvUpdate);
+    return () => window.removeEventListener('bcv_rate_updated', handleBcvUpdate);
   }, []);
 
   // Step 4 Validation State (post-registration)
@@ -362,7 +367,7 @@ export const RegistrationFlow: React.FC<RegistrationFlowProps> = ({
     } else if (clean.includes('TEACHER') || clean.includes('DOCENTE') || clean === 'PRE-CSB' || clean === 'CSB-PRE') {
       setAppliedCoupon({
         code: clean,
-        label: 'Pase Docente CSB (Prioridad 5:00 - 7:00 pm)',
+        label: 'Pase CSB / Teacher (Prioridad 5:00 - 7:00 pm)',
         discountPercent: 100
       });
       try { confetti({ particleCount: 70, spread: 60, origin: { y: 0.6 } }); } catch {}
@@ -570,7 +575,7 @@ export const RegistrationFlow: React.FC<RegistrationFlowProps> = ({
       streak: 1,
       league: 'Bronce',
       rating: { fluency: 3, grammar: 3, vocabulary: 3, pronunciation: 3 },
-      notes: `Plan: ${currentPlan.title}. Horas elegidas: ${selectedSlotIds.length}/${maxHoursForPlan}. ${isCSBMember ? 'Docente/Personal CSB.' : ''} ${appliedCoupon ? `Cupón: ${appliedCoupon.code}` : 'Sin cupón'}. Diagnóstico: ${placementResult ? placementResult.suggestedLevelName : 'Inicial por defecto (Prueba pendiente)'}.`,
+      notes: `Plan: ${currentPlan.title}. Horas elegidas: ${selectedSlotIds.length}/${maxHoursForPlan}. ${isCSBMember ? 'Personal CSB / Teacher.' : ''} ${appliedCoupon ? `Cupón: ${appliedCoupon.code}` : 'Sin cupón'}. Diagnóstico: ${placementResult ? placementResult.suggestedLevelName : 'Inicial por defecto (Prueba pendiente)'}.`,
       assignedSlots: selectedSlotIds
     };
 
@@ -1551,7 +1556,7 @@ export const RegistrationFlow: React.FC<RegistrationFlowProps> = ({
                           Opción 1: Validar con Código Promocional o Beca CSB
                         </h4>
                         <p className="text-[11px] text-blue-800/80">
-                          Si eres docente o personal del Colegio Simón Bolívar o tienes un código de cortesía:
+                          Si eres teacher o personal del Colegio Simón Bolívar o tienes un código de cortesía:
                         </p>
                       </div>
                     </div>

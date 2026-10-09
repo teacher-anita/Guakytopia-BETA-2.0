@@ -32,12 +32,14 @@ import {
   UNIT_1_LAB_EXERCISES, 
   LabExercise 
 } from '../data/labExercisesData';
+import { recordAcademicEvent } from '../services/academicEvents';
 
 interface LanguageLabProps {
   currentStudent: Student | null;
   activeRole: 'student' | 'teacher';
   user?: User | null;
   isTeacherAuthenticated?: boolean;
+  isStudentAuthenticated?: boolean;
   onAwardXp: (studentId: string, amount: number) => void;
   onGoToClassroom?: () => void;
   onLogin?: () => void;
@@ -49,12 +51,13 @@ export const LanguageLab: React.FC<LanguageLabProps> = ({
   activeRole,
   user,
   isTeacherAuthenticated,
+  isStudentAuthenticated,
   onAwardXp,
   onGoToClassroom,
   onLogin,
   onStartRegistration
 }) => {
-  const isUnlocked = isTeacherAuthenticated || !!user;
+  const isUnlocked = isTeacherAuthenticated || !!user || !!isStudentAuthenticated || currentStudent?.status === 'enrolled';
 
   // Persistence key for student answers
   const storageKey = `cokito_lab_u1_${currentStudent?.id || 'guest'}`;
@@ -65,8 +68,28 @@ export const LanguageLab: React.FC<LanguageLabProps> = ({
   // Filter by Station or All
   const [activeStationFilter, setActiveStationFilter] = useState<string>('all');
 
-  // Currently focused exercise index (0-based)
-  const [currentExerciseIndex, setCurrentExerciseIndex] = useState<number>(0);
+  // Resume point is stored separately so older answer maps remain compatible.
+  const resumeStorageKey = `${storageKey}_resume`;
+  const [currentExerciseIndex, setCurrentExerciseIndex] = useState<number>(() => {
+    try {
+      const saved = localStorage.getItem(resumeStorageKey);
+      const parsed = saved ? JSON.parse(saved) : null;
+      return Number.isInteger(parsed?.currentExerciseIndex) && parsed.currentExerciseIndex >= 0
+        ? parsed.currentExerciseIndex
+        : 0;
+    } catch {
+      return 0;
+    }
+  });
+  const [lastSavedAt, setLastSavedAt] = useState<string>(() => {
+    try {
+      const saved = localStorage.getItem(resumeStorageKey);
+      const parsed = saved ? JSON.parse(saved) : null;
+      return typeof parsed?.lastSavedAt === 'string' ? parsed.lastSavedAt : '';
+    } catch {
+      return '';
+    }
+  });
 
   // Student answers mapping: { [exerciseId]: { selectedAnswer: string, isCorrect: boolean } }
   const [userAnswers, setUserAnswers] = useState<Record<number, { selectedAnswer: string; isCorrect: boolean }>>(() => {
@@ -83,9 +106,11 @@ export const LanguageLab: React.FC<LanguageLabProps> = ({
   const [showExplanation, setShowExplanation] = useState<boolean>(false);
   const [showHint, setShowHint] = useState<boolean>(false);
 
-  // Audio playing state
+  // Audio state supports pause/resume for both media tracks and speech synthesis.
   const [isPlayingAudio, setIsPlayingAudio] = useState<boolean>(false);
+  const [isAudioPaused, setIsAudioPaused] = useState<boolean>(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const playbackModeRef = useRef<'media' | 'speech' | null>(null);
 
   // View mode: 'card' (one-by-one marathon) vs 'grid' (all 100 overview)
   const [viewMode, setViewMode] = useState<'card' | 'grid'>('card');
@@ -93,14 +118,21 @@ export const LanguageLab: React.FC<LanguageLabProps> = ({
   // Search filter
   const [searchQuery, setSearchQuery] = useState<string>('');
 
-  // Save progress to localStorage
+  // Save answers and the resume point locally. Learners can stop and return later
+  // on the same browser without losing completed answers or their place.
   useEffect(() => {
     try {
       localStorage.setItem(storageKey, JSON.stringify(userAnswers));
+      const savedAt = new Date().toISOString();
+      localStorage.setItem(resumeStorageKey, JSON.stringify({
+        currentExerciseIndex,
+        lastSavedAt: savedAt,
+      }));
+      setLastSavedAt(savedAt);
     } catch (e) {
-      console.warn('Could not persist lab answers', e);
+      console.warn('Could not persist lab progress', e);
     }
-  }, [userAnswers, storageKey]);
+  }, [userAnswers, currentExerciseIndex, storageKey, resumeStorageKey]);
 
   // Filtered exercises based on station and search query
   const filteredExercises = UNIT_1_LAB_EXERCISES.filter(ex => {
@@ -124,12 +156,18 @@ export const LanguageLab: React.FC<LanguageLabProps> = ({
       setShowExplanation(false);
       setShowHint(false);
     }
-    // Stop any playing audio
-    if (audioRef.current) {
-      audioRef.current.pause();
-      setIsPlayingAudio(false);
-    }
+    // Stop audio when the exercise or its answer changes.
+    if (audioRef.current) audioRef.current.pause();
+    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+    playbackModeRef.current = null;
+    setIsPlayingAudio(false);
+    setIsAudioPaused(false);
   }, [activeExercise?.id, userAnswers]);
+
+  useEffect(() => () => {
+    if (audioRef.current) audioRef.current.pause();
+    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+  }, []);
 
   // Overall statistics
   const totalCompleted = Object.keys(userAnswers).length;
@@ -145,6 +183,20 @@ export const LanguageLab: React.FC<LanguageLabProps> = ({
       total: stationEx.length,
       percent: Math.round((completed / stationEx.length) * 100)
     };
+  };
+
+  // Jump to the next incorrect answer so learners can review mistakes without searching manually.
+  const handleNextMistake = () => {
+    const mistakeIndexes = filteredExercises
+      .map((exercise, index) =>
+        userAnswers[exercise.id] && !userAnswers[exercise.id].isCorrect ? index : -1
+      )
+      .filter(index => index >= 0);
+
+    if (mistakeIndexes.length === 0) return;
+    const nextMistakeIndex = mistakeIndexes.find(index => index > currentExerciseIndex) ?? mistakeIndexes[0];
+    setCurrentExerciseIndex(nextMistakeIndex);
+    setViewMode('card');
   };
 
   // Submit Answer
@@ -165,6 +217,29 @@ export const LanguageLab: React.FC<LanguageLabProps> = ({
     }));
     setShowExplanation(true);
 
+    // Capture only authenticated student attempts. The writer is disabled by
+    // default and Firestore rules must explicitly authorize it before rollout.
+    // Never store the selected/free-text answer in the academic timeline.
+    if (currentStudent && user && activeRole === 'student') {
+      void recordAcademicEvent({
+        schemaVersion: 1,
+        studentId: currentStudent.id,
+        source: 'language_practice_lab',
+        eventType: 'answer_submitted',
+        occurredAt: new Date().toISOString(),
+        actor: { role: 'student', id: user.uid },
+        curriculum: {
+          unitId: `unit_${selectedUnit}`,
+          activityId: String(activeExercise.id),
+        },
+        outcome: isCorrect ? 'correct' : 'incorrect',
+        evidence: { questionId: String(activeExercise.id), isCorrect },
+      }).catch((error) => {
+        // A logging failure must never block the learner's practice flow.
+        console.warn('Academic event was not recorded:', error);
+      });
+    }
+
     if (isCorrect) {
       if (!wasAlreadyCorrect) {
         if (currentStudent) {
@@ -183,57 +258,93 @@ export const LanguageLab: React.FC<LanguageLabProps> = ({
     }
   };
 
-  // Play audio track or pronunciation text
+  // Pause/resume the current source rather than restarting it.
   const handlePlayAudio = () => {
-    if (isPlayingAudio && audioRef.current) {
-      audioRef.current.pause();
+    if (isPlayingAudio) {
+      if (playbackModeRef.current === 'speech' && 'speechSynthesis' in window) {
+        window.speechSynthesis.pause();
+      } else {
+        audioRef.current?.pause();
+      }
       setIsPlayingAudio(false);
+      setIsAudioPaused(true);
+      return;
+    }
+
+    if (isAudioPaused) {
+      if (playbackModeRef.current === 'speech' && 'speechSynthesis' in window) {
+        window.speechSynthesis.resume();
+        setIsPlayingAudio(true);
+        setIsAudioPaused(false);
+      } else if (audioRef.current) {
+        void audioRef.current.play().then(() => {
+          setIsPlayingAudio(true);
+          setIsAudioPaused(false);
+        }).catch(err => console.warn('Audio resume failed', err));
+      }
       return;
     }
 
     if (activeExercise.audioTrackSrc) {
-      if (!audioRef.current) {
-        audioRef.current = new Audio(activeExercise.audioTrackSrc);
-      } else {
-        audioRef.current.src = activeExercise.audioTrackSrc;
-      }
+      if (!audioRef.current) audioRef.current = new Audio(activeExercise.audioTrackSrc);
+      else audioRef.current.src = activeExercise.audioTrackSrc;
+      playbackModeRef.current = 'media';
 
-      // Parse timestamp if available, e.g. "0:13"
       if (activeExercise.audioTimestamp) {
         const parts = activeExercise.audioTimestamp.split(':');
         if (parts.length === 2) {
-          const seconds = parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
-          audioRef.current.currentTime = seconds;
+          const seconds = Number.parseInt(parts[0], 10) * 60 + Number.parseInt(parts[1], 10);
+          if (Number.isFinite(seconds)) audioRef.current.currentTime = seconds;
         }
       }
-
-      audioRef.current.play().then(() => {
+      audioRef.current.onplay = () => {
         setIsPlayingAudio(true);
-      }).catch(err => {
-        console.warn('Audio play failed, falling back to speech synthesis', err);
-        fallbackSpeech();
-      });
-
+        setIsAudioPaused(false);
+      };
+      audioRef.current.onpause = () => setIsPlayingAudio(false);
       audioRef.current.onended = () => {
         setIsPlayingAudio(false);
+        setIsAudioPaused(false);
+        playbackModeRef.current = null;
       };
+      void audioRef.current.play().catch(err => {
+        console.warn('Audio play failed; using speech synthesis instead', err);
+        fallbackSpeech();
+      });
     } else {
       fallbackSpeech();
     }
   };
 
   const fallbackSpeech = () => {
-    if ('speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-      const textToSpeak = activeExercise.ttsText || activeExercise.prompt;
-      const utterance = new SpeechSynthesisUtterance(textToSpeak);
-      utterance.lang = 'en-US';
-      utterance.rate = 0.9;
-      utterance.onstart = () => setIsPlayingAudio(true);
-      utterance.onend = () => setIsPlayingAudio(false);
-      utterance.onerror = () => setIsPlayingAudio(false);
-      window.speechSynthesis.speak(utterance);
-    }
+    if (!('speechSynthesis' in window)) return;
+    window.speechSynthesis.cancel();
+
+    const utterance = new SpeechSynthesisUtterance(activeExercise.ttsText || activeExercise.prompt);
+    const voices = window.speechSynthesis.getVoices();
+    const englishVoices = voices.filter(voice => /^en(-|_)/i.test(voice.lang));
+    const preferredVoice = englishVoices.find(voice =>
+      /natural|neural|online|google us english|samantha|ava|jenny|aria|zira/i.test(voice.name)
+    ) || englishVoices.find(voice => /en-US/i.test(voice.lang)) || englishVoices[0];
+
+    utterance.lang = preferredVoice?.lang || 'en-US';
+    if (preferredVoice) utterance.voice = preferredVoice;
+    utterance.rate = 0.96;
+    utterance.pitch = 1;
+    playbackModeRef.current = 'speech';
+    setIsAudioPaused(false);
+    utterance.onstart = () => setIsPlayingAudio(true);
+    utterance.onend = () => {
+      setIsPlayingAudio(false);
+      setIsAudioPaused(false);
+      playbackModeRef.current = null;
+    };
+    utterance.onerror = () => {
+      setIsPlayingAudio(false);
+      setIsAudioPaused(false);
+      playbackModeRef.current = null;
+    };
+    window.speechSynthesis.speak(utterance);
   };
 
   // Navigation handlers
@@ -384,10 +495,14 @@ export const LanguageLab: React.FC<LanguageLabProps> = ({
 
           {/* Quick Mastery Trophy & Progress Radial */}
           <div className="bg-white/10 backdrop-blur-md rounded-2xl p-5 border border-white/15 w-full lg:w-72 shrink-0 space-y-4 text-center">
-            <div className="flex items-center justify-between text-xs font-semibold text-slate-300">
+            <div className="flex items-center justify-between text-xs font-semibold text-slate-300 gap-3">
               <span>Unit 1 Lab Progress</span>
               <span className="font-mono text-emerald-300 font-bold">{totalCorrect}/100 Completed</span>
             </div>
+            <p className="text-[11px] text-slate-300 text-left" role="status" aria-live="polite">
+              Progress saves automatically on this device. You can return another day and continue.
+              {lastSavedAt ? ` Last saved: ${new Date(lastSavedAt).toLocaleString()}.` : ''}
+            </p>
 
             {/* Big Progress Bar */}
             <div className="w-full bg-slate-800/80 rounded-full h-4 p-0.5 border border-white/20 overflow-hidden">
@@ -669,10 +784,11 @@ export const LanguageLab: React.FC<LanguageLabProps> = ({
                     ? 'bg-amber-500 text-white animate-pulse'
                     : 'bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200'
                 }`}
-                title="Listen to native American English audio for this exercise"
+                title={isPlayingAudio ? 'Pause audio' : isAudioPaused ? 'Resume audio' : 'Listen to this exercise'}
+                aria-label={isPlayingAudio ? 'Pause Audio' : isAudioPaused ? 'Resume Audio' : 'Listen Audio'}
               >
                 {isPlayingAudio ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
-                <span>{isPlayingAudio ? 'Playing Audio...' : 'Listen Audio'}</span>
+                <span>{isPlayingAudio ? 'Pause Audio' : isAudioPaused ? 'Resume Audio' : 'Listen Audio'}</span>
                 {activeExercise.audioTimestamp && (
                   <span className="text-[10px] opacity-80 font-mono">({activeExercise.audioTimestamp})</span>
                 )}
@@ -782,6 +898,18 @@ export const LanguageLab: React.FC<LanguageLabProps> = ({
             </button>
 
             <div className="flex items-center gap-2">
+              <button
+                onClick={handleNextMistake}
+                disabled={!filteredExercises.some(ex => userAnswers[ex.id] && !userAnswers[ex.id].isCorrect)}
+                className="flex items-center gap-1 px-3 py-2 bg-rose-50 hover:bg-rose-100 disabled:opacity-40 disabled:cursor-not-allowed text-rose-700 border border-rose-200 rounded-xl text-xs font-bold transition-colors"
+                title="Jump to the next incorrectly answered exercise"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                <span>Review Mistakes</span>
+                <span className="bg-rose-100 px-1.5 rounded-md">
+                  {filteredExercises.filter(ex => userAnswers[ex.id] && !userAnswers[ex.id].isCorrect).length}
+                </span>
+              </button>
               {userAnswers[activeExercise.id] && (
                 <button
                   onClick={handleResetCurrent}
@@ -834,7 +962,7 @@ export const LanguageLab: React.FC<LanguageLabProps> = ({
 
           {/* 100 Grid */}
           <div className="grid grid-cols-5 sm:grid-cols-10 md:grid-cols-12 lg:grid-cols-20 gap-2">
-            {UNIT_1_LAB_EXERCISES.map((ex, idx) => {
+            {filteredExercises.map((ex, idx) => {
               const isAnswered = userAnswers[ex.id]?.isCorrect;
               const isSelected = activeExercise.id === ex.id;
               return (

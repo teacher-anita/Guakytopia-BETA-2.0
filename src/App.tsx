@@ -22,6 +22,7 @@ import { LanguageLab } from './components/LanguageLab';
 import { PrincipalDashboard } from './components/PrincipalDashboard';
 import { ThemeSelectorModal, StudyThemeId } from './components/ThemeSelectorModal';
 import { UnitOneMasterClass } from './components/UnitOneMasterClass';
+import { ClassroomHub } from './components/ClassroomHub';
 import { Student, ScheduleSlot, AudienceTheme, Teacher, StaffRole } from './types';
 import { INITIAL_STUDENTS, INITIAL_SCHEDULE_SLOTS } from './data/curriculumData';
 import { INITIAL_TEACHERS } from './data/teachersData';
@@ -39,10 +40,12 @@ import {
 } from './services/db';
 import { ShieldCheck } from 'lucide-react';
 import { CyberOwlChatbot } from './components/CyberOwlChatbot';
+import { fetchLiveBcvRate, initMidnightBcvScheduler } from './services/currencyService';
 
 export default function App() {
   // Navigation & Theme State
   const [activeTab, setActiveTab] = useState<string>('landing');
+  const [classroomView, setClassroomView] = useState<'interactive' | 'hub'>('interactive');
   const [audienceTheme, setAudienceTheme] = useState<AudienceTheme>('adults');
   const [studyTheme, setStudyTheme] = useState<StudyThemeId>(() => {
     const saved = localStorage.getItem('guakytopia_study_theme');
@@ -74,6 +77,7 @@ export default function App() {
 
   // Auth State
   const [user, setUser] = useState<User | null>(null);
+  const [isStudentAuthenticated, setIsStudentAuthenticated] = useState<boolean>(() => sessionStorage.getItem('cokito_student_auth') === 'true');
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   // Real-time Database State (Firestore + Local fallback)
@@ -81,10 +85,12 @@ export default function App() {
   const [teachers, setTeachers] = useState<Teacher[]>(() => getLocalTeachers());
   const [slots, setSlots] = useState<ScheduleSlot[]>(() => getLocalSlots());
 
-  // Current active student selector (Persisted in localStorage so refreshing maintains the active student/ticket!)
+  // A remembered profile is only a convenience after student authentication, never proof of identity.
+  // Visitors always start as guests even if this browser previously selected Ana or another student.
   const [currentStudentId, setCurrentStudentId] = useState<string>(() => {
-    const saved = localStorage.getItem('cokito_active_student_id');
-    return saved || 'student_ana_sandoval';
+    const hasStudentSession = sessionStorage.getItem('cokito_student_auth') === 'true';
+    const saved = hasStudentSession ? localStorage.getItem('cokito_active_student_id') : null;
+    return saved || 'guest';
   });
 
   useEffect(() => {
@@ -110,6 +116,17 @@ export default function App() {
     });
     return () => {
       if (typeof unsubTeachers === 'function') unsubTeachers();
+    };
+  }, []);
+
+  // Initialize official BCV exchange rate and automated midnight (12:00 AM VET) scheduler
+  useEffect(() => {
+    void fetchLiveBcvRate();
+    const unsubMidnight = initMidnightBcvScheduler(() => {
+      console.log('Tasa oficial BCV actualizada a medianoche');
+    });
+    return () => {
+      if (unsubMidnight) unsubMidnight();
     };
   }, []);
 
@@ -166,8 +183,10 @@ export default function App() {
       `${s.name} ${s.lastName || ''}`.trim().toLowerCase() === clean
     );
     if (matched) {
-      if (!matched.password || matched.password === pass || pass === '') {
+      if (matched.password && pass.length > 0 && matched.password === pass) {
         setCurrentStudentId(matched.id);
+        setIsStudentAuthenticated(true);
+        sessionStorage.setItem('cokito_student_auth', 'true');
         return true;
       }
     }
@@ -178,6 +197,8 @@ export default function App() {
     await logout();
     setUser(null);
     setCurrentStudentId('guest');
+    setIsStudentAuthenticated(false);
+    sessionStorage.removeItem('cokito_student_auth');
     sessionStorage.removeItem('cokito_teacher_auth');
     setIsTeacherAuthenticated(false);
   };
@@ -191,6 +212,8 @@ export default function App() {
   const handleRegisterComplete = async (newStudent: Student, bookedSlotIds: string[]) => {
     await saveStudent(newStudent);
     setCurrentStudentId(newStudent.id);
+    setIsStudentAuthenticated(true);
+    sessionStorage.setItem('cokito_student_auth', 'true');
 
     if (newStudent.isKid) {
       setAudienceTheme('kids');
@@ -223,6 +246,8 @@ export default function App() {
   const handleApplyCoupon = async (redeemedStudent: Student) => {
     setStudents(prev => [redeemedStudent, ...prev.filter(s => s.id !== redeemedStudent.id)]);
     setCurrentStudentId(redeemedStudent.id);
+    setIsStudentAuthenticated(true);
+    sessionStorage.setItem('cokito_student_auth', 'true');
     localStorage.setItem('cokito_active_student_id', redeemedStudent.id);
     await saveStudent(redeemedStudent);
     setActiveTab('pathway');
@@ -439,6 +464,7 @@ export default function App() {
             onAwardXp={handleAwardXp}
             activeRole={isTeacherAuthenticated ? 'teacher' : 'student'}
             audienceTheme={audienceTheme}
+            canSyncArenaLives={!isTeacherAuthenticated && Boolean(user && currentStudent && user.email?.toLowerCase() === currentStudent.email.toLowerCase())}
           />
         )}
 
@@ -446,6 +472,7 @@ export default function App() {
         {activeTab === 'pathway' && (
           <LearningPathway
             currentStudent={currentStudent}
+            user={user}
             activeRole={isTeacherAuthenticated ? 'teacher' : 'student'}
             audienceTheme={audienceTheme}
             onOpenRegister={() => setActiveTab('register')}
@@ -456,20 +483,43 @@ export default function App() {
           />
         )}
 
-        {/* TAB 6: CLASSROOM (AULA INTERACTIVA) */}
+        {/* TAB 6: CLASSROOM (AULA INTERACTIVA + HUB DE MATERIALES) */}
         {activeTab === 'classroom' && (
           (isTeacherAuthenticated || (currentStudent && currentStudent.status === 'enrolled')) ? (
             <div className="max-w-7xl mx-auto py-6 px-4 space-y-4">
-              <UnitOneMasterClass
-                currentStudent={currentStudent}
-                activeRole={isTeacherAuthenticated ? 'teacher' : 'student'}
-                onAwardXp={handleAwardXp}
-                onClose={() => setActiveTab('pathway')}
-              />
+              <div className="flex flex-wrap gap-2 border-b border-slate-200 pb-3">
+                <button
+                  type="button"
+                  onClick={() => setClassroomView('interactive')}
+                  aria-pressed={classroomView === 'interactive'}
+                  className={`rounded-xl px-4 py-2 text-sm font-bold transition-colors ${classroomView === 'interactive' ? 'bg-indigo-700 text-white' : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50'}`}
+                >
+                  Aula interactiva
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setClassroomView('hub')}
+                  aria-pressed={classroomView === 'hub'}
+                  className={`rounded-xl px-4 py-2 text-sm font-bold transition-colors ${classroomView === 'hub' ? 'bg-indigo-700 text-white' : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50'}`}
+                >
+                  Classroom y nuestro Hub
+                </button>
+              </div>
+              {classroomView === 'interactive' ? (
+                <UnitOneMasterClass
+                  currentStudent={currentStudent}
+                  activeRole={isTeacherAuthenticated ? 'teacher' : 'student'}
+                  onAwardXp={handleAwardXp}
+                  onClose={() => setActiveTab('pathway')}
+                />
+              ) : (
+                <ClassroomHub activeRole={isTeacherAuthenticated ? 'teacher' : 'student'} />
+              )}
             </div>
           ) : (
             <LearningPathway
               currentStudent={currentStudent}
+            user={user}
               activeRole={isTeacherAuthenticated ? 'teacher' : 'student'}
               audienceTheme={audienceTheme}
               onOpenRegister={() => setActiveTab('register')}
@@ -484,10 +534,12 @@ export default function App() {
         {/* TAB 6: LABORATORIO DE PRÁCTICA (Language Practice Lab • 100 Drills) */}
         {activeTab === 'lab' && (
           <LanguageLab
+            key={currentStudent?.id || 'guest'}
             currentStudent={currentStudent}
             activeRole={isTeacherAuthenticated ? 'teacher' : 'student'}
             user={user}
             isTeacherAuthenticated={isTeacherAuthenticated}
+            isStudentAuthenticated={isStudentAuthenticated}
             onAwardXp={handleAwardXp}
             onGoToClassroom={() => setActiveTab('pathway')}
             onLogin={handleLogin}
@@ -570,6 +622,7 @@ export default function App() {
         onClose={() => setIsProfileOpen(false)}
         student={currentStudent}
         user={user}
+        isStudentAuthenticated={isStudentAuthenticated}
         onLogin={handleLogin}
         onCredentialsLogin={handleCredentialsLogin}
         isLoggingIn={isLoggingIn}

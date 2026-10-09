@@ -2,19 +2,28 @@ import React, { useState } from 'react';
 import { X, CheckCircle2, XCircle, ArrowRight, Award, ExternalLink, HelpCircle, Sparkles } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { PathwayUnit } from '../data/pathwayData';
+import { Student } from '../types';
+import { User } from 'firebase/auth';
+import { recordAcademicEvent } from '../services/academicEvents';
 
 interface UnitQuizModalProps {
   unit: PathwayUnit;
   isOpen: boolean;
   onClose: () => void;
   onQuizFinished: (score: number, total: number) => void;
+  currentStudent?: Student | null;
+  user?: User | null;
+  activeRole?: 'student' | 'teacher';
 }
 
 export const UnitQuizModal: React.FC<UnitQuizModalProps> = ({
   unit,
   isOpen,
   onClose,
-  onQuizFinished
+  onQuizFinished,
+  currentStudent,
+  user,
+  activeRole = 'student'
 }) => {
   const [currentIdx, setCurrentIdx] = useState(0);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
@@ -42,7 +51,31 @@ export const UnitQuizModal: React.FC<UnitQuizModalProps> = ({
   const handleNext = () => {
     if (isLastQuestion) {
       setIsCompleted(true);
-      onQuizFinished(correctCount + (selectedOption === currentQ.correctIndex ? 1 : 0), unit.quizQuestions.length);
+      const finalScore = correctCount + (selectedOption === currentQ.correctIndex ? 1 : 0);
+      onQuizFinished(finalScore, unit.quizQuestions.length);
+      // Capture the assessment result only for a Firebase-authenticated student.
+      // The writer remains disabled by default until database/rules authorization is reviewed.
+      if (currentStudent && user && activeRole === 'student') {
+        void recordAcademicEvent({
+          schemaVersion: 1,
+          studentId: currentStudent.id,
+          source: 'quiz',
+          eventType: 'assessment_submitted',
+          occurredAt: new Date().toISOString(),
+          actor: { role: 'student', id: user.uid },
+          curriculum: {
+            unitId: `unit_${unit.unitNumber}`,
+            assessmentId: `unit_quiz_${unit.unitNumber}`,
+          },
+          outcome: 'submitted',
+          evidence: {
+            score: finalScore,
+            maxScore: unit.quizQuestions.length,
+          },
+        }).catch((error) => {
+          console.warn('Academic quiz event was not recorded:', error);
+        });
+      }
       try {
         confetti({ particleCount: 100, spread: 80, origin: { y: 0.5 } });
       } catch {}

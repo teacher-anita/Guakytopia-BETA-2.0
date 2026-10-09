@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   X, 
   CheckCircle2, 
@@ -13,7 +13,7 @@ import {
   MessageCircle
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
-import { OFFICIAL_PAGO_MOVIL, convertUsdToBs } from '../services/currencyService';
+import { OFFICIAL_PAGO_MOVIL, convertUsdToBs, getBcvDetails } from '../services/currencyService';
 
 interface PaymentCheckoutModalProps {
   isOpen: boolean;
@@ -39,7 +39,18 @@ export const PaymentCheckoutModal: React.FC<PaymentCheckoutModalProps> = ({
   // Submission notice
   const [isSuccess, setIsSuccess] = useState(false);
 
-  const conversion = convertUsdToBs(5);
+  // Live BCV rate details
+  const [bcvInfo, setBcvInfo] = useState(() => getBcvDetails());
+
+  useEffect(() => {
+    const handleBcvUpdate = () => {
+      setBcvInfo(getBcvDetails());
+    };
+    window.addEventListener('bcv_rate_updated', handleBcvUpdate);
+    return () => window.removeEventListener('bcv_rate_updated', handleBcvUpdate);
+  }, []);
+
+  const conversion = convertUsdToBs(5, bcvInfo.rate);
 
   if (!isOpen) return null;
 
@@ -248,9 +259,14 @@ export const PaymentCheckoutModal: React.FC<PaymentCheckoutModalProps> = ({
                         <Smartphone className="w-4 h-4 text-emerald-600" />
                         <span>Datos Oficiales Pago Móvil</span>
                       </span>
-                      <span className="text-[11px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-md">
-                        Tasa BCV: Bs. {conversion.rate.toFixed(2)}
-                      </span>
+                      <div className="text-right">
+                        <span className="text-[11px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-md inline-block">
+                          Tasa Oficial BCV: Bs. {conversion.rate.toFixed(2)}
+                        </span>
+                        <span className="text-[9px] text-emerald-700 block mt-0.5">
+                          Actualización diaria oficial (12:00 AM VET)
+                        </span>
+                      </div>
                     </div>
 
                     <div className="space-y-1.5 bg-white p-3 rounded-xl border border-emerald-200 text-slate-700 font-medium">

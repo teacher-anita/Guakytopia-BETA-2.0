@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { 
   Flame, 
   Zap, 
@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { Student, AudienceTheme } from '../types';
+import { ArenaMiniGames } from './ArenaMiniGames';
 
 interface GamificationHubProps {
   currentStudent: Student | null;
@@ -22,6 +23,7 @@ interface GamificationHubProps {
   onAwardXp: (studentId: string, amount: number) => void;
   activeRole: 'student' | 'teacher';
   audienceTheme: AudienceTheme;
+  canSyncArenaLives: boolean;
 }
 
 interface DailyQuest {
@@ -40,7 +42,8 @@ export const GamificationHub: React.FC<GamificationHubProps> = ({
   students,
   onAwardXp,
   activeRole,
-  audienceTheme
+  audienceTheme,
+  canSyncArenaLives
 }) => {
   const isKids = audienceTheme === 'kids';
 
@@ -81,13 +84,18 @@ export const GamificationHub: React.FC<GamificationHubProps> = ({
   const [activeQuestId, setActiveQuestId] = useState<string | null>(null);
   const [selectedOpt, setSelectedOpt] = useState<number | null>(null);
   const [answeredState, setAnsweredState] = useState<'idle' | 'correct' | 'wrong'>('idle');
+  // Prevent duplicate XP awards from rapid repeated submissions in the same mounted session.
+  const awardedQuestIdsRef = useRef<Set<string>>(new Set());
 
   const activeQuest = quests.find(q => q.id === activeQuestId);
 
   const handleVerifyQuest = () => {
-    if (!activeQuest || selectedOpt === null) return;
+    if (!activeQuest || selectedOpt === null || answeredState !== 'idle') return;
 
     if (selectedOpt === activeQuest.correctIndex) {
+      if (activeQuest.completed || awardedQuestIdsRef.current.has(activeQuest.id)) return;
+      // Mark synchronously before state updates so rapid double-clicks cannot award twice.
+      awardedQuestIdsRef.current.add(activeQuest.id);
       setAnsweredState('correct');
       try {
         confetti({ particleCount: 70, spread: 60, origin: { y: 0.6 } });
@@ -289,6 +297,9 @@ export const GamificationHub: React.FC<GamificationHubProps> = ({
         </div>
 
       </div>
+
+      {/* Arena Arcade: shared lives, word search, Scrabble Mix and Hangman */}
+      <ArenaMiniGames currentStudent={currentStudent} onAwardXp={onAwardXp} canSyncCloud={canSyncArenaLives} />
 
       {/* Quest Modal */}
       {activeQuest && (

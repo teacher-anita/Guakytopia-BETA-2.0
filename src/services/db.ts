@@ -193,3 +193,45 @@ export function subscribeToTeachers(callback: (teachers: Teacher[]) => void): ()
     return () => {};
   }
 }
+
+// Arena lives are stored on the authenticated student's existing Firestore document,
+// so their count and recharge timestamp follow the student across devices.
+export interface ArenaLivesState {
+  lives: number;
+  updatedAt: number;
+}
+
+function parseArenaLives(value: unknown): ArenaLivesState | null {
+  if (!value || typeof value !== 'object') return null;
+  const candidate = value as Partial<ArenaLivesState>;
+  if (!Number.isFinite(candidate.lives) || !Number.isFinite(candidate.updatedAt)) return null;
+  return {
+    lives: Math.max(0, Math.min(5, Math.floor(candidate.lives as number))),
+    updatedAt: candidate.updatedAt as number
+  };
+}
+
+export function subscribeToArenaLives(
+  studentId: string,
+  callback: (state: ArenaLivesState | null) => void
+): () => void {
+  return onSnapshot(
+    doc(db, 'students', studentId),
+    snapshot => callback(parseArenaLives(snapshot.data()?.arenaLives)),
+    error => console.warn('Could not sync Arena lives from Firestore:', error.message)
+  );
+}
+
+export async function saveArenaLives(studentId: string, state: ArenaLivesState): Promise<void> {
+  try {
+    await setDoc(doc(db, 'students', studentId), {
+      arenaLives: {
+        lives: Math.max(0, Math.min(5, Math.floor(state.lives))),
+        updatedAt: state.updatedAt
+      }
+    }, { merge: true });
+  } catch (error) {
+    console.warn('Could not save Arena lives to Firestore:', error);
+  }
+}
+

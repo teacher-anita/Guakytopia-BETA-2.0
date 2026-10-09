@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   ShieldCheck, 
   Crown, 
@@ -42,12 +42,32 @@ import {
   ToggleRight,
   Eye,
   EyeOff,
-  FileText
+  FileText,
+  RefreshCw,
+  Send
 } from 'lucide-react';
 import { Student, Teacher, ScheduleSlot, EnglishLevel } from '../types';
 import { ENGLISH_LEVELS } from '../data/curriculumData';
 import { TeachersLounge } from './TeachersLounge';
-import { OFFICIAL_PAGO_MOVIL, getBcvExchangeRate, setBcvExchangeRateOverride, convertUsdToBs } from '../services/currencyService';
+import { 
+  OFFICIAL_PAGO_MOVIL, 
+  getBcvExchangeRate, 
+  setBcvExchangeRateOverride, 
+  clearBcvExchangeRateOverride,
+  convertUsdToBs,
+  getBcvDetails,
+  fetchLiveBcvRate,
+  BcvDetails 
+} from '../services/currencyService';
+import { 
+  sendTeacherFlockWelcomeEmail, 
+  sendStudentCampusWelcomeEmail, 
+  generateTemporaryPassword 
+} from '../services/institutionalService';
+import { 
+  getFlockTeachersForLevel, 
+  getFlockMentorsLabel 
+} from '../services/matrixEngine';
 import { CouponItem, getStoredCoupons, saveStoredCoupons, BenefitType, CouponCategory } from '../data/couponsData';
 import confetti from 'canvas-confetti';
 import { 
@@ -170,7 +190,7 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
       categoryLabel: categoryLabels[newCouponData.category] || 'General',
       benefitType: newCouponData.benefitType,
       title: newCouponData.title.trim() || `Pase Institucional ${cleanCode}`,
-      description: newCouponData.description.trim() || 'Acceso y beneficio institucional autorizado por Rectoría de Güakytopia.',
+      description: newCouponData.description.trim() || "Official Güakytopia Academy benefit authorized by the Principal's Office.",
       maxUses: isNaN(maxU as number) ? null : maxU,
       currentUses: 0,
       isActive: true,
@@ -421,11 +441,24 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
     setTimeout(() => setApprovalNotice(null), 4500);
   };
 
-  // BCV Rate Management (Waky Control)
+  // BCV Rate Management (Waky Control) - Live Official BCV with automated midnight updates
+  const [bcvDetails, setBcvDetails] = useState<BcvDetails>(() => getBcvDetails());
   const [currentBcvRate, setCurrentBcvRate] = useState<number>(() => getBcvExchangeRate());
   const [isEditingBcvRate, setIsEditingBcvRate] = useState(false);
   const [bcvRateInput, setBcvRateInput] = useState<string>(() => getBcvExchangeRate().toString());
-  const [bcvRateSavedNotice, setBcvRateSavedNotice] = useState(false);
+  const [bcvRateSavedNotice, setBcvRateSavedNotice] = useState<string | null>(null);
+  const [isSyncingBcv, setIsSyncingBcv] = useState(false);
+
+  useEffect(() => {
+    const handleBcvChange = () => {
+      const details = getBcvDetails();
+      setBcvDetails(details);
+      setCurrentBcvRate(details.rate);
+      setBcvRateInput(details.rate.toString());
+    };
+    window.addEventListener('bcv_rate_updated', handleBcvChange);
+    return () => window.removeEventListener('bcv_rate_updated', handleBcvChange);
+  }, []);
 
   const handleSaveBcvRate = (e: React.FormEvent) => {
     e.preventDefault();
@@ -433,10 +466,39 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
     if (!isNaN(val) && val > 0) {
       setBcvExchangeRateOverride(val);
       setCurrentBcvRate(val);
+      setBcvDetails(getBcvDetails());
       setIsEditingBcvRate(false);
-      setBcvRateSavedNotice(true);
-      setTimeout(() => setBcvRateSavedNotice(false), 2500);
+      setBcvRateSavedNotice(`Tasa manual establecida en Bs. ${val.toFixed(2)}`);
+      setTimeout(() => setBcvRateSavedNotice(null), 3000);
     }
+  };
+
+  const handleSyncBcv = async () => {
+    setIsSyncingBcv(true);
+    try {
+      const freshRate = await fetchLiveBcvRate(true);
+      const details = getBcvDetails();
+      setBcvDetails(details);
+      setCurrentBcvRate(freshRate);
+      setBcvRateInput(freshRate.toString());
+      setBcvRateSavedNotice(`Tasa sincronizada exitosamente con el BCV: Bs. ${freshRate.toFixed(2)}`);
+      setTimeout(() => setBcvRateSavedNotice(null), 3500);
+    } catch {
+      setBcvRateSavedNotice('No se pudo sincronizar en este momento. Se mantiene la tasa activa.');
+      setTimeout(() => setBcvRateSavedNotice(null), 3500);
+    } finally {
+      setIsSyncingBcv(false);
+    }
+  };
+
+  const handleRestoreOfficialBcv = () => {
+    clearBcvExchangeRateOverride();
+    const details = getBcvDetails();
+    setBcvDetails(details);
+    setCurrentBcvRate(details.rate);
+    setBcvRateInput(details.rate.toString());
+    setBcvRateSavedNotice(`Tasa restaurada a la oficial del BCV (Bs. ${details.rate.toFixed(2)}). Actualización a medianoche reactivada.`);
+    setTimeout(() => setBcvRateSavedNotice(null), 4000);
   };
 
   // Payment Management Tab State
@@ -519,6 +581,7 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
     hourlyRate: 15,
     bio: ''
   });
+  const [sendTeacherWelcomeEmailFlag, setSendTeacherWelcomeEmailFlag] = useState(true);
 
   // Student Modals
   const [movingStudent, setMovingStudent] = useState<Student | null>(null);
@@ -537,6 +600,9 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
 
   // New Student Manual Registration Modal
   const [isNewStudentModalOpen, setIsNewStudentModalOpen] = useState(false);
+  const [sendStudentWelcomeEmailFlag, setSendStudentWelcomeEmailFlag] = useState(true);
+  const [newStudentMentorshipMode, setNewStudentMentorshipMode] = useState<'rotational' | 'exclusive'>('rotational');
+  const [newStudentExclusiveTeacherId, setNewStudentExclusiveTeacherId] = useState<string>('');
   const [newStudentData, setNewStudentData] = useState<Partial<Student>>({
     name: '',
     lastName: '',
@@ -544,7 +610,7 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
     phone: '',
     age: 25,
     isKid: false,
-    schoolOrProfession: 'Estudiante Institucional',
+    schoolOrProfession: 'Estudiante Campus Güakytopia',
     learningGoal: 'Superación laboral y fluidez conversacional',
     plan: 'basic',
     modality: 'online',
@@ -557,6 +623,43 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
 
   // Slot Teacher Assignment Modal
   const [selectedSlotForTeacher, setSelectedSlotForTeacher] = useState<ScheduleSlot | null>(null);
+
+  // Reenviar credenciales de teachers
+  const handleResendTeacherEmail = async (teacher: Teacher) => {
+    const tempPass = teacher.temporaryPassword || generateTemporaryPassword();
+    const res = await sendTeacherFlockWelcomeEmail(teacher, tempPass);
+    if (res.success) {
+      onUpdateTeacher({
+        ...teacher,
+        temporaryPassword: tempPass,
+        welcomeEmailSent: true,
+        welcomeEmailSentAt: new Date().toISOString()
+      });
+      setApprovalNotice(`🪶 Credenciales de acceso a la Manada reenviadas a ${teacher.email} (Clave: ${tempPass})`);
+      setTimeout(() => setApprovalNotice(null), 4500);
+    }
+  };
+
+  // Reenviar credenciales de alumno
+  const handleResendStudentEmail = async (student: Student) => {
+    const tempPass = student.temporaryPassword || generateTemporaryPassword();
+    const mentorsSummary = getFlockMentorsLabel(teachers, student.levelId || 'level_1');
+    const res = await sendStudentCampusWelcomeEmail(student, {
+      temporaryPassword: tempPass,
+      flockMentorsSummary: mentorsSummary,
+      mentorName: student.teacherName
+    });
+    if (res.success) {
+      onUpdateStudent({
+        ...student,
+        temporaryPassword: tempPass,
+        welcomeEmailSent: true,
+        welcomeEmailSentAt: new Date().toISOString()
+      });
+      setApprovalNotice(`🎉 Credenciales de acceso al Campus reenviadas a ${student.email} (Clave: ${tempPass})`);
+      setTimeout(() => setApprovalNotice(null), 4500);
+    }
+  };
 
   // Filtered Students
   const filteredStudents = students.filter(s => {
@@ -584,10 +687,11 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
   };
 
   // Handle Create Teacher
-  const handleCreateTeacher = (e: React.FormEvent) => {
+  const handleCreateTeacher = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newTeacherData.name || !newTeacherData.email) return;
 
+    const tempPassword = generateTemporaryPassword();
     const teacherToAdd: Teacher = {
       id: `teacher_${Date.now()}`,
       name: newTeacherData.name.trim(),
@@ -595,14 +699,26 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
       email: newTeacherData.email.trim().toLowerCase(),
       phone: newTeacherData.phone?.trim() || '',
       avatar: `https://api.dicebear.com/7.x/micah/svg?seed=${newTeacherData.name}`,
-      specialty: newTeacherData.specialty || 'General English',
-      levelsAssigned: newTeacherData.levelsAssigned || ['level_1'],
+      specialty: newTeacherData.specialty || 'General English & Communicative Confidence',
+      levelsAssigned: newTeacherData.levelsAssigned || ['level_1', 'level_2'],
       assignedDays: newTeacherData.assignedDays || ['Lunes', 'Miércoles'],
-      workingHours: newTeacherData.workingHours || '08:00 - 13:00',
+      workingHours: newTeacherData.workingHours || '08:00 - 14:00',
       status: (newTeacherData.status as any) || 'active',
-      hourlyRate: Number(newTeacherData.hourlyRate) || 12,
-      bio: newTeacherData.bio || 'Profesor de Cokitö Academy'
+      hourlyRate: Number(newTeacherData.hourlyRate) || 15,
+      bio: newTeacherData.bio || 'Mentor de Güakytopia\'s Flock',
+      flockRole: 'Flock Mentor',
+      password: tempPassword,
+      temporaryPassword: tempPassword,
+      welcomeEmailSent: false
     };
+
+    if (sendTeacherWelcomeEmailFlag) {
+      const emailRes = await sendTeacherFlockWelcomeEmail(teacherToAdd, tempPassword);
+      if (emailRes.success) {
+        teacherToAdd.welcomeEmailSent = true;
+        teacherToAdd.welcomeEmailSentAt = emailRes.timestamp;
+      }
+    }
 
     onAddTeacher(teacherToAdd);
     setIsNewTeacherModalOpen(false);
@@ -619,6 +735,8 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
       hourlyRate: 15,
       bio: ''
     });
+    setApprovalNotice(`🪶 ¡Teacher ${teacherToAdd.name} contratado e integrado a la Manada (The Flock)! ${sendTeacherWelcomeEmailFlag ? `Correo con credenciales enviado a ${teacherToAdd.email} (Clave provisional: ${tempPassword})` : ''}`);
+    setTimeout(() => setApprovalNotice(null), 4500);
   };
 
   // Handle Student Movement / Reassignment
@@ -750,9 +868,13 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
   };
 
   // Handle Create Student
-  const handleCreateStudent = (e: React.FormEvent) => {
+  const handleCreateStudent = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newStudentData.name || !newStudentData.email) return;
+
+    const tempPassword = generateTemporaryPassword();
+    const isExclusive = newStudentMentorshipMode === 'exclusive' && Boolean(newStudentExclusiveTeacherId);
+    const exclusiveTeacher = isExclusive ? teachers.find(t => t.id === newStudentExclusiveTeacherId) : null;
 
     const studentToAdd: Student = {
       id: `student_${Date.now()}`,
@@ -762,8 +884,8 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
       phone: newStudentData.phone?.trim() || '',
       age: Number(newStudentData.age) || 20,
       isKid: Boolean(newStudentData.isKid),
-      schoolOrProfession: newStudentData.schoolOrProfession || 'Estudiante Cokitö',
-      learningGoal: newStudentData.learningGoal || 'Inglés conversacional',
+      schoolOrProfession: newStudentData.schoolOrProfession || 'Estudiante Campus Güakytopia',
+      learningGoal: newStudentData.learningGoal || 'Inglés conversacional y fluidez',
       avatar: `https://api.dicebear.com/7.x/initials/svg?seed=${newStudentData.name}`,
       plan: newStudentData.plan || 'basic',
       modality: newStudentData.modality || 'online',
@@ -778,12 +900,33 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
       streak: 1,
       league: 'Bronce',
       rating: { fluency: 3, grammar: 3, vocabulary: 3, pronunciation: 3 },
-      notes: 'Matriculado directamente por The Principal (Directora Waky).',
-      assignedSlots: []
+      notes: `Matriculado directamente en el Campus por The Principal (Directora Waky). ${isExclusive ? `Mentor exclusivo: ${exclusiveTeacher?.name}` : 'Modo rotativo Manada (The Flock)'}`,
+      assignedSlots: [],
+      isExclusiveTeacher: isExclusive,
+      teacherId: isExclusive ? exclusiveTeacher?.id : undefined,
+      teacherName: isExclusive ? `Teacher ${exclusiveTeacher?.name}` : undefined,
+      password: tempPassword,
+      temporaryPassword: tempPassword,
+      welcomeEmailSent: false
     };
+
+    if (sendStudentWelcomeEmailFlag) {
+      const mentorsSummary = getFlockMentorsLabel(teachers, studentToAdd.levelId || 'level_1');
+      const emailRes = await sendStudentCampusWelcomeEmail(studentToAdd, {
+        temporaryPassword: tempPassword,
+        flockMentorsSummary: mentorsSummary,
+        mentorName: exclusiveTeacher?.name
+      });
+      if (emailRes.success) {
+        studentToAdd.welcomeEmailSent = true;
+        studentToAdd.welcomeEmailSentAt = emailRes.timestamp;
+      }
+    }
 
     onAddStudent(studentToAdd);
     setIsNewStudentModalOpen(false);
+    setApprovalNotice(`🎉 ¡${studentToAdd.name} matriculado en el Campus! ${sendStudentWelcomeEmailFlag ? `Carta oficial con credenciales enviada a ${studentToAdd.email} (Clave provisional: ${tempPassword})` : ''}`);
+    setTimeout(() => setApprovalNotice(null), 4500);
   };
 
   // Assign Teacher to Slot
@@ -819,20 +962,20 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
                 The Principal • Directora General
               </span>
               <span className="bg-white/90 text-slate-900 text-xs font-bold px-3 py-1 rounded-full border border-amber-300">
-                👑 Sesión: Rectoría General
+                👑 Office Session
               </span>
               <span className="bg-amber-100 text-amber-950 text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1.5 shadow-2xs border border-amber-300">
-                <ShieldCheck className="w-3.5 h-3.5 text-amber-700" />
-                <span>Acceso Seguro Verificado</span>
+                <Settings className="w-3.5 h-3.5 text-amber-700" />
+                <span>Panel de dirección</span>
               </span>
             </div>
 
             <h1 className="text-2xl sm:text-4xl font-black tracking-tight text-slate-950">
-              Despacho Institucional Güakytopia • Rectoría General
+              Güakytopia Academy • Principal's Office
             </h1>
 
             <p className="text-xs sm:text-sm text-slate-900 font-medium leading-relaxed">
-              Control maestro de rectoría: emite y controla cupones y becas, edita perfiles de alumnos, gestiona profesores, aprueba pagos y supervisa toda la institución como Directora Waky.
+              Lead the academy from one place: manage scholarships and rewards, support students and teachers, review payments, and keep learning moving forward with Waky, The Principal.
             </p>
           </div>
 
@@ -841,7 +984,7 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
             <div className="flex items-center justify-between text-xs font-bold text-amber-300">
               <span className="flex items-center gap-1.5">
                 <ArrowRightLeft className="w-3.5 h-3.5" />
-                Conmutador de Vista (Impersonate)
+                Vista de demostración
               </span>
               <span className="text-[10px] text-slate-400">Ver como:</span>
             </div>
@@ -913,9 +1056,10 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
       </div>
 
       {/* 3. TABS NAVIGATION */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-1 border-b border-slate-200 text-xs font-bold">
+      <div role="group" aria-label="Principal's Office sections" className="flex items-center gap-2 overflow-x-auto pb-1 border-b border-slate-200 text-xs font-bold">
         <button
           onClick={() => setActiveTab('payments')}
+          aria-pressed={activeTab === 'payments'}
           className={`flex items-center gap-2 px-4 py-3 rounded-2xl whitespace-nowrap transition-all relative ${
             activeTab === 'payments'
               ? 'bg-slate-900 text-white shadow-md'
@@ -923,7 +1067,7 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
           }`}
         >
           <Smartphone className="w-4 h-4 text-emerald-400" />
-          <span>Gestión de Pagos & Matrícula</span>
+          <span>Payments & Enrollment</span>
           {students.filter(s => s.paymentStatus === 'pending_approval' || (s.status === 'pending_evaluation' && s.pagoMovilRef)).length > 0 && (
             <span className="bg-amber-400 text-slate-950 px-2 py-0.5 rounded-full text-[10px] font-black shadow-xs animate-pulse">
               🔔 {students.filter(s => s.paymentStatus === 'pending_approval' || (s.status === 'pending_evaluation' && s.pagoMovilRef)).length}
@@ -933,6 +1077,7 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
 
         <button
           onClick={() => setActiveTab('lounge')}
+          aria-pressed={activeTab === 'lounge'}
           className={`flex items-center gap-2 px-4 py-3 rounded-2xl whitespace-nowrap transition-all ${
             activeTab === 'lounge'
               ? 'bg-amber-700 text-white shadow-md'
@@ -940,11 +1085,12 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
           }`}
         >
           <Coffee className="w-4 h-4 text-amber-500" />
-          <span>☕ Teacher's Lounge & Cartelera</span>
+          <span>☕ Teacher's Lounge & Bulletin Board</span>
         </button>
 
         <button
           onClick={() => setActiveTab('teachers')}
+          aria-pressed={activeTab === 'teachers'}
           className={`flex items-center gap-2 px-4 py-3 rounded-2xl whitespace-nowrap transition-all ${
             activeTab === 'teachers'
               ? 'bg-slate-900 text-white shadow-md'
@@ -957,6 +1103,7 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
 
         <button
           onClick={() => setActiveTab('students')}
+          aria-pressed={activeTab === 'students'}
           className={`flex items-center gap-2 px-4 py-3 rounded-2xl whitespace-nowrap transition-all ${
             activeTab === 'students'
               ? 'bg-slate-900 text-white shadow-md'
@@ -964,11 +1111,12 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
           }`}
         >
           <Users className="w-4 h-4 text-emerald-400" />
-          <span>Mover y Gestionar Alumnos ({students.length})</span>
+          <span>Manage Students ({students.length})</span>
         </button>
 
         <button
           onClick={() => setActiveTab('classrooms')}
+          aria-pressed={activeTab === 'classrooms'}
           className={`flex items-center gap-2 px-4 py-3 rounded-2xl whitespace-nowrap transition-all ${
             activeTab === 'classrooms'
               ? 'bg-slate-900 text-white shadow-md'
@@ -981,6 +1129,7 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
 
         <button
           onClick={() => setActiveTab('coupons')}
+          aria-pressed={activeTab === 'coupons'}
           className={`flex items-center gap-2 px-4 py-3 rounded-2xl whitespace-nowrap transition-all ${
             activeTab === 'coupons'
               ? 'bg-amber-500 text-slate-950 font-black shadow-md'
@@ -988,11 +1137,12 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
           }`}
         >
           <Gift className="w-4 h-4 text-amber-500" />
-          <span>Cupones, Becas & Promos ({couponsList.length})</span>
+          <span>Scholarships & Rewards ({couponsList.length})</span>
         </button>
 
         <button
           onClick={() => setActiveTab('profile')}
+          aria-pressed={activeTab === 'profile'}
           className={`flex items-center gap-2 px-4 py-3 rounded-2xl whitespace-nowrap transition-all ${
             activeTab === 'profile'
               ? 'bg-gradient-to-r from-amber-600 to-amber-700 text-white font-black shadow-md'
@@ -1000,7 +1150,7 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
           }`}
         >
           <Crown className="w-4 h-4 text-amber-300" />
-          <span>👑 Despacho Rectora Waky</span>
+          <span>👑 Waky's Office</span>
         </button>
       </div>
 
@@ -1097,15 +1247,31 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
                     </div>
                   </div>
 
-                  {/* Contact Info */}
-                  <div className="flex items-center justify-between text-xs text-slate-500 pt-1 border-t border-slate-100">
-                    <span className="truncate max-w-[200px]">{t.email}</span>
-                    <button
-                      onClick={() => setEditingTeacher(t)}
-                      className="text-indigo-600 hover:underline font-bold text-xs"
-                    >
-                      Asignar Horarios & Clases →
-                    </button>
+                  {/* Contact Info & Flock Credential Dispatch */}
+                  <div className="flex items-center justify-between text-xs text-slate-500 pt-2 border-t border-slate-100 flex-wrap gap-2">
+                    <div className="flex items-center gap-1.5 truncate max-w-[220px]">
+                      <span className="text-amber-500 text-sm">🪶</span>
+                      <span className="truncate font-medium">{t.email}</span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleResendTeacherEmail(t)}
+                        className="px-2.5 py-1 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 rounded-lg font-bold text-[11px] flex items-center gap-1 transition-colors"
+                        title="Reenviar carta oficial con credenciales de la Manada a su correo"
+                      >
+                        <Send className="w-3 h-3 text-amber-600" />
+                        <span>{t.welcomeEmailSent ? 'Reenviar credenciales' : 'Enviar credenciales'}</span>
+                      </button>
+
+                      <button
+                        onClick={() => setEditingTeacher(t)}
+                        className="text-indigo-600 hover:underline font-bold text-xs"
+                      >
+                        Asignar Horarios →
+                      </button>
+                    </div>
                   </div>
                 </div>
               );
@@ -1195,7 +1361,7 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
                     {classRequests.find(r => r.status === 'pending')?.studentName} necesita asignación de clases
                   </h3>
                   <p className="text-xs text-slate-600 mt-0.5">
-                    "{classRequests.find(r => r.status === 'pending')?.notes || 'Solicitud de horarios y docente para iniciar clases.'}" • Horario tentativo: <strong className="text-slate-800">{classRequests.find(r => r.status === 'pending')?.preferredDaysTimes}</strong>
+                    "{classRequests.find(r => r.status === 'pending')?.notes || 'Solicitud de horarios y teacher para iniciar clases.'}" • Horario tentativo: <strong className="text-slate-800">{classRequests.find(r => r.status === 'pending')?.preferredDaysTimes}</strong>
                   </p>
                 </div>
               </div>
@@ -1207,10 +1373,27 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
                     id: firstPending.studentId,
                     name: firstPending.studentName,
                     email: firstPending.studentEmail,
+                    age: 25,
+                    isKid: false,
+                    schoolOrProfession: 'Estudiante Institucional',
+                    learningGoal: 'Superación laboral y fluidez conversacional',
+                    avatar: '🦜',
+                    plan: 'basic',
+                    modality: 'online',
+                    groupSize: 'individual',
+                    preferredTimeSlot: 'Tardes',
                     status: 'enrolled',
                     levelId: 'level_1',
+                    registeredAt: new Date().toISOString(),
+                    currentUnit: 1,
+                    completedHours: 0,
+                    xp: 0,
+                    streak: 0,
+                    league: 'Bronce',
+                    rating: { fluency: 0, grammar: 0, vocabulary: 0, pronunciation: 0 },
+                    notes: '',
                     assignedSlots: []
-                  } as Student;
+                  } satisfies Student;
                   return (
                     <button
                       type="button"
@@ -1270,9 +1453,21 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
 
                         <td className="py-3 px-4 text-slate-700">
                           <div className="space-y-1">
-                            <div className="font-semibold text-slate-900 flex items-center gap-1.5">
-                              <span>{student.teacherName || 'Teacher Cokitö (General)'}</span>
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-md ${
+                                student.isExclusiveTeacher 
+                                  ? 'bg-purple-100 text-purple-900 border border-purple-200' 
+                                  : 'bg-emerald-100 text-emerald-900 border border-emerald-200'
+                              }`}>
+                                {student.isExclusiveTeacher ? '🔒 Mentor Exclusivo' : '🌟 La Manada (Rotativo)'}
+                              </span>
+                              <span className="font-semibold text-slate-900 text-xs">
+                                {student.isExclusiveTeacher 
+                                  ? (student.teacherName || 'Por asignar') 
+                                  : 'Mentores del Nivel'}
+                              </span>
                             </div>
+
                             {hasClasses ? (
                               <div className="text-[10px] font-bold text-indigo-800 bg-indigo-50 px-2 py-0.5 rounded-lg border border-indigo-200 inline-flex items-center gap-1">
                                 <Calendar className="w-3 h-3 text-indigo-600" />
@@ -1281,7 +1476,7 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
                             ) : (
                               <div className="text-[10px] font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded-lg border border-amber-300 inline-flex items-center gap-1">
                                 <AlertCircle className="w-3 h-3 text-amber-600" />
-                                <span>⚠️ Sin clases agendadas</span>
+                                <span>⚠️ Sin horario agendado</span>
                               </div>
                             )}
                           </div>
@@ -1301,6 +1496,15 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
 
                         <td className="py-3 px-4 text-right">
                           <div className="flex items-center justify-end gap-1.5">
+                            {/* Resend Welcome Email with Credentials */}
+                            <button
+                              onClick={() => handleResendStudentEmail(student)}
+                              className="p-1.5 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 rounded-xl transition-colors"
+                              title="Reenviar carta oficial con credenciales y acceso al Campus por correo"
+                            >
+                              <Send className="w-3.5 h-3.5 text-amber-700" />
+                            </button>
+
                             {/* Assign / Edit Classes Button */}
                             <button
                               onClick={() => handleOpenAssignClasses(student)}
@@ -1437,11 +1641,16 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
             {/* Box 1: BCV Exchange Rate Control */}
             <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-2xs space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                  Tasa Oficial de Cambio (BCV)
+                <span className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                  <span className="text-sm">🏛️</span>
+                  <span>Tasa Oficial BCV</span>
                 </span>
-                <span className="text-[10px] bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-md font-bold border border-emerald-200">
-                  Activa
+                <span className={`text-[10px] px-2 py-0.5 rounded-md font-black border ${
+                  bcvDetails.isManualOverride 
+                    ? 'bg-amber-100 text-amber-900 border-amber-300' 
+                    : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                }`}>
+                  {bcvDetails.isManualOverride ? 'Ajuste Manual' : 'Oficial BCV • Auto'}
                 </span>
               </div>
 
@@ -1470,31 +1679,78 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
                       ✕
                     </button>
                   </div>
-                  <span className="text-[10px] text-slate-400 block">Actualiza el cálculo automático en Bs para todos los alumnos.</span>
+                  <span className="text-[10px] text-slate-400 block">Fija temporalmente una tasa manual para casos especiales.</span>
                 </form>
               ) : (
-                <div className="flex items-baseline justify-between">
-                  <div>
-                    <div className="text-2xl font-black text-slate-900">
-                      Bs. {currentBcvRate.toFixed(2)}
+                <div className="space-y-2">
+                  <div className="flex items-baseline justify-between">
+                    <div>
+                      <div className="text-2xl font-black text-slate-900">
+                        Bs. {currentBcvRate.toFixed(2)}
+                      </div>
+                      <span className="text-[11px] text-slate-500 font-medium">
+                        por 1.00 USD (Fecha valor: {bcvDetails.effectiveDate})
+                      </span>
                     </div>
-                    <span className="text-[11px] text-slate-400">por 1.00 USD</span>
+
+                    <div className="flex items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={handleSyncBcv}
+                        disabled={isSyncingBcv}
+                        title="Sincronizar directamente con el Banco Central de Venezuela"
+                        className="p-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-xl text-xs font-bold transition-colors flex items-center gap-1 disabled:opacity-50"
+                      >
+                        <RefreshCw className={`w-3.5 h-3.5 ${isSyncingBcv ? 'animate-spin' : ''}`} />
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setBcvRateInput(currentBcvRate.toString());
+                          setIsEditingBcvRate(true);
+                        }}
+                        className="px-2.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-colors flex items-center gap-1"
+                        title="Ajustar manualmente"
+                      >
+                        <Edit3 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   </div>
-                  <button
-                    onClick={() => {
-                      setBcvRateInput(currentBcvRate.toString());
-                      setIsEditingBcvRate(true);
-                    }}
-                    className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-colors flex items-center gap-1"
-                  >
-                    <Edit3 className="w-3.5 h-3.5" />
-                    <span>Modificar</span>
-                  </button>
+
+                  {/* Auto-update Schedule Notice */}
+                  <div className="rounded-xl bg-slate-50 p-2 border border-slate-200/80 text-[11px] space-y-1">
+                    <div className="flex items-center justify-between text-slate-600">
+                      <span>🕛 Ajuste automático:</span>
+                      <strong className="text-slate-900 font-semibold">12:00 AM (Medianoche VET)</strong>
+                    </div>
+                    <div className="text-[10px] text-slate-500 flex items-center justify-between">
+                      <span>Próximo ciclo:</span>
+                      <span className="font-mono text-indigo-600 font-bold">en ~{bcvDetails.hoursUntilMidnight}h</span>
+                    </div>
+                  </div>
+
+                  {bcvDetails.isManualOverride && (
+                    <div className="rounded-xl bg-amber-50 p-2.5 border border-amber-200 text-[11px] text-amber-900 space-y-1.5">
+                      <p>
+                        ⚠️ Hay un ajuste manual activo. Tasa oficial BCV: <strong>Bs. {bcvDetails.officialRate.toFixed(2)}</strong>.
+                      </p>
+                      <button
+                        type="button"
+                        onClick={handleRestoreOfficialBcv}
+                        className="w-full py-1.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-black rounded-lg text-[10px] shadow-xs"
+                      >
+                        Restaurar tasa oficial del BCV
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
 
               {bcvRateSavedNotice && (
-                <p className="text-[11px] text-emerald-600 font-bold animate-fadeIn">✓ Tasa actualizada exitosamente</p>
+                <p className="text-[11px] text-emerald-700 bg-emerald-50 p-2 rounded-lg font-bold animate-fadeIn border border-emerald-200">
+                  {bcvRateSavedNotice}
+                </p>
               )}
             </div>
 
@@ -1836,7 +2092,7 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <span className="bg-amber-100 text-amber-900 text-xs font-black px-2.5 py-0.5 rounded-full border border-amber-300">
-                  🎟️ Rectoría Güakytopia
+                  🎟️ Güakytopia • Principal's Office
                 </span>
                 <span className="text-xs text-slate-500 font-bold">Validación en tiempo real</span>
               </div>
@@ -2115,7 +2371,7 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
               <div className="w-10 h-10 rounded-2xl bg-amber-100 text-amber-800 flex items-center justify-center font-bold">
                 📜
               </div>
-              <h3 className="font-black text-slate-900 text-base">Misión de Rectoría</h3>
+              <h3 className="font-black text-slate-900 text-base">Our Mission</h3>
               <p className="text-xs text-slate-600 leading-relaxed">
                 Transformar el aprendizaje del inglés en Venezuela y Latinoamérica eliminando el miedo a hablar, mediante inmersión lúdica y acompañamiento humano de alta categoría.
               </p>
@@ -2187,7 +2443,7 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
               <div className="p-3 bg-white/5 rounded-2xl border border-white/10">
                 <span className="text-amber-300 font-bold block mb-1">👑 Autoridad Académica</span>
                 <p className="text-slate-300 text-[11px]">
-                  Todos los cambios realizados en pensum, asignación docente o cupones tienen validez inmediata en toda la plataforma.
+                  Todos los cambios realizados en pensum, asignación de teachers o cupones tienen validez inmediata en toda la plataforma.
                 </p>
               </div>
               <div className="p-3 bg-white/5 rounded-2xl border border-white/10">
@@ -2358,7 +2614,7 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
             <div className="space-y-4 text-xs overflow-y-auto flex-1 pr-1">
               {/* Especialidad */}
               <div>
-                <label className="font-bold text-slate-700 block mb-1">Especialidad Docente:</label>
+                <label className="font-bold text-slate-700 block mb-1">Especialidad del Teacher:</label>
                 <input
                   type="text"
                   value={editingTeacher.specialty}
@@ -2536,17 +2792,25 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
         </div>
       )}
 
-      {/* MODAL: CONTRATAR / AGREGAR NUEVO PROFESOR */}
+      {/* MODAL: CONTRATAR / AGREGAR NUEVO PROFESOR A LA MANADA (THE FLOCK) */}
       {isNewTeacherModalOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
           <form 
             onSubmit={handleCreateTeacher}
-            className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 space-y-4 shadow-2xl border border-slate-200"
+            className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 space-y-4 shadow-2xl border border-slate-200 my-auto"
           >
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h3 className="font-black text-slate-900 text-base">
-                Contratar / Agregar Nuevo Teacher
-              </h3>
+              <div className="flex items-center gap-2">
+                <span className="text-xl">🪶</span>
+                <div>
+                  <h3 className="font-black text-slate-900 text-base">
+                    Contratar Mentor • Güakytopia's Flock
+                  </h3>
+                  <p className="text-[11px] text-slate-500">
+                    Suma un nuevo profesor a la manada y expide sus credenciales
+                  </p>
+                </div>
+              </div>
               <button 
                 type="button"
                 onClick={() => setIsNewTeacherModalOpen(false)}
@@ -2556,7 +2820,7 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
               </button>
             </div>
 
-            <div className="space-y-3 text-xs">
+            <div className="space-y-3 text-xs max-h-[65vh] overflow-y-auto pr-1">
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <label className="font-bold text-slate-700 block mb-1">Nombre:</label>
@@ -2581,38 +2845,109 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
                 </div>
               </div>
 
-              <div>
-                <label className="font-bold text-slate-700 block mb-1">Correo Electrónico:</label>
-                <input
-                  type="email"
-                  value={newTeacherData.email}
-                  onChange={e => setNewTeacherData({ ...newTeacherData, email: e.target.value })}
-                  className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl"
-                  placeholder="profe@cokito.com"
-                  required
-                />
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Correo Electrónico:</label>
+                  <input
+                    type="email"
+                    value={newTeacherData.email}
+                    onChange={e => setNewTeacherData({ ...newTeacherData, email: e.target.value })}
+                    className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl"
+                    placeholder="profe@guakytopia.com"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Teléfono / WhatsApp:</label>
+                  <input
+                    type="text"
+                    value={newTeacherData.phone}
+                    onChange={e => setNewTeacherData({ ...newTeacherData, phone: e.target.value })}
+                    className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl"
+                    placeholder="+58 414 1234567"
+                  />
+                </div>
               </div>
 
               <div>
-                <label className="font-bold text-slate-700 block mb-1">Especialidad:</label>
+                <label className="font-bold text-slate-700 block mb-1">Especialidad Pedagógica:</label>
                 <input
                   type="text"
                   value={newTeacherData.specialty}
                   onChange={e => setNewTeacherData({ ...newTeacherData, specialty: e.target.value })}
                   className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl"
-                  placeholder="Inglés Conversacional Teens & Kids"
+                  placeholder="Super Goal 1–3, Fonética y Confianza Oral"
                 />
               </div>
 
+              {/* Niveles Certificados en Matriz */}
               <div>
-                <label className="font-bold text-slate-700 block mb-1">Horario Laboral Asignado:</label>
+                <label className="font-bold text-slate-700 block mb-1">
+                  Niveles que Certifica en la Matriz Cokitö:
+                </label>
+                <div className="grid grid-cols-3 sm:grid-cols-4 gap-1.5 p-2 bg-slate-50 rounded-xl border border-slate-200">
+                  {ENGLISH_LEVELS.slice(0, 8).map(lvl => {
+                    const isChecked = (newTeacherData.levelsAssigned || []).includes(lvl.id);
+                    return (
+                      <label key={lvl.id} className="flex items-center gap-1.5 text-[11px] font-medium text-slate-700 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={e => {
+                            const cur = newTeacherData.levelsAssigned || [];
+                            const next = e.target.checked 
+                              ? [...cur, lvl.id]
+                              : cur.filter(id => id !== lvl.id);
+                            setNewTeacherData({ ...newTeacherData, levelsAssigned: next });
+                          }}
+                          className="rounded text-amber-600 focus:ring-amber-500"
+                        />
+                        <span className="truncate">{lvl.levelName}</span>
+                      </label>
+                    );
+                  })}
+                </div>
+                <span className="text-[10px] text-slate-400 mt-1 block">
+                  Los alumnos de estos niveles podrán ser atendidos por este mentor.
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Franja de Horario:</label>
+                  <input
+                    type="text"
+                    value={newTeacherData.workingHours}
+                    onChange={e => setNewTeacherData({ ...newTeacherData, workingHours: e.target.value })}
+                    className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl"
+                    placeholder="08:00 - 14:00 (Mañanas)"
+                  />
+                </div>
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Tarifa Horaria ($/h):</label>
+                  <input
+                    type="number"
+                    value={newTeacherData.hourlyRate}
+                    onChange={e => setNewTeacherData({ ...newTeacherData, hourlyRate: Number(e.target.value) })}
+                    className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl"
+                    placeholder="15"
+                  />
+                </div>
+              </div>
+
+              {/* Enviar Correo de Bienvenida a la Manada */}
+              <div className="p-3 bg-amber-50 border border-amber-200 rounded-2xl flex items-start gap-2.5">
                 <input
-                  type="text"
-                  value={newTeacherData.workingHours}
-                  onChange={e => setNewTeacherData({ ...newTeacherData, workingHours: e.target.value })}
-                  className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl"
-                  placeholder="14:00 - 20:00 (Tardes y Noches)"
+                  id="send-teacher-welcome-checkbox"
+                  type="checkbox"
+                  checked={sendTeacherWelcomeEmailFlag}
+                  onChange={e => setSendTeacherWelcomeEmailFlag(e.target.checked)}
+                  className="mt-0.5 rounded text-amber-600 focus:ring-amber-500 w-4 h-4 cursor-pointer"
                 />
+                <label htmlFor="send-teacher-welcome-checkbox" className="text-[11px] text-amber-950 font-medium cursor-pointer">
+                  <strong className="block text-amber-900 font-bold">Enviar carta oficial "Welcome to Güakytopia's Flock!" por correo</strong>
+                  Genera una contraseña provisional y despacha las credenciales, enlace al portal y bienvenida oficial al buzón del profesor.
+                </label>
               </div>
             </div>
 
@@ -2626,26 +2961,34 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
               </button>
               <button
                 type="submit"
-                className="px-5 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black rounded-xl text-xs shadow-md transition-colors"
+                className="px-5 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black rounded-xl text-xs shadow-md transition-colors flex items-center gap-1.5"
               >
-                Registrar Teacher en Plantilla
+                <span>🪶 Contratar e Integrar a la Manada</span>
               </button>
             </div>
           </form>
         </div>
       )}
 
-      {/* MODAL: MATRICULAR ALUMNO MANUALMENTE */}
+      {/* MODAL: MATRICULAR ALUMNO EN GÜAKYTOPIA CAMPUS */}
       {isNewStudentModalOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
           <form 
             onSubmit={handleCreateStudent}
-            className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 space-y-4 shadow-2xl border border-slate-200"
+            className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 space-y-4 shadow-2xl border border-slate-200 my-auto"
           >
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h3 className="font-black text-slate-900 text-base">
-                Matricular Nuevo Alumno desde Rectoría
-              </h3>
+              <div className="flex items-center gap-2">
+                <span className="text-xl">🎓</span>
+                <div>
+                  <h3 className="font-black text-slate-900 text-base">
+                    Matricular Alumno • Güakytopia Campus
+                  </h3>
+                  <p className="text-[11px] text-slate-500">
+                    Expide carnet digital, asigna nivel y vincula mentoría
+                  </p>
+                </div>
+              </div>
               <button 
                 type="button"
                 onClick={() => setIsNewStudentModalOpen(false)}
@@ -2655,7 +2998,7 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
               </button>
             </div>
 
-            <div className="space-y-3 text-xs">
+            <div className="space-y-3 text-xs max-h-[65vh] overflow-y-auto pr-1">
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <label className="font-bold text-slate-700 block mb-1">Nombre:</label>
@@ -2680,20 +3023,32 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
                 </div>
               </div>
 
-              <div>
-                <label className="font-bold text-slate-700 block mb-1">Correo Electrónico:</label>
-                <input
-                  type="email"
-                  value={newStudentData.email}
-                  onChange={e => setNewStudentData({ ...newStudentData, email: e.target.value })}
-                  className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl"
-                  placeholder="alumno@ejemplo.com"
-                  required
-                />
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Correo Electrónico:</label>
+                  <input
+                    type="email"
+                    value={newStudentData.email}
+                    onChange={e => setNewStudentData({ ...newStudentData, email: e.target.value })}
+                    className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl"
+                    placeholder="alumno@ejemplo.com"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Teléfono / WhatsApp:</label>
+                  <input
+                    type="text"
+                    value={newStudentData.phone}
+                    onChange={e => setNewStudentData({ ...newStudentData, phone: e.target.value })}
+                    className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl"
+                    placeholder="+58 412 1234567"
+                  />
+                </div>
               </div>
 
               <div>
-                <label className="font-bold text-slate-700 block mb-1">Nivel Inicial Asignado:</label>
+                <label className="font-bold text-slate-700 block mb-1">Nivel Curricular de Inicio:</label>
                 <select
                   value={newStudentData.levelId}
                   onChange={e => setNewStudentData({ ...newStudentData, levelId: e.target.value })}
@@ -2703,6 +3058,74 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
                     <option key={l.id} value={l.id}>{l.levelName} - {l.book}</option>
                   ))}
                 </select>
+              </div>
+
+              {/* Modelo de Mentoría (La Manada vs Exclusivo) */}
+              <div className="p-3 bg-slate-50 border border-slate-200 rounded-2xl space-y-2">
+                <span className="font-bold text-slate-800 block text-[11px] uppercase tracking-wider">
+                  Dinámica de Mentoría en el Campus:
+                </span>
+                
+                <div className="space-y-1.5">
+                  <label className="flex items-start gap-2 p-2 bg-white rounded-xl border border-slate-200 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="mentorshipMode"
+                      checked={newStudentMentorshipMode === 'rotational'}
+                      onChange={() => setNewStudentMentorshipMode('rotational')}
+                      className="mt-0.5 text-emerald-600 focus:ring-emerald-500"
+                    />
+                    <div>
+                      <strong className="block text-slate-900 font-bold">🌟 La Manada (The Flock • Modo Rotativo)</strong>
+                      <span className="text-[11px] text-slate-500 block leading-tight">
+                        El alumno puede agendar con cualquier mentor certificado en su nivel ({getFlockMentorsLabel(teachers, newStudentData.levelId || 'level_1')}), manteniendo su bitácora unificada.
+                      </span>
+                    </div>
+                  </label>
+
+                  <label className="flex items-start gap-2 p-2 bg-white rounded-xl border border-slate-200 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="mentorshipMode"
+                      checked={newStudentMentorshipMode === 'exclusive'}
+                      onChange={() => setNewStudentMentorshipMode('exclusive')}
+                      className="mt-0.5 text-purple-600 focus:ring-purple-500"
+                    />
+                    <div className="flex-1">
+                      <strong className="block text-slate-900 font-bold">🔒 Mentor Exclusivo Dedicado</strong>
+                      <span className="text-[11px] text-slate-500 block leading-tight mb-2">
+                        El alumno únicamente tomará clases con un profesor específico de la manada.
+                      </span>
+                      {newStudentMentorshipMode === 'exclusive' && (
+                        <select
+                          value={newStudentExclusiveTeacherId}
+                          onChange={e => setNewStudentExclusiveTeacherId(e.target.value)}
+                          className="w-full p-2 bg-slate-50 border border-purple-300 rounded-xl font-bold text-purple-900"
+                        >
+                          <option value="">Selecciona el Mentor Exclusivo...</option>
+                          {getFlockTeachersForLevel(teachers, newStudentData.levelId || 'level_1').map(t => (
+                            <option key={t.id} value={t.id}>Teacher {t.name} ({t.specialty})</option>
+                          ))}
+                        </select>
+                      )}
+                    </div>
+                  </label>
+                </div>
+              </div>
+
+              {/* Checkbox de Envío de Correo */}
+              <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-2xl flex items-start gap-2.5">
+                <input
+                  id="send-student-welcome-checkbox"
+                  type="checkbox"
+                  checked={sendStudentWelcomeEmailFlag}
+                  onChange={e => setSendStudentWelcomeEmailFlag(e.target.checked)}
+                  className="mt-0.5 rounded text-emerald-600 focus:ring-emerald-500 w-4 h-4 cursor-pointer"
+                />
+                <label htmlFor="send-student-welcome-checkbox" className="text-[11px] text-emerald-950 font-medium cursor-pointer">
+                  <strong className="block text-emerald-900 font-bold">Enviar carta oficial "Welcome to Güakytopia Campus!" por correo</strong>
+                  Despacha el carnet digital, contraseña provisional, enlace de acceso y detalles de su nivel al correo del alumno.
+                </label>
               </div>
             </div>
 
@@ -2716,9 +3139,10 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
               </button>
               <button
                 type="submit"
-                className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-black rounded-xl text-xs shadow-md transition-colors"
+                className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-black rounded-xl text-xs shadow-md transition-colors flex items-center gap-1.5"
               >
-                Matricular e Inscribir
+                <CheckCircle2 className="w-4 h-4" />
+                <span>Matricular y Expedir Carnet</span>
               </button>
             </div>
           </form>
@@ -3433,7 +3857,7 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
                   >
                     {teachers.map(t => (
                       <option key={t.id} value={t.id}>
-                        {t.name} ({t.role || 'Teacher'})
+                        {t.name} ({t.specialty || 'Teacher'})
                       </option>
                     ))}
                     {teachers.length === 0 && (

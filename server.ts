@@ -42,6 +42,103 @@ INFORMACIÓN CLAVE DE LA ACADEMIA:
 ATENCIÓN PERSONALIZADA / WHATSAPP:
 Si el alumno tiene preguntas administrativas muy específicas, dudas sobre pagos en bolívares, solicitud de horarios personalizados, o si desea hablar directamente con un ser humano, indícale amablemente que el usuario oficial de WhatsApp de La Teacher Cokitö es @CokitoVZLA y que puede hacer clic en el botón de WhatsApp directo en pantalla para iniciar la conversación sin necesidad de números de teléfono.`;
 
+// Official BCV Exchange Rate Service
+interface BcvCache {
+  rate: number;
+  source: string;
+  effectiveDate: string;
+  fechaActualizacion: string;
+  lastChecked: string;
+  status: 'official' | 'cached' | 'fallback';
+}
+
+let bcvCache: BcvCache = {
+  rate: 875.65,
+  source: 'Banco Central de Venezuela (BCV)',
+  effectiveDate: new Date().toISOString().split('T')[0],
+  fechaActualizacion: new Date().toISOString(),
+  lastChecked: new Date().toISOString(),
+  status: 'fallback'
+};
+
+async function fetchBcvRateFromSource(): Promise<BcvCache> {
+  try {
+    const response = await fetch('https://ve.dolarapi.com/v1/dolares/oficial', {
+      headers: { 'Accept': 'application/json', 'User-Agent': 'Guakytopia-Academic-Portal' },
+      cache: 'no-store'
+    });
+    if (response.ok) {
+      const data = await response.json();
+      if (data && typeof data.promedio === 'number' && data.promedio > 0) {
+        bcvCache = {
+          rate: Number(data.promedio.toFixed(4)),
+          source: 'Banco Central de Venezuela (BCV)',
+          effectiveDate: data.fechaActualizacion ? data.fechaActualizacion.split('T')[0] : new Date().toISOString().split('T')[0],
+          fechaActualizacion: data.fechaActualizacion || new Date().toISOString(),
+          lastChecked: new Date().toISOString(),
+          status: 'official'
+        };
+        console.log(`[BCV] Official rate updated: Bs. ${bcvCache.rate} (Vigente: ${bcvCache.effectiveDate})`);
+        return bcvCache;
+      }
+    }
+  } catch (error) {
+    console.warn('[BCV] Warning fetching official rate, using cached:', error);
+  }
+  bcvCache.lastChecked = new Date().toISOString();
+  return bcvCache;
+}
+
+function getMsUntilMidnightVET(): number {
+  const now = new Date();
+  const utcMs = now.getTime() + (now.getTimezoneOffset() * 60000);
+  const vetOffsetMs = -4 * 60 * 60 * 1000; // Venezuela is UTC-4
+  const vetTime = new Date(utcMs + vetOffsetMs);
+  
+  const nextMidnightVET = new Date(vetTime);
+  nextMidnightVET.setDate(nextMidnightVET.getDate() + 1);
+  nextMidnightVET.setHours(0, 0, 5, 0); // 12:00:05 AM in Venezuela
+  
+  const msDiff = nextMidnightVET.getTime() - vetTime.getTime();
+  return msDiff > 0 ? msDiff : 24 * 60 * 60 * 1000;
+}
+
+function scheduleMidnightBcvFetch() {
+  const ms = getMsUntilMidnightVET();
+  console.log(`[BCV] Automatic midnight sync scheduled in ${(ms / 3600000).toFixed(2)} hours (12:00:05 AM VET)`);
+  setTimeout(async () => {
+    console.log('[BCV] 12:00 AM Midnight in Venezuela reached! Executing automated daily rate update...');
+    await fetchBcvRateFromSource();
+    scheduleMidnightBcvFetch();
+  }, ms);
+}
+
+// Initial fetch and scheduled jobs
+fetchBcvRateFromSource();
+scheduleMidnightBcvFetch();
+// Safety hourly poll to guarantee parity with afternoon announcements
+setInterval(() => {
+  fetchBcvRateFromSource();
+}, 60 * 60 * 1000);
+
+// Endpoint to retrieve current official BCV rate
+app.get('/api/bcv', async (_req: Request, res: Response) => {
+  res.json({
+    ...bcvCache,
+    nextMidnightInHours: Number((getMsUntilMidnightVET() / 3600000).toFixed(2))
+  });
+});
+
+// Endpoint for Principal Waky to force an immediate re-sync with BCV
+app.post('/api/bcv/sync', async (_req: Request, res: Response) => {
+  const fresh = await fetchBcvRateFromSource();
+  res.json({
+    ...fresh,
+    message: 'Tasa BCV sincronizada directamente con la fuente oficial.',
+    nextMidnightInHours: Number((getMsUntilMidnightVET() / 3600000).toFixed(2))
+  });
+});
+
 // Endpoint for Gemini multi-turn chat
 app.post('/api/chat', async (req: Request, res: Response) => {
   try {

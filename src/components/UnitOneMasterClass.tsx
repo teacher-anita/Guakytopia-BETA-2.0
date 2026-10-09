@@ -24,7 +24,8 @@ import {
   ShieldCheck,
   Music,
   FolderOpen,
-  Compass
+  Compass,
+  Globe2
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { Student } from '../types';
@@ -191,6 +192,26 @@ export const UnitOneMasterClass: React.FC<UnitOneMasterClassProps> = ({
   onGoToLab
 }) => {
   const isTeacher = activeRole === 'teacher';
+
+  // Share the selected language mode with the Learning Pathway through localStorage.
+  type LanguageMode = 'english-only' | 'spanglish';
+  const [languageMode, setLanguageMode] = useState<LanguageMode>(() => {
+    try {
+      return localStorage.getItem('cokito_language_mode') === 'spanglish' ? 'spanglish' : 'english-only';
+    } catch {
+      return 'english-only';
+    }
+  });
+  const isSpanglish = languageMode === 'spanglish';
+  const toggleLanguageMode = () => {
+    const nextMode: LanguageMode = isSpanglish ? 'english-only' : 'spanglish';
+    setLanguageMode(nextMode);
+    try {
+      localStorage.setItem('cokito_language_mode', nextMode);
+    } catch {
+      // The switch still works for this session if storage is unavailable.
+    }
+  };
 
   // Navigation tab inside Unit 1
   const [activeUnitTab, setActiveUnitTab] = useState<'lessons' | 'overview' | 'sessions' | 'audio' | 'workbook' | 'reflection' | 'resources'>('lessons');
@@ -380,6 +401,18 @@ export const UnitOneMasterClass: React.FC<UnitOneMasterClassProps> = ({
 
   return (
     <div className="bg-slate-50 min-h-screen pb-16 space-y-6 animate-fadeIn">
+      <div className={`mx-4 sm:mx-0 rounded-2xl px-4 sm:px-5 py-3 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md transition-colors ${isSpanglish ? 'bg-gradient-to-r from-violet-600 via-fuchsia-600 to-orange-500' : 'bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700'}`}>
+        <div className="flex items-center gap-2.5 min-w-0">
+          <span className="text-xl shrink-0">{isSpanglish ? '🌈' : '🇬🇧 🇺🇸'}</span>
+          <div>
+            <strong className="text-xs font-black uppercase tracking-wider block">{isSpanglish ? 'Spanglish Party • ¡Mix It Up!' : 'English Only • Immersion Mode'}</strong>
+            <span className="text-[11px] text-white/90 block mt-0.5">{isSpanglish ? 'English first, con Spanish hints when you need a boost. ¡You got this!' : 'Your mission: speak, read, think, and dream in English.'}</span>
+          </div>
+        </div>
+        <button type="button" onClick={toggleLanguageMode} aria-pressed={isSpanglish} aria-label={`Switch to ${isSpanglish ? 'English Only Immersion Mode' : 'Spanglish Party mode'}`} className={`inline-flex items-center justify-center gap-2 self-start sm:self-auto shrink-0 px-4 py-2 rounded-xl text-xs font-black border transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800 ${isSpanglish ? 'bg-white text-violet-700 border-white hover:bg-violet-50' : 'bg-white/15 text-white border-white/50 hover:bg-white/25'}`}>
+          <Globe2 className="w-4 h-4" />{isSpanglish ? 'Switch to English Only' : 'Try Spanglish Party'}<ChevronRight className="w-3.5 h-3.5" />
+        </button>
+      </div>
       
       {/* 1. HERO HEADER OF UNIT 1 */}
       <div className="bg-gradient-to-r from-blue-900 via-indigo-950 to-slate-900 text-white rounded-3xl p-6 sm:p-8 shadow-xl relative overflow-hidden border border-blue-800">
@@ -410,9 +443,9 @@ export const UnitOneMasterClass: React.FC<UnitOneMasterClassProps> = ({
               <div className="flex items-center justify-between text-xs font-bold">
                 <span className="text-blue-200 flex items-center gap-1.5">
                   <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                  Curricular Mastery Progress:
+                  {isSpanglish ? 'Learning progress / Progreso:' : 'Learning Progress:'}
                 </span>
-                <span className="text-amber-300 font-mono">{overallUnitProgress}% Completed</span>
+                <span className="text-amber-300 font-mono">{overallUnitProgress}% {isSpanglish ? 'Completed / Completado' : 'Completed'}</span>
               </div>
               <div className="w-full h-3 bg-white/10 rounded-full overflow-hidden p-0.5 border border-white/20">
                 <div 
@@ -428,10 +461,10 @@ export const UnitOneMasterClass: React.FC<UnitOneMasterClassProps> = ({
             <button
               onClick={() => downloadUnitPdf('level_1', 1, 'Good Morning!')}
               className="px-5 py-3 bg-amber-400 hover:bg-amber-300 text-slate-950 rounded-2xl text-xs font-black shadow-md flex items-center justify-center gap-2 transition-transform active:scale-95"
-              title="Descargar libro de texto y guía oficial de la Unidad 1 en PDF"
+              title={isSpanglish ? 'Download the official Unit 1 book and guide / Descargar libro y guía' : 'Download the official Unit 1 book and guide as a PDF'}
             >
               <Download className="w-4 h-4 text-slate-950" />
-              <span>Descargar Archivo Oficial (PDF)</span>
+              <span>{isSpanglish ? 'Download Official Materials • PDF' : 'Download Official Materials (PDF)'}</span>
             </button>
             <a
               href="https://meet.google.com/eng-cokito-class"
@@ -457,7 +490,7 @@ export const UnitOneMasterClass: React.FC<UnitOneMasterClassProps> = ({
         <div className="absolute -top-12 -right-12 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
       </div>
 
-      {/* BANNER DE DESCARGA OBLIGATORIA DEL MATERIAL DE LA UNIDAD 1 */}
+      {/* UNIT 1 MATERIALS STARTER BANNER */}
       <div className="bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-400 rounded-3xl p-5 text-slate-950 shadow-md border border-amber-300 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div className="flex items-start gap-3">
           <div className="w-12 h-12 rounded-2xl bg-slate-950 text-amber-300 flex items-center justify-center shrink-0 shadow-md">
@@ -466,14 +499,14 @@ export const UnitOneMasterClass: React.FC<UnitOneMasterClassProps> = ({
           <div>
             <div className="flex items-center gap-2 flex-wrap mb-1">
               <span className="bg-slate-950 text-amber-300 text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full tracking-wider">
-                📥 Paso 1 Obligatorio para el Alumno
+                📥 {isSpanglish ? 'Step 1 / Paso 1 • Start Here' : 'Step 1 • Start Here'}
               </span>
               <span className="text-xs font-black text-slate-950">
-                Descarga tu Guía y Libro de la Unidad 1 antes de comenzar
+                {isSpanglish ? 'Get your Unit 1 book and guide before you begin' : 'Get your Unit 1 book and guide before you begin'}
               </span>
             </div>
             <p className="text-xs text-slate-900 font-medium max-w-2xl leading-snug">
-              Para seguir las explicaciones de Teacher Waky, escuchar las pistas de audio y resolver tus tareas, descarga aquí tu archivo en PDF: <strong>Super Goal 1 (Pág. 2–9)</strong> y las hojas de práctica del <strong>Workbook (Pág. 89–92)</strong>.
+              {isSpanglish ? <>Download your PDF materials para seguir Teacher Waky, listen to the audio tracks, and complete your practice: <strong>Super Goal 1 (pp. 2–9)</strong> and <strong>Workbook (pp. 89–92)</strong>.</> : <>Download your PDFs before you begin: <strong>Super Goal 1 (pp. 2–9)</strong> and the <strong>Workbook (pp. 89–92)</strong>. Use them to follow Teacher Waky’s explanations, listen to the audio, and complete your practice.</>}
             </p>
           </div>
         </div>
@@ -484,7 +517,7 @@ export const UnitOneMasterClass: React.FC<UnitOneMasterClassProps> = ({
             className="flex-1 sm:flex-none px-5 py-3 bg-slate-950 hover:bg-slate-900 text-amber-300 rounded-2xl font-black text-xs shadow-md transition-all active:scale-95 flex items-center justify-center gap-2"
           >
             <FileText className="w-4 h-4 text-amber-400" />
-            <span>Descargar Libro y Guía (PDF)</span>
+            <span>{isSpanglish ? 'Download Book & Guide (PDF)' : 'Download Book & Guide (PDF)'}</span>
           </button>
 
           <button
@@ -492,7 +525,7 @@ export const UnitOneMasterClass: React.FC<UnitOneMasterClassProps> = ({
             className="flex-1 sm:flex-none px-4 py-3 bg-white hover:bg-slate-50 text-slate-900 border border-slate-900/20 rounded-2xl font-bold text-xs shadow-xs transition-colors flex items-center justify-center gap-1.5"
           >
             <Download className="w-4 h-4 text-blue-700" />
-            <span>Descargar Audios CD1</span>
+            <span>{isSpanglish ? 'Download Audio Tracks' : 'Download Audio Tracks'}</span>
           </button>
         </div>
       </div>

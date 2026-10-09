@@ -46,7 +46,7 @@ export const INITIAL_COUPONS: CouponItem[] = [
     maxUses: 15,
     currentUses: 2,
     isActive: true,
-    notes: 'Exalumnas y docentes directas del Colegio Simón Bolívar',
+    notes: 'Exalumnas y teachers del Colegio Simón Bolívar',
     createdAt: '2026-10-01'
   },
   {
@@ -55,12 +55,12 @@ export const INITIAL_COUPONS: CouponItem[] = [
     category: 'csb',
     categoryLabel: 'Colegio Simón Bolívar',
     benefitType: 'webapp_5usd_3m',
-    title: 'Profesoras CSB • Tarifa Especial $5/mes',
+    title: 'Teachers CSB • Tarifa Especial $5/mes',
     description: 'Acceso completo a Web App por $5.00/mes durante 3 meses.',
     maxUses: 25,
     currentUses: 5,
     isActive: true,
-    notes: 'Docentes colaboradoras del CSB',
+    notes: 'Teachers colaboradoras del CSB',
     createdAt: '2026-10-01'
   },
   {
@@ -74,7 +74,7 @@ export const INITIAL_COUPONS: CouponItem[] = [
     maxUses: null,
     currentUses: 8,
     isActive: true,
-    notes: 'Comunidad CSB abierta (padres, alumnos, docentes)',
+    notes: 'Comunidad CSB abierta (padres, alumnos, teachers)',
     createdAt: '2026-10-01'
   },
 

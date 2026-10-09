@@ -68,14 +68,20 @@ export interface Student {
   balanceDueUsd?: number;    // e.g. remaining balance for private classes or group
   preferredSlotId?: string;
   
-  // Level Assignment
+  // Level Assignment & Flock Mentorship
   levelId?: string; // Assigned by Teacher Cokito or Principal Waky!
-  teacherId?: string; // Assigned Teacher
+  teacherId?: string; // Assigned Teacher (if exclusive or primary)
   teacherName?: string;
+  isExclusiveTeacher?: boolean; // If true: dedicated mentor only; If false: Rotational across Güakytopia's Flock
   status: 'pending_evaluation' | 'enrolled' | 'completed' | 'paused';
   placementTestScore?: number; // 0-25
   placementTestDiagnosis?: string;
   placementTestDate?: string;
+  
+  // Onboarding & Campus Access
+  welcomeEmailSent?: boolean;
+  welcomeEmailSentAt?: string;
+  temporaryPassword?: string;
   
   registeredAt: string;
   currentUnit: number;
@@ -145,14 +151,16 @@ export interface ScheduleSlot {
   maxCapacity?: number; // 1 for individual, 3-4 for group
   enrolledStudents?: EnrolledStudentInSlot[]; // Students inside this classroom
   classroomTitle?: string; // e.g. "Aula CSB Teachers - Super Goal 3"
+  teacherId?: string; // ID linking to Güakytopia's Flock Mentor
   teacherName?: string; // e.g. "Teacher Cokitö"
+  allowedLevels?: string[]; // Curricular levels this slot supports (e.g. ['level_1', 'level_2'])
   academicMinutes?: number; // 45 min
   bufferMinutes?: number; // 15 min (10 min break + 5 min gracia)
   studentId?: string;
   studentName?: string;
   levelId?: string;
   meetLink?: string;
-  status: 'available' | 'booked' | 'break';
+  status: 'available' | 'booked' | 'break' | 'blocked';
 }
 
 export interface DailyChallenge {
@@ -209,5 +217,12 @@ export interface Teacher {
   status: 'active' | 'leave' | 'inactive';
   hourlyRate?: number;
   bio?: string;
+  
+  // Flock Credentials & Onboarding
+  flockRole?: string; // e.g. "Flock Mentor", "Head Teacher"
+  password?: string;
+  temporaryPassword?: string;
+  welcomeEmailSent?: boolean;
+  welcomeEmailSentAt?: string;
 }
 

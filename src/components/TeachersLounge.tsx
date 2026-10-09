@@ -263,7 +263,7 @@ export const TeachersLounge: React.FC<TeachersLoungeProps> = ({
                     <div className={`flex items-center gap-2 text-[11px] ${isMe ? 'justify-end' : ''}`}>
                       <span className="font-bold text-slate-800">{msg.authorName}</span>
                       <span className="text-[10px] px-1.5 py-0.2 rounded bg-amber-100 text-amber-900 font-semibold">
-                        {msg.authorRole === 'principal' ? 'Directora' : 'Docente'}
+                        {msg.authorRole === 'principal' ? 'Directora' : 'Teacher'}
                       </span>
                       <span className="text-slate-400 text-[10px]">{msg.timestamp}</span>
                     </div>

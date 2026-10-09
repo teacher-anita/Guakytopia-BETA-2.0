@@ -260,7 +260,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
             Panel de Evaluación y Seguimiento de Alumnos
           </h2>
           <p className="text-xs sm:text-sm text-blue-100 max-w-xl">
-            Tú tienes el control absoluto: revisa las pruebas de nivel de los nuevos aspirantes, asígnales su libro oficial de Super Goal o MegaGoal, y administra la agenda.
+            Organiza las evaluaciones, acompaña el progreso de tus alumnos, asigna materiales de Super Goal o Mega Goal y consulta la agenda desde un mismo lugar.
           </p>
         </div>
 
@@ -269,9 +269,9 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
             <button
               onClick={onSwitchToPrincipal}
               className="flex items-center justify-center gap-2 px-4 py-3 bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs sm:text-sm rounded-2xl shadow-md transition-colors border border-amber-300"
-              title="Volver al Despacho Institucional de Rectoría"
+              title="Return to the Principal's Office"
             >
-              <span>👑 Despacho de Rectoría</span>
+              <span>👑 Principal's Office</span>
             </button>
           )}
           <button
@@ -292,9 +292,10 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
       </div>
 
       {/* Tab Switcher: Teacher's Lounge vs Seguimiento Pedagógico */}
-      <div className="flex items-center gap-2 border-b border-slate-200 pb-2 text-xs font-bold">
+      <div role="group" aria-label="Secciones del panel de teachers" className="flex flex-wrap items-center gap-2 border-b border-slate-200 pb-2 text-xs font-bold">
         <button
           onClick={() => setActiveMainTab('lounge')}
+          aria-pressed={activeMainTab === 'lounge'}
           className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl transition-all ${
             activeMainTab === 'lounge'
               ? 'bg-amber-700 text-white shadow-md'
@@ -307,6 +308,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
 
         <button
           onClick={() => setActiveMainTab('evaluation')}
+          aria-pressed={activeMainTab === 'evaluation'}
           className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl transition-all ${
             activeMainTab === 'evaluation'
               ? 'bg-slate-900 text-white shadow-md'
