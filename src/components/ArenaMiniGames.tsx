@@ -43,7 +43,7 @@ function loadLifeState(key: string): LifeState {
 }
 
 function applyRecharge(state: LifeState, now: number): LifeState {
-  if (state.lives >= MAX_LIVES) return { lives: MAX_LIVES, updatedAt: now };
+  if (state.lives >= MAX_LIVES) return state;
   const elapsed = Math.max(0, now - state.updatedAt);
   const recovered = Math.floor(elapsed / REFILL_MS);
   if (recovered <= 0) return state;
@@ -288,7 +288,7 @@ export const ArenaMiniGames: React.FC<ArenaMiniGamesProps> = ({ currentStudent, 
           {finished && <button type="button" onClick={nextRound} className="mt-4 w-full rounded-xl bg-emerald-600 px-4 py-3 text-sm font-black text-white"><CheckCircle2 className="mr-1 inline h-4 w-4" />Play next challenge</button>}
         </div>
       )}
-      <p className="text-[11px] leading-relaxed text-slate-500">Guests can play too. XP rewards are added only to an authenticated student account. Signed-in students sync lives and recharge time across devices; Guest lives stay on this browser.</p>
+      <p className="text-[11px] leading-relaxed text-slate-500">Guests can play too. XP rewards are added only to an authenticated student account. Google-authenticated students sync lives and recharge time across devices; Guest and other local-only sessions keep lives on this browser.</p>
     </section>
   );
 };
