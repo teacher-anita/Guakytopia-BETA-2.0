@@ -170,6 +170,14 @@ test('Arena consumes a shared guest life after an incorrect word attempt', async
   await expect(page.getByText('4/5')).toBeVisible();
   const savedLives = await page.evaluate(() => JSON.parse(localStorage.getItem('guakytopia_arena_lives_guest') || '{}'));
   expect(savedLives.lives).toBe(4);
+
+  await expect(page.getByRole('heading', { name: 'Cokitö’s learning signals' })).toBeVisible();
+  await expect(page.getByText('Incorrect attempts')).toBeVisible();
+  const signals = await page.evaluate(() => JSON.parse(localStorage.getItem('guakytopia_cokito_learning_signals_guest') || '[]'));
+  expect(signals).toHaveLength(1);
+  expect(signals[0].correct).toBe(false);
+  expect(signals[0].game).toBe('scrabble');
+  expect(signals[0].unit).toBe('level_1_unit_1');
 });
 
 test('Arena uses Level 1 Unit 1 vocabulary and remains usable on a phone viewport', async ({ page }) => {
