@@ -348,7 +348,7 @@ ${unit.owlCulture.culturalStory}
               key={lvl.levelId}
               onClick={() => setSelectedLevelId(lvl.levelId)}
               aria-pressed={selectedLevelId === lvl.levelId}
-              className={``px-3.5 py-1.5 rounded-xl whitespace-nowrap transition-all ${
+              className={`px-3.5 py-1.5 rounded-xl whitespace-nowrap transition-all ${
                 selectedLevelId === lvl.levelId
                   ? 'bg-amber-400 text-slate-950 shadow-md font-black'
                   : 'bg-white/10 text-white hover:bg-white/20'
