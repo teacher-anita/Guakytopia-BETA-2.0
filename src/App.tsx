@@ -448,6 +448,7 @@ export default function App() {
         {activeTab === 'pathway' && (
           <LearningPathway
             currentStudent={currentStudent}
+            user={user}
             activeRole={isTeacherAuthenticated ? 'teacher' : 'student'}
             audienceTheme={audienceTheme}
             onOpenRegister={() => setActiveTab('register')}
@@ -494,6 +495,7 @@ export default function App() {
           ) : (
             <LearningPathway
               currentStudent={currentStudent}
+            user={user}
               activeRole={isTeacherAuthenticated ? 'teacher' : 'student'}
               audienceTheme={audienceTheme}
               onOpenRegister={() => setActiveTab('register')}
