@@ -164,7 +164,7 @@ test('Arena consumes a shared guest life after an incorrect word attempt', async
   await page.goto('/');
   await page.getByRole('button', { name: /Arena/ }).click();
   await page.getByRole('button', { name: /Scrabble Mix/ }).click();
-  await page.getByRole('label', { name: 'Your word' }).fill('WRONG');
+  await page.getByLabel('Your word').fill('WRONG');
   await page.getByRole('button', { name: 'Check', exact: true }).click();
 
   await expect(page.getByText('4/5')).toBeVisible();
