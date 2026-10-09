@@ -10,7 +10,7 @@ Design note only. No authentication flow, Firestore rules, production configurat
 2. Student credential login currently matches a student record in the client and can accept an empty password when the record has no password. It does not establish a Firebase Authentication identity.
 3. `Student` records do not currently define a Firebase Auth UID field. Google sign-in can match a student by email, but that is not a durable authorization link unless the account identity is verified and linked deliberately.
 4. `TeacherGate` contains client-side institutional credential checks and role selection. A client-side role is presentation state, not a trusted security boundary.
-5. `initAuth` invokes its success callback only when the Google access-token cache is populated. A Firebase-authenticated session without that cached Google token may therefore not be reflected in the app's `user` state by this listener.
+5. The auth listener previously invoked its success callback only when the Google access-token cache was populated. This was corrected on the development branch: Firebase auth state is now reported independently, with an empty token when a Google API token is unavailable. This does not itself grant Google API access or link a student profile to a UID.
 6. The Lab event call currently checks for a non-null Firebase `user` and student UI role, but does not verify that the Firebase UID is linked to `currentStudent.id`. That check alone is insufficient for reliable student attribution.
 7. Existing Firestore rules permit public student reads/creates and effectively public slot writes. The catch-all rule denies the new `academicEvents` collection unless an explicit rule is added.
 
