@@ -64,3 +64,10 @@ Do not create two Firebase accounts with invented email addresses. If the owner 
 The development branch currently has a client-side student credential matcher that can accept a blank password when a student record has no stored password. Staff role checks also include client-side logic. Existing Firestore rules have overly broad student and schedule access. These must be addressed through a deliberate authentication and authorization change, not by creating additional profile records or changing production rules hastily.
 
 The academic event writer remains disabled by default. Keep it disabled until UID-to-profile ownership and database-specific rules are implemented and tested in the isolated development environment.
+
+## Source-code seed audit (development branch)
+
+- The bundled `INITIAL_STUDENTS` seed contains a Genesis profile and includes legacy username/password fields in source code. Treat these fields as exposed legacy credentials: do not reuse them for Firebase Authentication, do not copy them into a new account, and remove their use as part of the reviewed authentication migration. Do not reproduce the credential values in documentation or logs.
+- The bundled `INITIAL_STUDENTS` seed does not contain a Ragni entry. This does **not** prove Ragni is absent from Firestore or browser-local data. Inspect the intended development database and confirm the existing record before creating anything.
+- The bundled seed also does not define the requested Student Tester or Teacher Tester identities.
+- Because the database layer can seed initial records when a cloud collection is empty, verify the effective development database before running the app or changing seed behavior. Do not use a seed reset as a way to reconcile existing learner records.
