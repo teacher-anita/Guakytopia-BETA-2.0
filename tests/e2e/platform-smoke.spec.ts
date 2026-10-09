@@ -172,3 +172,16 @@ test('Arena consumes a shared guest life after an incorrect word attempt', async
   expect(savedLives.lives).toBe(4);
 });
 
+test('Arena uses Level 1 Unit 1 vocabulary and remains usable on a phone viewport', async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 780 });
+  await page.goto('/');
+  await page.getByRole('button', { name: /Arena/ }).click();
+
+  await expect(page.getByText('Level 1 · Unit 1: greetings, introductions and classroom English.')).toBeVisible();
+  await expect(page.getByRole('button', { name: /Word Search/ })).toBeVisible();
+  await page.getByRole('button', { name: /Hangman/ }).click();
+  await expect(page.getByText('A greeting when you meet someone')).toBeVisible();
+
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth);
+  expect(overflow).toBe(false);
+});
