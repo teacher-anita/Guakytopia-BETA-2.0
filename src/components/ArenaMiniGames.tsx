@@ -103,7 +103,14 @@ export const ArenaMiniGames: React.FC<ArenaMiniGamesProps> = ({ currentStudent, 
 
     setCloudReadyFor(null);
     return subscribeToArenaLives(studentId, remoteState => {
-      if (remoteState) setLifeState(applyRecharge(remoteState, Date.now()));
+      if (remoteState) {
+        const refreshed = applyRecharge(remoteState, Date.now());
+        setLifeState(previous => (
+          previous.lives === refreshed.lives && previous.updatedAt === refreshed.updatedAt
+            ? previous
+            : refreshed
+        ));
+      }
       setCloudReadyFor(studentId);
     });
   }, [canSyncCloud, currentStudent?.id]);
