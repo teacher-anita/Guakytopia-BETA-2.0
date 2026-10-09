@@ -1207,10 +1207,27 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
                     id: firstPending.studentId,
                     name: firstPending.studentName,
                     email: firstPending.studentEmail,
+                    age: 25,
+                    isKid: false,
+                    schoolOrProfession: 'Estudiante Institucional',
+                    learningGoal: 'Superación laboral y fluidez conversacional',
+                    avatar: '🦜',
+                    plan: 'basic',
+                    modality: 'online',
+                    groupSize: 'individual',
+                    preferredTimeSlot: 'Tardes',
                     status: 'enrolled',
                     levelId: 'level_1',
+                    registeredAt: new Date().toISOString(),
+                    currentUnit: 1,
+                    completedHours: 0,
+                    xp: 0,
+                    streak: 0,
+                    league: 'Bronce',
+                    rating: { fluency: 0, grammar: 0, vocabulary: 0, pronunciation: 0 },
+                    notes: '',
                     assignedSlots: []
-                  } as Student;
+                  } satisfies Student;
                   return (
                     <button
                       type="button"
@@ -3433,7 +3450,7 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
                   >
                     {teachers.map(t => (
                       <option key={t.id} value={t.id}>
-                        {t.name} ({t.role || 'Teacher'})
+                        {t.name} ({t.specialty || 'Teacher'})
                       </option>
                     ))}
                     {teachers.length === 0 && (
