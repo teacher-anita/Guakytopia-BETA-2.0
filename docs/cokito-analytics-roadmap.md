@@ -17,9 +17,15 @@ Keep these concepts separate:
 
 Opening an activity is not completion; completion alone is not mastery. Every academic event should include, where available: student ID, event type, experience/source, activity or curriculum reference, timestamp, outcome, evidence, and actor (student, teacher, or system).
 
+## Environment-isolation check (2026-10-08)
+
+The repository configuration was compared with the student-facing `Cokitos-Academy` repository. Both configurations reference the same Firebase project ID, but specify different Firestore database IDs. This is a positive indicator of database-level separation, not sufficient proof by itself. Before enabling writes, verify the deployed app's effective config and that Firestore rules are deployed and scoped to the intended database. No production data or rules have been changed.
+
+The shared event schema and a guarded writer have been added on the development branch. The writer is disabled unless `VITE_ENABLE_ACADEMIC_EVENT_LOG=true`; it is not yet connected to learner interactions. Keep it disabled until database targeting, authorization rules, and validation are reviewed.
+
 ## Recommended implementation sequence
 
-1. **Confirm environment isolation.** Verify whether the configured Firebase project/database is exclusive to the 2.0 development environment. Do not alter Firestore rules before this is established.
+1. **Finish environment-isolation verification.** Compare effective runtime configuration and database-scoped Firestore rules before enabling writes. Do not alter rules until app read/write requirements and the intended database are confirmed.
 2. **Define a shared academic-event schema.** Design an auditable, chronological record for Lab, Hub, Classroom, The Flock Arena • Retos Diarios & Comunidad, quizzes, and teacher-marked class coverage.
 3. **Connect the Language Practice Lab first.** Preserve its current user experience while emitting events for starts, answers, correctness, completion, and retries. Do not treat XP as a substitute for academic evidence.
 4. **Add authorized teacher/class records.** A teacher marking a section as covered records the teacher, student, section, and timestamp; it does not automatically mean mastery.
@@ -30,6 +36,7 @@ Opening an activity is not completion; completion alone is not mastery. Every ac
 ## Initial audit findings
 
 - Language Practice Lab answers are currently persisted in browser localStorage under a per-student key; they are not yet a shared academic event history.
+- A versioned event contract is defined in `src/types/academicEvent.ts` and `docs/cokito-academic-event-schema.md`; the guarded writer in `src/services/academicEvents.ts` remains opt-in and is not yet wired into UI flows.
 - Student and schedule data are persisted to Firestore and localStorage.
 - The current Firestore rules allow public reads and creates for student records, and schedule writes are effectively unrestricted due to an unconditional `|| true`.
 - Teacher access checks exist in client-side code. Client-side gates alone are not a secure authorization boundary.
