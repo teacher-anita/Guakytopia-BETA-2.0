@@ -35,7 +35,7 @@ The shared event schema and guarded writer have been added on the development br
 
 ## Authentication and event-authorization review (2026-10-08)
 
-A focused review found that the current student selector is browser-persisted and is not identity proof; student credential login is client-side and does not create a Firebase Auth identity; student records have no Firebase UID link; staff role checks are client-side; and the app auth listener depends on a cached Google API access token before setting its authenticated user state. The Lab event guard therefore does not yet prove that the authenticated UID owns the selected student profile. Details and safe prerequisites are documented in `docs/cokito-auth-and-event-authorization.md`. Event writes remain disabled. No rules or live authentication behavior were changed.
+A focused review found that the current student selector is browser-persisted and is not identity proof; student credential login is client-side and does not create a Firebase Auth identity; student records have no Firebase UID link; and staff role checks are client-side. The auth listener was corrected on this branch to report Firebase auth independently of Google API token availability, but the change is not yet tested. The Lab event guard still does not prove that the authenticated UID owns the selected student profile. Details and safe prerequisites are documented in `docs/cokito-auth-and-event-authorization.md`. Event writes remain disabled. No rules or live authentication behavior were changed.
 
 ## Initial audit findings
 
