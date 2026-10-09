@@ -21,7 +21,7 @@ Opening an activity is not completion; completion alone is not mastery. Every ac
 
 The repository configuration was compared with the student-facing `Cokitos-Academy` repository. Both configurations reference the same Firebase project ID, but specify different Firestore database IDs. This is a positive indicator of database-level separation, not sufficient proof by itself. Before enabling writes, verify the deployed app's effective config and that Firestore rules are deployed and scoped to the intended database. No production data or rules have been changed.
 
-The shared event schema and a guarded writer have been added on the development branch. The writer is disabled unless `VITE_ENABLE_ACADEMIC_EVENT_LOG=true`; it is not yet connected to learner interactions. Keep it disabled until database targeting, authorization rules, and validation are reviewed.
+The shared event schema and guarded writer have been added on the development branch. Language Practice Lab answer submission now calls the writer only for a Firebase-authenticated student session. The writer is disabled unless `VITE_ENABLE_ACADEMIC_EVENT_LOG=true`, so no events are persisted by default. Keep it disabled until database targeting, authorization rules, and validation are reviewed.
 
 ## Recommended implementation sequence
 
@@ -36,7 +36,7 @@ The shared event schema and a guarded writer have been added on the development 
 ## Initial audit findings
 
 - Language Practice Lab answers are currently persisted in browser localStorage under a per-student key; they are not yet a shared academic event history.
-- A versioned event contract is defined in `src/types/academicEvent.ts` and `docs/cokito-academic-event-schema.md`; the guarded writer in `src/services/academicEvents.ts` remains opt-in and is not yet wired into UI flows.
+- A versioned event contract is defined in `src/types/academicEvent.ts` and `docs/cokito-academic-event-schema.md`; `src/services/academicEvents.ts` is opt-in, and Language Practice Lab calls it for authenticated student answer submissions. Event writes remain disabled by default.
 - Student and schedule data are persisted to Firestore and localStorage.
 - The current Firestore rules allow public reads and creates for student records, and schedule writes are effectively unrestricted due to an unconditional `|| true`.
 - Teacher access checks exist in client-side code. Client-side gates alone are not a secure authorization boundary.
