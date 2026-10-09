@@ -76,6 +76,7 @@ export default function App() {
 
   // Auth State
   const [user, setUser] = useState<User | null>(null);
+  const [isStudentAuthenticated, setIsStudentAuthenticated] = useState<boolean>(() => sessionStorage.getItem('cokito_student_auth') === 'true');
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   // Real-time Database State (Firestore + Local fallback)
@@ -170,6 +171,8 @@ export default function App() {
     if (matched) {
       if (!matched.password || matched.password === pass || pass === '') {
         setCurrentStudentId(matched.id);
+        setIsStudentAuthenticated(true);
+        sessionStorage.setItem('cokito_student_auth', 'true');
         return true;
       }
     }
@@ -180,6 +183,8 @@ export default function App() {
     await logout();
     setUser(null);
     setCurrentStudentId('guest');
+    setIsStudentAuthenticated(false);
+    sessionStorage.removeItem('cokito_student_auth');
     sessionStorage.removeItem('cokito_teacher_auth');
     setIsTeacherAuthenticated(false);
   };
@@ -193,6 +198,8 @@ export default function App() {
   const handleRegisterComplete = async (newStudent: Student, bookedSlotIds: string[]) => {
     await saveStudent(newStudent);
     setCurrentStudentId(newStudent.id);
+    setIsStudentAuthenticated(true);
+    sessionStorage.setItem('cokito_student_auth', 'true');
 
     if (newStudent.isKid) {
       setAudienceTheme('kids');
@@ -225,6 +232,8 @@ export default function App() {
   const handleApplyCoupon = async (redeemedStudent: Student) => {
     setStudents(prev => [redeemedStudent, ...prev.filter(s => s.id !== redeemedStudent.id)]);
     setCurrentStudentId(redeemedStudent.id);
+    setIsStudentAuthenticated(true);
+    sessionStorage.setItem('cokito_student_auth', 'true');
     localStorage.setItem('cokito_active_student_id', redeemedStudent.id);
     await saveStudent(redeemedStudent);
     setActiveTab('pathway');
@@ -514,6 +523,7 @@ export default function App() {
             activeRole={isTeacherAuthenticated ? 'teacher' : 'student'}
             user={user}
             isTeacherAuthenticated={isTeacherAuthenticated}
+            isStudentAuthenticated={isStudentAuthenticated}
             onAwardXp={handleAwardXp}
             onGoToClassroom={() => setActiveTab('pathway')}
             onLogin={handleLogin}
