@@ -18,6 +18,19 @@ test('landing page renders and primary navigation reaches the Learning Hub', asy
   await expect(page.getByText('Master Curriculum & Classroom Hub')).toBeVisible();
 });
 
+test('Student account does not expose a selected profile before sign-in', async ({ page }) => {
+  await page.addInitScript(() => {
+    sessionStorage.removeItem('cokito_student_auth');
+  });
+  await page.goto('/');
+  await page.getByTitle('Ver mi perfil').click();
+
+  await expect(page.getByRole('heading', { name: 'Acceso & Sesión' })).toBeVisible();
+  await expect(page.getByLabel('Correo Electrónico o Nombre de Usuario:')).toBeVisible();
+  await expect(page.getByLabel('Contraseña:')).toHaveAttribute('required', '');
+  await expect(page.getByText('Mi Cuenta de Alumno')).toHaveCount(0);
+});
+
 test('Classroom switches between interactive classroom and materials Hub', async ({ page }) => {
   await page.goto('/');
   await page.getByRole('button', { name: /Classroom/ }).click();
