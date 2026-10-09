@@ -97,7 +97,7 @@ export const ArenaMiniGames: React.FC<ArenaMiniGamesProps> = ({ currentStudent, 
   const grid = useMemo(() => makeGrid(word.word, round), [word.word, round]);
   const scrambled = useMemo(() => {
     const letters = word.word.split('');
-    return letters.map((_, i) => letters[(i * 3 + 1) % letters.length]).join('');
+    return letters.reverse().join('');
   }, [word.word]);
   const refillIn = lifeState.lives >= MAX_LIVES
     ? 0
