@@ -341,6 +341,7 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         placeholder="••••••••"
+                        required
                         className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs font-medium focus:ring-2 focus:ring-blue-500 focus:outline-hidden pr-8"
                       />
                       <button
