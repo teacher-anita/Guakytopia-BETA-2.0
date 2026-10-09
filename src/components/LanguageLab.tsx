@@ -148,6 +148,20 @@ export const LanguageLab: React.FC<LanguageLabProps> = ({
     };
   };
 
+  // Jump to the next incorrect answer so learners can review mistakes without searching manually.
+  const handleNextMistake = () => {
+    const mistakeIndexes = filteredExercises
+      .map((exercise, index) =>
+        userAnswers[exercise.id] && !userAnswers[exercise.id].isCorrect ? index : -1
+      )
+      .filter(index => index >= 0);
+
+    if (mistakeIndexes.length === 0) return;
+    const nextMistakeIndex = mistakeIndexes.find(index => index > currentExerciseIndex) ?? mistakeIndexes[0];
+    setCurrentExerciseIndex(nextMistakeIndex);
+    setViewMode('card');
+  };
+
   // Submit Answer
   const handleCheckAnswer = (optionToSubmit?: string) => {
     const answer = (optionToSubmit || selectedOption).trim();
@@ -806,6 +820,18 @@ export const LanguageLab: React.FC<LanguageLabProps> = ({
             </button>
 
             <div className="flex items-center gap-2">
+              <button
+                onClick={handleNextMistake}
+                disabled={!filteredExercises.some(ex => userAnswers[ex.id] && !userAnswers[ex.id].isCorrect)}
+                className="flex items-center gap-1 px-3 py-2 bg-rose-50 hover:bg-rose-100 disabled:opacity-40 disabled:cursor-not-allowed text-rose-700 border border-rose-200 rounded-xl text-xs font-bold transition-colors"
+                title="Jump to the next incorrectly answered exercise"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                <span>Review Mistakes</span>
+                <span className="bg-rose-100 px-1.5 rounded-md">
+                  {filteredExercises.filter(ex => userAnswers[ex.id] && !userAnswers[ex.id].isCorrect).length}
+                </span>
+              </button>
               {userAnswers[activeExercise.id] && (
                 <button
                   onClick={handleResetCurrent}
