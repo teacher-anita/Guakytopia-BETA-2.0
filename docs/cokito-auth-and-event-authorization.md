@@ -45,3 +45,18 @@ The auth-listener correction is committed on the development branch, but no Type
 - Do not enable event logging.
 - Do not alter student login behavior or force account migration.
 - Do not copy student records or credentials into new collections.
+
+## Login decision: email or username + password
+
+The student-facing login should support both identifiers while authenticating through the same trusted identity system:
+
+- **Email + password:** use Firebase Authentication email/password sign-in.
+- **Username + password:** resolve the normalized username to the account's authentication email through a trusted server-side mechanism, then authenticate with Firebase Authentication. Do not search the public student collection for usernames and passwords, and do not treat a client-side student lookup as authentication.
+- **Password storage:** never store plaintext passwords or password comparisons on Student documents, in localStorage, or in Firestore. Firebase Authentication manages password credentials.
+- **Profile link:** after successful authentication, load the student profile linked to the authenticated Firebase UID. A browser-selected `currentStudentId`, matching display name, or unverified email is not proof of ownership.
+- **Existing two-student transition:** manually verify each student's identity with the teacher, create or confirm the Firebase Authentication account, then link that profile to the verified UID. Preserve existing student IDs and academic progress; do not bulk-link accounts by name or copy legacy passwords into the new system.
+- **Account recovery:** provide a safe password reset flow for email-based accounts. For username sign-in, ensure recovery does not reveal the underlying email address to an unauthenticated visitor.
+
+Username lookup must not create an account-enumeration endpoint. Any callable backend or lookup service must rate-limit attempts, return generic authentication errors, and never return password data. A username may be an alias for sign-in, but the authenticated Firebase UID remains the stable identity used for authorization and academic events.
+
+This is a design decision only. No login code, user records, Firestore rules, or deployed configuration were changed by adding this section. Keep academic event logging disabled until UID linking and database rules are implemented and tested in an isolated development environment.
