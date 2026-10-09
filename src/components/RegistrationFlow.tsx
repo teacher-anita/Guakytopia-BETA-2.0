@@ -73,7 +73,7 @@ const REGISTRATION_PLANS: CustomPlanInfo[] = [
       'Acceso a todos los niveles (SuperGoal y MegaGoal)',
       'Quizzes interactivos de fin de unidad (+50 XP)',
       'Smart Owl Trivia de cultura general y etiqueta',
-      'Sin clases en vivo con la profesora'
+      'Sin clases en vivo con teacher (100% autogestionado)'
     ]
   },
   {

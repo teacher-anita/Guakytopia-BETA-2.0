@@ -375,7 +375,7 @@ export const INITIAL_STUDENTS: Student[] = [
     levelId: 'level_1',
     status: 'enrolled',
     placementTestScore: 19,
-    placementTestDiagnosis: '🟢 Nivel A1 Sólido (Super Goal 1). Lista para iniciar clases presenciales u online una vez que Rectoría asigne su horario y profesor.',
+    placementTestDiagnosis: '🟢 Nivel A1 Sólido (Super Goal 1). Lista para iniciar clases presenciales u online una vez que Rectoría asigne su horario y teacher.',
     placementTestDate: '2026-10-06',
     registeredAt: '2026-10-06',
     currentUnit: 1,

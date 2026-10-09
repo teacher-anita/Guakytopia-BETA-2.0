@@ -52,6 +52,31 @@
         "modality": { "type": "string" }
       },
       "required": ["id", "day", "startTime", "endTime", "status"]
+    },
+    "Teacher": {
+      "title": "Teacher",
+      "description": "Flock Teacher in Güakytopia Campus",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "lastName": { "type": "string" },
+        "email": { "type": "string" },
+        "phone": { "type": "string" },
+        "avatar": { "type": "string" },
+        "specialty": { "type": "string" },
+        "levelsAssigned": { "type": "array" },
+        "assignedDays": { "type": "array" },
+        "workingHours": { "type": "string" },
+        "status": { "type": "string" },
+        "hourlyRate": { "type": "number" },
+        "bio": { "type": "string" },
+        "flockRole": { "type": "string" },
+        "temporaryPassword": { "type": "string" },
+        "welcomeEmailSent": { "type": "boolean" },
+        "welcomeEmailSentAt": { "type": "string" }
+      },
+      "required": ["id", "email", "name"]
     }
   },
   "firestore": {
@@ -62,6 +87,10 @@
     "/slots/{slotId}": {
       "schema": "Slot",
       "description": "Schedule calendar slots"
+    },
+    "/teachers/{teacherId}": {
+      "schema": "Teacher",
+      "description": "Teachers part of Güakytopia's Flock"
     }
   }
 }

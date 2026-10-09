@@ -16,7 +16,8 @@ import {
   Zap,
   Award,
   Download,
-  FileText
+  FileText,
+  FolderOpen
 } from 'lucide-react';
 import { Student } from '../types';
 import { downloadUnitPdf, downloadUnitAudio } from '../services/materialDownloader';
@@ -567,19 +568,40 @@ export const UnitOneLessonsView: React.FC<UnitOneLessonsViewProps> = ({
 
         <div className="flex items-center gap-2 flex-wrap w-full md:w-auto shrink-0">
           <button
-            onClick={() => downloadUnitPdf('level_1', 1, 'Good Morning!')}
-            className="flex-1 sm:flex-none px-4 py-2.5 bg-slate-950 hover:bg-slate-900 text-amber-300 rounded-xl text-xs font-black shadow-md transition-all active:scale-95 flex items-center justify-center gap-2"
+            onClick={() => downloadUnitPdf('level_1', 1, 'Good Morning!', 'student_book')}
+            className="flex-1 sm:flex-none px-4 py-2.5 bg-slate-950 hover:bg-slate-900 text-amber-300 rounded-xl text-xs font-black shadow-md transition-all active:scale-95 flex items-center justify-center gap-1.5"
+            title="Abrir SG01-SB-U01 (Student Book oficial en Google Drive)"
           >
-            <FileText className="w-4 h-4 text-amber-400" />
-            <span>Descargar Libro y Guía (PDF)</span>
+            <BookOpen className="w-4 h-4 text-amber-400" />
+            <span>SG01-SB-U01 • Student Book</span>
           </button>
 
           <button
+            onClick={() => downloadUnitPdf('level_1', 1, 'Good Morning!', 'workbook')}
+            className="flex-1 sm:flex-none px-4 py-2.5 bg-white hover:bg-slate-100 text-slate-950 border-2 border-slate-900 rounded-xl text-xs font-black shadow-xs transition-colors flex items-center justify-center gap-1.5"
+            title="Abrir SG01-WB-U01 (Workbook oficial en Google Drive)"
+          >
+            <FileText className="w-4 h-4 text-slate-900" />
+            <span>SG01-WB-U01 • Workbook</span>
+          </button>
+
+          <a
+            href="https://drive.google.com/drive/folders/18M-iUz1w4PTH2kaTkoXGj6p02fs1MYtc"
+            target="_blank"
+            rel="noreferrer"
+            className="flex-1 sm:flex-none px-3.5 py-2.5 bg-blue-50 hover:bg-blue-100 text-blue-900 border border-blue-300 rounded-xl text-xs font-bold shadow-xs transition-colors flex items-center justify-center gap-1.5"
+            title="Abrir Carpeta General de Drive Nivel 1"
+          >
+            <FolderOpen className="w-3.5 h-3.5 text-blue-600" />
+            <span>Carpeta Drive</span>
+          </a>
+
+          <button
             onClick={() => downloadUnitAudio(2)}
-            className="flex-1 sm:flex-none px-3.5 py-2.5 bg-white hover:bg-slate-100 text-slate-900 border border-slate-300 rounded-xl text-xs font-bold shadow-xs transition-colors flex items-center justify-center gap-1.5"
+            className="flex-1 sm:flex-none px-3 py-2.5 bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 rounded-xl text-xs font-bold shadow-xs transition-colors flex items-center justify-center gap-1.5"
           >
             <Download className="w-3.5 h-3.5 text-blue-700" />
-            <span>Descargar Audios CD1</span>
+            <span>Audios CD1</span>
           </button>
         </div>
       </div>

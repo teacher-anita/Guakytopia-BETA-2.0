@@ -9,6 +9,8 @@ export interface DispatchEmailResult {
   success: boolean;
   recipient: string;
   subject: string;
+  bodyText?: string;
+  gmailWebUrl?: string;
   previewUrl?: string;
   temporaryPassword?: string;
   timestamp: string;
@@ -26,15 +28,12 @@ export function generateTemporaryPassword(): string {
   return `${prefix}-${rand}`;
 }
 
-/**
- * Sends or logs an official Welcome Email for a new Teacher entering Güakytopia's Flock.
- */
-export async function sendTeacherFlockWelcomeEmail(
+export function buildTeacherWelcomeEmailContent(
   teacher: Teacher,
   temporaryPassword?: string
-): Promise<DispatchEmailResult> {
+): { subject: string; bodyText: string; gmailWebUrl: string; tempPass: string } {
   const tempPass = temporaryPassword || teacher.temporaryPassword || generateTemporaryPassword();
-  const campusUrl = window.location.origin;
+  const campusUrl = typeof window !== 'undefined' ? window.location.origin : 'https://guakytopia.campus';
 
   const levelNames = (teacher.levelsAssigned || [])
     .map(lvlId => {
@@ -44,7 +43,7 @@ export async function sendTeacherFlockWelcomeEmail(
     .join(', ');
 
   const subject = `🪶 Welcome to Güakytopia's Flock! • Tus Credenciales y Acceso al Campus Digital`;
-  
+
   const bodyText = `¡Hola, Teacher ${teacher.name}! 🪶✨
 
 Es un honor darte la más cálida bienvenida oficial a Güakytopia's Flock (The Flock • Equipo de Teachers). Desde hoy formas parte del equipo de mentores que transforma vidas a través del inglés con empatía, fluidez y rigor pedagógico.
@@ -62,7 +61,7 @@ Es un honor darte la más cálida bienvenida oficial a Güakytopia's Flock (The 
 - Contraseña provisional: ${tempPass}
 - Clave de Acceso Rápido al Portal: 3223
 
-Al ingresar por primera vez, podrás actualizar tu contraseña personal en tu perfil, consultar tu agenda de alumnos y compartir novedades en el Teachers' Lounge (nuestra sala de profesores).
+Al ingresar por primera vez, podrás actualizar tu contraseña personal en tu perfil, consultar tu agenda de alumnos y compartir novedades en el Teachers' Lounge (el espacio oficial de nuestros teachers).
 
 "Start where you are. Keep going." ¡Bienvenido a la manada!
 
@@ -71,6 +70,19 @@ Directora Waky (The Principal)
 Rectoría General • Güakytopia Campus
 contacto: anateresa.csb@gmail.com`;
 
+  const gmailWebUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(teacher.email)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(bodyText)}`;
+
+  return { subject, bodyText, gmailWebUrl, tempPass };
+}
+
+/**
+ * Sends or logs an official Welcome Email for a new Teacher entering Güakytopia's Flock.
+ */
+export async function sendTeacherFlockWelcomeEmail(
+  teacher: Teacher,
+  temporaryPassword?: string
+): Promise<DispatchEmailResult> {
+  const { subject, bodyText, gmailWebUrl, tempPass } = buildTeacherWelcomeEmailContent(teacher, temporaryPassword);
   const timestamp = new Date().toISOString();
 
   // Attempt real Gmail API dispatch if Directora has OAuth token
@@ -86,17 +98,21 @@ contacto: anateresa.csb@gmail.com`;
       success: true,
       recipient: teacher.email,
       subject,
+      bodyText,
+      gmailWebUrl,
       temporaryPassword: tempPass,
       timestamp,
       mode: 'gmail_api'
     };
   }
 
-  // Graceful fallback to campus institutional log
+  // Graceful fallback to campus institutional log & ready dispatch link
   return {
     success: true,
     recipient: teacher.email,
     subject,
+    bodyText,
+    gmailWebUrl,
     temporaryPassword: tempPass,
     timestamp,
     mode: 'campus_logged',
@@ -104,10 +120,7 @@ contacto: anateresa.csb@gmail.com`;
   };
 }
 
-/**
- * Sends or logs an official Welcome Email for a new Student enrolled at Güakytopia Campus.
- */
-export async function sendStudentCampusWelcomeEmail(
+export function buildStudentWelcomeEmailContent(
   student: Student,
   options: {
     temporaryPassword?: string;
@@ -115,15 +128,15 @@ export async function sendStudentCampusWelcomeEmail(
     flockMentorsSummary?: string;
     meetLink?: string;
   } = {}
-): Promise<DispatchEmailResult> {
+): { subject: string; bodyText: string; gmailWebUrl: string; tempPass: string } {
   const tempPass = options.temporaryPassword || student.temporaryPassword || generateTemporaryPassword();
-  const campusUrl = window.location.origin;
+  const campusUrl = typeof window !== 'undefined' ? window.location.origin : 'https://guakytopia.campus';
   
   const levelObj = ENGLISH_LEVELS.find(l => l.id === student.levelId);
   const levelTitle = levelObj ? `${levelObj.levelName} • ${levelObj.book}` : (student.levelId || 'Level 1');
 
   const mentorshipDescription = student.isExclusiveTeacher && student.teacherName
-    ? `Mentor Dedicado Exclusivo: ${student.teacherName} (Tus sesiones y seguimiento se coordinan directamente con tu profesor)`
+    ? `Mentor Dedicado Exclusivo: ${student.teacherName} (Tus sesiones y seguimiento se coordinan directamente con tu teacher)`
     : `Acceso Rotativo a La Manada (Güakytopia's Flock): Puedes interactuar y tomar clases con los mentores certificados en tu nivel (${options.flockMentorsSummary || 'Teacher Waky, Teacher David'}), manteniendo tu bitácora de progreso 100% unificada.`;
 
   const subject = `🎉 Welcome to Güakytopia Campus! • Tu Carnet Digital y Acceso Oficial`;
@@ -157,6 +170,24 @@ Atentamente,
 Directora Waky (The Principal)
 Güakytopia Campus • Open the World`;
 
+  const gmailWebUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(student.email)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(bodyText)}`;
+
+  return { subject, bodyText, gmailWebUrl, tempPass };
+}
+
+/**
+ * Sends or logs an official Welcome Email for a new Student enrolled at Güakytopia Campus.
+ */
+export async function sendStudentCampusWelcomeEmail(
+  student: Student,
+  options: {
+    temporaryPassword?: string;
+    mentorName?: string;
+    flockMentorsSummary?: string;
+    meetLink?: string;
+  } = {}
+): Promise<DispatchEmailResult> {
+  const { subject, bodyText, gmailWebUrl, tempPass } = buildStudentWelcomeEmailContent(student, options);
   const timestamp = new Date().toISOString();
 
   const mailResult = await sendGmailEmail({
@@ -171,6 +202,8 @@ Güakytopia Campus • Open the World`;
       success: true,
       recipient: student.email,
       subject,
+      bodyText,
+      gmailWebUrl,
       temporaryPassword: tempPass,
       timestamp,
       mode: 'gmail_api'
@@ -181,6 +214,8 @@ Güakytopia Campus • Open the World`;
     success: true,
     recipient: student.email,
     subject,
+    bodyText,
+    gmailWebUrl,
     temporaryPassword: tempPass,
     timestamp,
     mode: 'campus_logged',

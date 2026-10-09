@@ -42,6 +42,8 @@ interface LearningPathwayProps {
   onOpenCouponModal: () => void;
   onOpenPaymentModal?: () => void;
   onAwardXp: (studentId: string, amount: number) => void;
+  onGoToClassroom?: () => void;
+  onGoToLibrary?: () => void;
 }
 
 export const LearningPathway: React.FC<LearningPathwayProps> = ({
@@ -53,7 +55,9 @@ export const LearningPathway: React.FC<LearningPathwayProps> = ({
   onOpenPlacementTest,
   onOpenCouponModal,
   onOpenPaymentModal,
-  onAwardXp
+  onAwardXp,
+  onGoToClassroom,
+  onGoToLibrary
 }) => {
   const isTeacher = activeRole === 'teacher';
   // A student is enrolled if their status is 'enrolled'
@@ -371,22 +375,44 @@ ${unit.owlCulture.culturalStory}
         </div>
 
         {/* Level Switcher Pills */}
-        <div role="group" aria-label="Seleccionar nivel curricular" className="flex items-center gap-2 overflow-x-auto pb-1 border-t border-white/10 pt-4 text-xs font-bold">
-          <span className="text-slate-400 uppercase text-[10px] tracking-wider shrink-0">Nivel:</span>
-          {PATHWAY_LEVELS.map(lvl => (
+        <div role="group" aria-label="Seleccionar nivel curricular" className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-t border-white/10 pt-4 text-xs font-bold">
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
+            <span className="text-slate-400 uppercase text-[10px] tracking-wider shrink-0">Nivel:</span>
+            {PATHWAY_LEVELS.map(lvl => {
+              const isStudentActive = lvl.levelId === (currentStudent?.levelId || 'level_1');
+              const isSelected = selectedLevelId === lvl.levelId;
+              return (
+                <button
+                  key={lvl.levelId}
+                  onClick={() => setSelectedLevelId(lvl.levelId)}
+                  aria-pressed={isSelected}
+                  className={`px-3.5 py-1.5 rounded-xl whitespace-nowrap transition-all flex items-center gap-1.5 ${
+                    isSelected
+                      ? 'bg-amber-400 text-slate-950 shadow-md font-black'
+                      : 'bg-white/10 text-white hover:bg-white/20'
+                  }`}
+                >
+                  <span>{lvl.levelName}</span>
+                  {isStudentActive && (
+                    <span className="text-[9px] bg-slate-900 text-amber-300 px-1.5 py-0.2 rounded-md font-black">
+                      Activo
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
+          {onGoToLibrary && (
             <button
-              key={lvl.levelId}
-              onClick={() => setSelectedLevelId(lvl.levelId)}
-              aria-pressed={selectedLevelId === lvl.levelId}
-              className={`px-3.5 py-1.5 rounded-xl whitespace-nowrap transition-all ${
-                selectedLevelId === lvl.levelId
-                  ? 'bg-amber-400 text-slate-950 shadow-md font-black'
-                  : 'bg-white/10 text-white hover:bg-white/20'
-              }`}
+              onClick={onGoToLibrary}
+              className="self-start sm:self-auto text-[11px] text-blue-200 hover:text-white bg-white/10 hover:bg-white/15 px-3 py-1.5 rounded-xl transition-colors flex items-center gap-1.5"
             >
-              {lvl.levelName}
+              <BookOpen className="w-3.5 h-3.5 text-amber-300" />
+              <span>Ver todos los libros en Library</span>
+              <ArrowRight className="w-3 h-3" />
             </button>
-          ))}
+          )}
         </div>
       </div>
 
@@ -490,28 +516,40 @@ ${unit.owlCulture.culturalStory}
                 </div>
 
                 <div className="flex items-center gap-2 flex-wrap w-full md:w-auto shrink-0">
-                  {/* Real Student Book Google Drive Link */}
+                  {/* Real Student Book Google Drive Link (SG01-SB-U) */}
                   <a
-                    href={unit.studentBookPdfUrl || 'https://drive.google.com/file/d/17Oqq95rEd2Qy9fbltoHA_86jYBOoyitE/view?usp=drive_link'}
+                    href={unit.studentBookPdfUrl || 'https://drive.google.com/file/d/13JNZQ1NpbLF-DodPPkAnHVaMaPqkImmw/view?usp=drive_link'}
                     target="_blank"
                     rel="noreferrer"
                     className="flex-1 sm:flex-none px-4 py-2.5 bg-slate-950 hover:bg-slate-900 text-amber-300 rounded-xl text-xs font-black shadow-md transition-all active:scale-95 flex items-center justify-center gap-1.5"
-                    title="Abrir o descargar el Student Book oficial en Google Drive"
+                    title={`Abrir ${unit.studentBookCode || 'SG01-SB-U01'} (Student Book oficial) en Google Drive`}
                   >
                     <BookOpen className="w-4 h-4 text-amber-400" />
-                    <span>Student Book (PDF)</span>
+                    <span>{unit.studentBookCode || 'SG01-SB-U01'} • Student Book</span>
                   </a>
 
-                  {/* Real Workbook Google Drive Link */}
+                  {/* Real Workbook Google Drive Link (SG01-WB-U) */}
                   <a
-                    href={unit.workbookPdfUrl || 'https://drive.google.com/file/d/13JNZQ1NpbLF-DodPPkAnHVaMaPqkImmw/view?usp=drive_link'}
+                    href={unit.workbookPdfUrl || 'https://drive.google.com/file/d/17Oqq95rEd2Qy9fbltoHA_86jYBOoyitE/view?usp=drive_link'}
                     target="_blank"
                     rel="noreferrer"
                     className="flex-1 sm:flex-none px-4 py-2.5 bg-white hover:bg-slate-100 text-slate-950 border-2 border-slate-900 rounded-xl text-xs font-black shadow-xs transition-colors flex items-center justify-center gap-1.5"
-                    title="Abrir o descargar el Workbook oficial en Google Drive"
+                    title={`Abrir ${unit.workbookCode || 'SG01-WB-U01'} (Workbook oficial) en Google Drive`}
                   >
                     <FileText className="w-4 h-4 text-slate-900" />
-                    <span>Workbook (PDF)</span>
+                    <span>{unit.workbookCode || 'SG01-WB-U01'} • Workbook</span>
+                  </a>
+
+                  {/* Carpeta Drive General Nivel 1 */}
+                  <a
+                    href="https://drive.google.com/drive/folders/18M-iUz1w4PTH2kaTkoXGj6p02fs1MYtc"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex-1 sm:flex-none px-3.5 py-2.5 bg-blue-50 hover:bg-blue-100 text-blue-900 border border-blue-300 rounded-xl text-xs font-bold shadow-xs transition-colors flex items-center justify-center gap-1.5"
+                    title="Abrir Carpeta Drive General con todos los materiales oficiales del Nivel 1"
+                  >
+                    <FolderOpen className="w-3.5 h-3.5 text-blue-600" />
+                    <span>Carpeta Drive</span>
                   </a>
 
                   {/* Audio MP3 */}
@@ -549,13 +587,31 @@ ${unit.owlCulture.culturalStory}
 
                 {/* Action Buttons for this Unit */}
                 <div className="flex items-center gap-2 flex-wrap">
-                  {unit.unitNumber === 1 && activeLevel.levelId === 'level_1' && (
+                  {onGoToClassroom && (
+                    <button
+                      onClick={onGoToClassroom}
+                      className="flex items-center gap-1.5 px-4 py-2 bg-amber-400 hover:bg-amber-300 text-slate-950 rounded-xl text-xs font-black shadow-md transition-all active:scale-95"
+                    >
+                      <Sparkles className="w-3.5 h-3.5 text-blue-900" />
+                      <span>{isSpanglish ? 'Open Classroom • ¡Entrar a clase!' : 'Open Interactive Classroom'}</span>
+                    </button>
+                  )}
+                  {unit.unitNumber === 1 && activeLevel.levelId === 'level_1' && !onGoToClassroom && (
                     <button
                       onClick={() => setSelectedMasterUnit(1)}
                       className="flex items-center gap-1.5 px-4 py-2 bg-amber-400 hover:bg-amber-300 text-slate-950 rounded-xl text-xs font-black shadow-md transition-all active:scale-95"
                     >
                       <Sparkles className="w-3.5 h-3.5 text-blue-900" />
                       <span>{isSpanglish ? 'Open Unit 1 Interactive Classroom • ¡Let’s go!' : 'Open Unit 1 Interactive Classroom'}</span>
+                    </button>
+                  )}
+                  {onGoToLibrary && (
+                    <button
+                      onClick={onGoToLibrary}
+                      className="flex items-center gap-1.5 px-3.5 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-800 border border-indigo-200 rounded-xl text-xs font-bold transition-colors"
+                    >
+                      <BookOpen className="w-3.5 h-3.5 text-indigo-600" />
+                      <span>{isSpanglish ? 'Library • Libros & Audios' : 'Open in Library'}</span>
                     </button>
                   )}
                   <button

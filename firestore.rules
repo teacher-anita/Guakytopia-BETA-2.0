@@ -26,6 +26,18 @@ service cloud.firestore {
       allow write: if isTeacher() || isSignedIn() || true;
     }
 
+    // Teachers collection
+    match /teachers/{teacherId} {
+      allow read: if true;
+      allow create, update: if true;
+      allow delete: if isTeacher() || true;
+    }
+
+    // Academic events
+    match /academicEvents/{eventId} {
+      allow read, write: if true;
+    }
+
     // Default deny for everything else
     match /{document=**} {
       allow read, write: if false;

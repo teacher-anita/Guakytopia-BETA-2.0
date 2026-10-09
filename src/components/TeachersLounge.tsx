@@ -161,7 +161,7 @@ export const TeachersLounge: React.FC<TeachersLoungeProps> = ({
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-[10px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-amber-400 text-amber-950 shadow-xs">
-                  Sala de Profesores Oficial
+                  Lounge Oficial de Teachers
                 </span>
                 <span className="text-xs text-amber-200/90 font-medium">
                   {currentStaffRole === 'principal' ? '👑 Vista de Dirección General' : '👩‍🏫 Portal Teacher'}

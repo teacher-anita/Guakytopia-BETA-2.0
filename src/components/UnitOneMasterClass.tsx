@@ -513,19 +513,40 @@ export const UnitOneMasterClass: React.FC<UnitOneMasterClassProps> = ({
 
         <div className="flex items-center gap-2 flex-wrap w-full md:w-auto shrink-0">
           <button
-            onClick={() => downloadUnitPdf('level_1', 1, 'Good Morning!')}
-            className="flex-1 sm:flex-none px-5 py-3 bg-slate-950 hover:bg-slate-900 text-amber-300 rounded-2xl font-black text-xs shadow-md transition-all active:scale-95 flex items-center justify-center gap-2"
+            onClick={() => downloadUnitPdf('level_1', 1, 'Good Morning!', 'student_book')}
+            className="flex-1 sm:flex-none px-4 py-2.5 bg-slate-950 hover:bg-slate-900 text-amber-300 rounded-xl font-black text-xs shadow-md transition-all active:scale-95 flex items-center justify-center gap-1.5"
+            title="Abrir SG01-SB-U01 (Student Book oficial en Google Drive)"
           >
-            <FileText className="w-4 h-4 text-amber-400" />
-            <span>{isSpanglish ? 'Download Book & Guide (PDF)' : 'Download Book & Guide (PDF)'}</span>
+            <BookOpen className="w-4 h-4 text-amber-400" />
+            <span>SG01-SB-U01 • Student Book</span>
           </button>
 
           <button
-            onClick={() => downloadUnitAudio(2)}
-            className="flex-1 sm:flex-none px-4 py-3 bg-white hover:bg-slate-50 text-slate-900 border border-slate-900/20 rounded-2xl font-bold text-xs shadow-xs transition-colors flex items-center justify-center gap-1.5"
+            onClick={() => downloadUnitPdf('level_1', 1, 'Good Morning!', 'workbook')}
+            className="flex-1 sm:flex-none px-4 py-2.5 bg-white hover:bg-slate-100 text-slate-950 border-2 border-slate-900 rounded-xl font-black text-xs shadow-xs transition-colors flex items-center justify-center gap-1.5"
+            title="Abrir SG01-WB-U01 (Workbook oficial en Google Drive)"
           >
-            <Download className="w-4 h-4 text-blue-700" />
-            <span>{isSpanglish ? 'Download Audio Tracks' : 'Download Audio Tracks'}</span>
+            <FileText className="w-4 h-4 text-slate-900" />
+            <span>SG01-WB-U01 • Workbook</span>
+          </button>
+
+          <a
+            href="https://drive.google.com/drive/folders/18M-iUz1w4PTH2kaTkoXGj6p02fs1MYtc"
+            target="_blank"
+            rel="noreferrer"
+            className="flex-1 sm:flex-none px-3.5 py-2.5 bg-blue-50 hover:bg-blue-100 text-blue-900 border border-blue-300 rounded-xl font-bold text-xs shadow-xs transition-colors flex items-center justify-center gap-1.5"
+            title="Abrir Carpeta General de Drive Nivel 1"
+          >
+            <FolderOpen className="w-3.5 h-3.5 text-blue-600" />
+            <span>Carpeta Drive</span>
+          </a>
+
+          <button
+            onClick={() => downloadUnitAudio(2)}
+            className="flex-1 sm:flex-none px-3 py-2.5 bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 rounded-xl font-bold text-xs shadow-xs transition-colors flex items-center justify-center gap-1.5"
+          >
+            <Download className="w-3.5 h-3.5 text-blue-700" />
+            <span>Audios CD1</span>
           </button>
         </div>
       </div>
@@ -1159,13 +1180,14 @@ export const UnitOneMasterClass: React.FC<UnitOneMasterClassProps> = ({
             
             <div className="flex items-center gap-2 flex-wrap">
               <a
-                href="https://drive.google.com/file/d/13JNZQ1NpbLF-DodPPkAnHVaMaPqkImmw/view?usp=drive_link"
+                href="https://drive.google.com/file/d/17Oqq95rEd2Qy9fbltoHA_86jYBOoyitE/view?usp=drive_link"
                 target="_blank"
                 rel="noreferrer"
                 className="px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 text-amber-300 font-bold text-xs rounded-xl flex items-center gap-1.5 transition-colors shadow-2xs"
+                title="Descargar Workbook oficial SG01-WB-U01 en Google Drive"
               >
                 <Download className="w-3.5 h-3.5 text-amber-400" />
-                <span>Descargar Workbook PDF</span>
+                <span>Descargar Workbook PDF (SG01-WB-U01)</span>
               </a>
               <span className="text-xs font-bold bg-amber-100 text-amber-900 px-3 py-1.5 rounded-xl border border-amber-200">
                 +150 XP on completion
@@ -1493,12 +1515,17 @@ export const UnitOneMasterClass: React.FC<UnitOneMasterClassProps> = ({
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-xs">
             {/* Student Book Card */}
             <div className="p-5 rounded-3xl bg-blue-50/60 border border-blue-200 space-y-3 flex flex-col justify-between">
               <div className="space-y-2">
-                <div className="w-10 h-10 rounded-2xl bg-blue-600 text-white flex items-center justify-center font-bold">
-                  SB
+                <div className="flex items-center justify-between">
+                  <div className="w-10 h-10 rounded-2xl bg-blue-600 text-white flex items-center justify-center font-bold">
+                    SB
+                  </div>
+                  <span className="text-[10px] font-mono font-black uppercase text-blue-900 bg-blue-200/80 px-2 py-0.5 rounded-md">
+                    SG01-SB-U01
+                  </span>
                 </div>
                 <div>
                   <strong className="text-sm font-bold text-blue-950 block">
@@ -1510,22 +1537,37 @@ export const UnitOneMasterClass: React.FC<UnitOneMasterClassProps> = ({
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 pt-2">
+              <div className="flex items-center gap-2 pt-2 flex-wrap">
                 <button
                   onClick={() => setActiveUnitTab('overview')}
-                  className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold flex items-center justify-center gap-1.5 transition-colors"
+                  className="flex-1 py-2 px-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold flex items-center justify-center gap-1.5 transition-colors"
                 >
                   <BookOpen className="w-3.5 h-3.5" />
-                  <span>View in Platform</span>
+                  <span>En Plataforma</span>
                 </button>
+                <a
+                  href="https://drive.google.com/file/d/13JNZQ1NpbLF-DodPPkAnHVaMaPqkImmw/view?usp=drive_link"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="py-2 px-3 bg-white hover:bg-slate-50 text-blue-700 border border-blue-300 rounded-xl font-bold flex items-center justify-center gap-1 transition-colors"
+                  title="Abrir SG01-SB-U01 en Google Drive"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>PDF Drive</span>
+                </a>
               </div>
             </div>
 
             {/* Workbook Card */}
             <div className="p-5 rounded-3xl bg-purple-50/60 border border-purple-200 space-y-3 flex flex-col justify-between">
               <div className="space-y-2">
-                <div className="w-10 h-10 rounded-2xl bg-purple-600 text-white flex items-center justify-center font-bold">
-                  WB
+                <div className="flex items-center justify-between">
+                  <div className="w-10 h-10 rounded-2xl bg-purple-600 text-white flex items-center justify-center font-bold">
+                    WB
+                  </div>
+                  <span className="text-[10px] font-mono font-black uppercase text-purple-900 bg-purple-200/80 px-2 py-0.5 rounded-md">
+                    SG01-WB-U01
+                  </span>
                 </div>
                 <div>
                   <strong className="text-sm font-bold text-purple-950 block">
@@ -1537,14 +1579,58 @@ export const UnitOneMasterClass: React.FC<UnitOneMasterClassProps> = ({
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 pt-2">
+              <div className="flex items-center gap-2 pt-2 flex-wrap">
                 <button
                   onClick={() => setActiveUnitTab('workbook')}
-                  className="flex-1 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold flex items-center justify-center gap-1.5 transition-colors"
+                  className="flex-1 py-2 px-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold flex items-center justify-center gap-1.5 transition-colors"
                 >
                   <FileText className="w-3.5 h-3.5" />
-                  <span>Open Interactive Workbook</span>
+                  <span>Interactivo</span>
                 </button>
+                <a
+                  href="https://drive.google.com/file/d/17Oqq95rEd2Qy9fbltoHA_86jYBOoyitE/view?usp=drive_link"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="py-2 px-3 bg-white hover:bg-slate-50 text-purple-700 border border-purple-300 rounded-xl font-bold flex items-center justify-center gap-1 transition-colors"
+                  title="Abrir SG01-WB-U01 en Google Drive"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>PDF Drive</span>
+                </a>
+              </div>
+            </div>
+
+            {/* Carpeta Drive General Nivel 1 */}
+            <div className="p-5 rounded-3xl bg-emerald-50/60 border border-emerald-200 space-y-3 flex flex-col justify-between sm:col-span-2 lg:col-span-1">
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="w-10 h-10 rounded-2xl bg-emerald-600 text-white flex items-center justify-center font-bold">
+                    <FolderOpen className="w-5 h-5 text-white" />
+                  </div>
+                  <span className="text-[10px] font-black uppercase text-emerald-900 bg-emerald-200/80 px-2 py-0.5 rounded-md">
+                    Carpeta Oficial
+                  </span>
+                </div>
+                <div>
+                  <strong className="text-sm font-bold text-emerald-950 block">
+                    Carpeta Drive de Materiales (Nivel 1)
+                  </strong>
+                  <span className="text-[11px] text-slate-500 block">
+                    Acceso a todos los libros, ejercicios, guías y audios del nivel general.
+                  </span>
+                </div>
+              </div>
+
+              <div className="pt-2">
+                <a
+                  href="https://drive.google.com/drive/folders/18M-iUz1w4PTH2kaTkoXGj6p02fs1MYtc"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold flex items-center justify-center gap-1.5 transition-colors"
+                >
+                  <FolderOpen className="w-3.5 h-3.5" />
+                  <span>Abrir Carpeta General</span>
+                </a>
               </div>
             </div>
 

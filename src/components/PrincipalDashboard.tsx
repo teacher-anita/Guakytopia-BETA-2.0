@@ -44,7 +44,9 @@ import {
   EyeOff,
   FileText,
   RefreshCw,
-  Send
+  Send,
+  Copy,
+  ExternalLink
 } from 'lucide-react';
 import { Student, Teacher, ScheduleSlot, EnglishLevel } from '../types';
 import { ENGLISH_LEVELS } from '../data/curriculumData';
@@ -62,7 +64,9 @@ import {
 import { 
   sendTeacherFlockWelcomeEmail, 
   sendStudentCampusWelcomeEmail, 
-  generateTemporaryPassword 
+  generateTemporaryPassword,
+  buildTeacherWelcomeEmailContent,
+  buildStudentWelcomeEmailContent 
 } from '../services/institutionalService';
 import { 
   getFlockTeachersForLevel, 
@@ -419,7 +423,7 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
     const waText = encodeURIComponent(
       `¡Hola ${assigningClassesStudent.name}! 🌴✨ Te saluda la Rectoría de Güakytopia (Directora Waky).\n\n` +
       `Tus clases oficiales de inglés han sido agendadas con éxito conforme a lo acordado:\n` +
-      `👨‍🏫 Profesor Asignado: ${teacherObj.name}\n` +
+      `🪶 Teacher Asignado: ${teacherObj.name}\n` +
       `📅 Horario Oficial: ${scheduleSummary}\n` +
       `📚 Nivel: ${ENGLISH_LEVELS.find(l => l.id === assignLevelId)?.levelName || assignLevelId} (Unidad ${assignUnit})\n` +
       `💻 Enlace Google Meet: ${assignMeetLink}\n\n` +
@@ -624,6 +628,55 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
   // Slot Teacher Assignment Modal
   const [selectedSlotForTeacher, setSelectedSlotForTeacher] = useState<ScheduleSlot | null>(null);
 
+  // Modal de Carta Oficial y Credenciales (The Flock & Campus)
+  const [activeCredentialsModal, setActiveCredentialsModal] = useState<{
+    recipientName: string;
+    recipientEmail: string;
+    role: 'teacher' | 'student';
+    temporaryPassword: string;
+    subject: string;
+    bodyText: string;
+    gmailWebUrl: string;
+    mode: 'gmail_api' | 'campus_logged';
+  } | null>(null);
+
+  // Ver carta oficial de teacher en modal
+  const handleOpenTeacherLetterModal = (teacher: Teacher) => {
+    const tempPass = teacher.temporaryPassword || 'FLOCK-3223';
+    const content = buildTeacherWelcomeEmailContent(teacher, tempPass);
+    setActiveCredentialsModal({
+      recipientName: `Teacher ${teacher.name}`,
+      recipientEmail: teacher.email,
+      role: 'teacher',
+      temporaryPassword: tempPass,
+      subject: content.subject,
+      bodyText: content.bodyText,
+      gmailWebUrl: content.gmailWebUrl,
+      mode: teacher.welcomeEmailSent ? 'gmail_api' : 'campus_logged'
+    });
+  };
+
+  // Ver carta oficial de alumno en modal
+  const handleOpenStudentLetterModal = (student: Student) => {
+    const tempPass = student.temporaryPassword || 'FLOCK-CAMPUS';
+    const mentorsSummary = getFlockMentorsLabel(teachers, student.levelId || 'level_1');
+    const content = buildStudentWelcomeEmailContent(student, {
+      temporaryPassword: tempPass,
+      flockMentorsSummary: mentorsSummary,
+      mentorName: student.teacherName
+    });
+    setActiveCredentialsModal({
+      recipientName: `${student.name} ${student.lastName || ''}`.trim(),
+      recipientEmail: student.email,
+      role: 'student',
+      temporaryPassword: tempPass,
+      subject: content.subject,
+      bodyText: content.bodyText,
+      gmailWebUrl: content.gmailWebUrl,
+      mode: student.welcomeEmailSent ? 'gmail_api' : 'campus_logged'
+    });
+  };
+
   // Reenviar credenciales de teachers
   const handleResendTeacherEmail = async (teacher: Teacher) => {
     const tempPass = teacher.temporaryPassword || generateTemporaryPassword();
@@ -635,7 +688,17 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
         welcomeEmailSent: true,
         welcomeEmailSentAt: new Date().toISOString()
       });
-      setApprovalNotice(`🪶 Credenciales de acceso a la Manada reenviadas a ${teacher.email} (Clave: ${tempPass})`);
+      setActiveCredentialsModal({
+        recipientName: `Teacher ${teacher.name}`,
+        recipientEmail: teacher.email,
+        role: 'teacher',
+        temporaryPassword: tempPass,
+        subject: res.subject,
+        bodyText: res.bodyText || '',
+        gmailWebUrl: res.gmailWebUrl || '',
+        mode: res.mode
+      });
+      setApprovalNotice(`🪶 Credenciales de la Manada preparadas para ${teacher.email} (Clave: ${tempPass})`);
       setTimeout(() => setApprovalNotice(null), 4500);
     }
   };
@@ -656,7 +719,17 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
         welcomeEmailSent: true,
         welcomeEmailSentAt: new Date().toISOString()
       });
-      setApprovalNotice(`🎉 Credenciales de acceso al Campus reenviadas a ${student.email} (Clave: ${tempPass})`);
+      setActiveCredentialsModal({
+        recipientName: `${student.name} ${student.lastName || ''}`.trim(),
+        recipientEmail: student.email,
+        role: 'student',
+        temporaryPassword: tempPass,
+        subject: res.subject,
+        bodyText: res.bodyText || '',
+        gmailWebUrl: res.gmailWebUrl || '',
+        mode: res.mode
+      });
+      setApprovalNotice(`🎉 Credenciales de acceso al Campus preparadas para ${student.email} (Clave: ${tempPass})`);
       setTimeout(() => setApprovalNotice(null), 4500);
     }
   };
@@ -712,9 +785,10 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
       welcomeEmailSent: false
     };
 
+    let emailRes: any = null;
     if (sendTeacherWelcomeEmailFlag) {
-      const emailRes = await sendTeacherFlockWelcomeEmail(teacherToAdd, tempPassword);
-      if (emailRes.success) {
+      emailRes = await sendTeacherFlockWelcomeEmail(teacherToAdd, tempPassword);
+      if (emailRes?.success) {
         teacherToAdd.welcomeEmailSent = true;
         teacherToAdd.welcomeEmailSentAt = emailRes.timestamp;
       }
@@ -735,7 +809,21 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
       hourlyRate: 15,
       bio: ''
     });
-    setApprovalNotice(`🪶 ¡Teacher ${teacherToAdd.name} contratado e integrado a la Manada (The Flock)! ${sendTeacherWelcomeEmailFlag ? `Correo con credenciales enviado a ${teacherToAdd.email} (Clave provisional: ${tempPassword})` : ''}`);
+
+    if (emailRes) {
+      setActiveCredentialsModal({
+        recipientName: `Teacher ${teacherToAdd.name}`,
+        recipientEmail: teacherToAdd.email,
+        role: 'teacher',
+        temporaryPassword: tempPassword,
+        subject: emailRes.subject,
+        bodyText: emailRes.bodyText || '',
+        gmailWebUrl: emailRes.gmailWebUrl || '',
+        mode: emailRes.mode
+      });
+    }
+
+    setApprovalNotice(`🪶 ¡Teacher ${teacherToAdd.name} guardado en base de datos e integrado a la Manada (The Flock)! ${sendTeacherWelcomeEmailFlag ? `Credenciales preparadas para ${teacherToAdd.email} (Clave provisional: ${tempPassword})` : ''}`);
     setTimeout(() => setApprovalNotice(null), 4500);
   };
 
@@ -910,14 +998,15 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
       welcomeEmailSent: false
     };
 
+    let emailRes: any = null;
     if (sendStudentWelcomeEmailFlag) {
       const mentorsSummary = getFlockMentorsLabel(teachers, studentToAdd.levelId || 'level_1');
-      const emailRes = await sendStudentCampusWelcomeEmail(studentToAdd, {
+      emailRes = await sendStudentCampusWelcomeEmail(studentToAdd, {
         temporaryPassword: tempPassword,
         flockMentorsSummary: mentorsSummary,
         mentorName: exclusiveTeacher?.name
       });
-      if (emailRes.success) {
+      if (emailRes?.success) {
         studentToAdd.welcomeEmailSent = true;
         studentToAdd.welcomeEmailSentAt = emailRes.timestamp;
       }
@@ -925,7 +1014,21 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
 
     onAddStudent(studentToAdd);
     setIsNewStudentModalOpen(false);
-    setApprovalNotice(`🎉 ¡${studentToAdd.name} matriculado en el Campus! ${sendStudentWelcomeEmailFlag ? `Carta oficial con credenciales enviada a ${studentToAdd.email} (Clave provisional: ${tempPassword})` : ''}`);
+
+    if (emailRes) {
+      setActiveCredentialsModal({
+        recipientName: `${studentToAdd.name} ${studentToAdd.lastName || ''}`.trim(),
+        recipientEmail: studentToAdd.email,
+        role: 'student',
+        temporaryPassword: tempPassword,
+        subject: emailRes.subject,
+        bodyText: emailRes.bodyText || '',
+        gmailWebUrl: emailRes.gmailWebUrl || '',
+        mode: emailRes.mode
+      });
+    }
+
+    setApprovalNotice(`🎉 ¡${studentToAdd.name} matriculado en el Campus y guardado en base de datos! ${sendStudentWelcomeEmailFlag ? `Carta oficial con credenciales preparada para ${studentToAdd.email} (Clave: ${tempPassword})` : ''}`);
     setTimeout(() => setApprovalNotice(null), 4500);
   };
 
@@ -1207,7 +1310,7 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
                       <button
                         onClick={() => setEditingTeacher(t)}
                         className="p-2 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-xl transition-colors"
-                        title="Modificar horarios y niveles del profesor"
+                        title="Modificar horarios y niveles del teacher"
                       >
                         <Edit3 className="w-4 h-4" />
                       </button>
@@ -1219,7 +1322,7 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
                             }
                           }}
                           className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors"
-                          title="Dar de baja profesor"
+                          title="Dar de baja teacher"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -1254,22 +1357,32 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
                       <span className="truncate font-medium">{t.email}</span>
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <button
+                        type="button"
+                        onClick={() => handleOpenTeacherLetterModal(t)}
+                        className="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-bold text-[11px] flex items-center gap-1 transition-colors"
+                        title="Ver carta oficial y credenciales del teacher"
+                      >
+                        <FileText className="w-3 h-3 text-slate-600" />
+                        <span>Ver carta</span>
+                      </button>
+
                       <button
                         type="button"
                         onClick={() => handleResendTeacherEmail(t)}
                         className="px-2.5 py-1 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 rounded-lg font-bold text-[11px] flex items-center gap-1 transition-colors"
-                        title="Reenviar carta oficial con credenciales de la Manada a su correo"
+                        title="Despachar carta oficial con credenciales de la Manada a su correo"
                       >
                         <Send className="w-3 h-3 text-amber-600" />
-                        <span>{t.welcomeEmailSent ? 'Reenviar credenciales' : 'Enviar credenciales'}</span>
+                        <span>{t.welcomeEmailSent ? 'Reenviar' : 'Enviar'}</span>
                       </button>
 
                       <button
                         onClick={() => setEditingTeacher(t)}
                         className="text-indigo-600 hover:underline font-bold text-xs"
                       >
-                        Asignar Horarios →
+                        Horarios →
                       </button>
                     </div>
                   </div>
@@ -1289,7 +1402,7 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
                 Movimiento de Alumnos & Control de Niveles
               </h2>
               <p className="text-xs text-slate-500">
-                Mueve alumnos de nivel, cambia sus unidades, reasígnalos de profesor o dálos de baja.
+                Mueve alumnos de nivel, cambia sus unidades, reasígnalos de teacher o dálos de baja.
               </p>
             </div>
 
@@ -1496,6 +1609,15 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
 
                         <td className="py-3 px-4 text-right">
                           <div className="flex items-center justify-end gap-1.5">
+                            {/* Ver Carta Oficial y Credenciales */}
+                            <button
+                              onClick={() => handleOpenStudentLetterModal(student)}
+                              className="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl transition-colors"
+                              title="Ver carnet oficial y carta de bienvenida"
+                            >
+                              <FileText className="w-3.5 h-3.5 text-slate-600" />
+                            </button>
+
                             {/* Resend Welcome Email with Credentials */}
                             <button
                               onClick={() => handleResendStudentEmail(student)}
@@ -1550,7 +1672,7 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
                                 setTargetSlotId(student.assignedSlots?.[0] || 'none');
                               }}
                               className="px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-900 font-bold border border-amber-300 rounded-xl transition-colors flex items-center gap-1"
-                              title="Mover de nivel, unidad o profesor"
+                              title="Mover de nivel, unidad o teacher"
                             >
                               <ArrowRightLeft className="w-3.5 h-3.5" />
                               <span>Mover</span>
@@ -2070,7 +2192,7 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
         </div>
       )}
 
-      {/* 6. TAB CONTENT: TEACHER'S LOUNGE (SALA DE PROFESORES Y STAFF HUB) */}
+      {/* 6. TAB CONTENT: TEACHER'S LOUNGE (LOUNGE DE TEACHERS Y STAFF HUB) */}
       {activeTab === 'lounge' && (
         <div className="space-y-6 animate-fadeIn">
           <TeachersLounge
@@ -2463,7 +2585,7 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
         </div>
       )}
 
-      {/* MODAL: MOVER ALUMNO (NIVEL, UNIDAD, PROFESOR, ESTADO) */}
+      {/* MODAL: MOVER ALUMNO (NIVEL, UNIDAD, TEACHER, ESTADO) */}
       {movingStudent && (
         <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 space-y-5 shadow-2xl border border-slate-200">
@@ -2574,7 +2696,7 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
         </div>
       )}
 
-      {/* MODAL: EDITAR PROFESOR (HORARIOS, DÍAS, NIVELES - DINÁMICO) */}
+      {/* MODAL: EDITAR TEACHER (HORARIOS, DÍAS, NIVELES - DINÁMICO) */}
       {editingTeacher && (
         <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto animate-fadeIn">
           <form 
@@ -2743,7 +2865,7 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
                 </div>
               </div>
 
-              {/* ESTADO DEL PROFESOR & HONORARIOS */}
+              {/* ESTADO DEL TEACHER & HONORARIOS */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="font-bold text-slate-700 block mb-1">Estado en Plantilla:</label>
@@ -2792,7 +2914,7 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
         </div>
       )}
 
-      {/* MODAL: CONTRATAR / AGREGAR NUEVO PROFESOR A LA MANADA (THE FLOCK) */}
+      {/* MODAL: CONTRATAR / AGREGAR NUEVO TEACHER A LA MANADA (THE FLOCK) */}
       {isNewTeacherModalOpen && (
         <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
           <form 
@@ -2807,7 +2929,7 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
                     Contratar Mentor • Güakytopia's Flock
                   </h3>
                   <p className="text-[11px] text-slate-500">
-                    Suma un nuevo profesor a la manada y expide sus credenciales
+                    Suma un nuevo teacher a la manada y expide sus credenciales
                   </p>
                 </div>
               </div>
@@ -2946,7 +3068,7 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
                 />
                 <label htmlFor="send-teacher-welcome-checkbox" className="text-[11px] text-amber-950 font-medium cursor-pointer">
                   <strong className="block text-amber-900 font-bold">Enviar carta oficial "Welcome to Güakytopia's Flock!" por correo</strong>
-                  Genera una contraseña provisional y despacha las credenciales, enlace al portal y bienvenida oficial al buzón del profesor.
+                  Genera una contraseña provisional y despacha las credenciales, enlace al portal y bienvenida oficial al buzón del teacher.
                 </label>
               </div>
             </div>
@@ -3094,7 +3216,7 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
                     <div className="flex-1">
                       <strong className="block text-slate-900 font-bold">🔒 Mentor Exclusivo Dedicado</strong>
                       <span className="text-[11px] text-slate-500 block leading-tight mb-2">
-                        El alumno únicamente tomará clases con un profesor específico de la manada.
+                        El alumno únicamente tomará clases con un teacher específico de la manada.
                       </span>
                       {newStudentMentorshipMode === 'exclusive' && (
                         <select
@@ -3149,7 +3271,7 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
         </div>
       )}
 
-      {/* MODAL: ASIGNAR PROFESOR A UN SLOT DE HORARIO */}
+      {/* MODAL: ASIGNAR TEACHER A UN SLOT DE HORARIO */}
       {selectedSlotForTeacher && (
         <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-slate-200">
@@ -3843,12 +3965,12 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
                 </div>
               </div>
 
-              {/* 5. PROFESOR, NIVEL & UNIDAD ACORDADA */}
+              {/* 5. TEACHER, NIVEL & UNIDAD ACORDADA */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                {/* Profesor */}
+                {/* Teacher */}
                 <div>
                   <label className="font-bold text-slate-800 block mb-1">
-                    Profesor Asignado:
+                    Teacher Asignado:
                   </label>
                   <select
                     value={assignTeacherId}
@@ -4024,6 +4146,135 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
             >
               Cerrar
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: CARTA OFICIAL Y CREDENCIALES (THE FLOCK & CAMPUS) */}
+      {activeCredentialsModal && (
+        <div className="fixed inset-0 z-50 bg-slate-950/75 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto animate-fadeIn">
+          <div className="bg-white rounded-3xl max-w-xl w-full p-6 sm:p-7 space-y-4 shadow-2xl border border-slate-200 my-auto animate-scaleUp">
+            {/* Header */}
+            <div className="flex items-start justify-between border-b border-slate-100 pb-3">
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 rounded-2xl bg-amber-500/10 border border-amber-300 flex items-center justify-center text-xl shrink-0">
+                  {activeCredentialsModal.role === 'teacher' ? '🪶' : '🎓'}
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-400 text-amber-950">
+                      {activeCredentialsModal.role === 'teacher' ? 'Credenciales de The Flock' : 'Carnet de Campus'}
+                    </span>
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                      activeCredentialsModal.mode === 'gmail_api'
+                        ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                        : 'bg-blue-100 text-blue-800 border border-blue-200'
+                    }`}>
+                      {activeCredentialsModal.mode === 'gmail_api' ? '✓ Enviado vía Gmail API' : '✉️ Listo para Despacho'}
+                    </span>
+                  </div>
+                  <h3 className="font-black text-slate-900 text-base mt-0.5">
+                    {activeCredentialsModal.recipientName}
+                  </h3>
+                  <p className="text-xs text-slate-500">{activeCredentialsModal.recipientEmail}</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setActiveCredentialsModal(null)}
+                className="text-slate-400 hover:text-slate-700 p-1"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Status Info */}
+            <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-2xl flex items-center justify-between text-xs text-emerald-950">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                <span>
+                  <strong>100% Guardado en Base de Datos</strong> (Firestore Cloud & Sincronizado en Vivo).
+                </span>
+              </div>
+              <span className="text-[10px] bg-emerald-200/80 px-2 py-0.5 rounded font-bold text-emerald-900">
+                Sincronizado
+              </span>
+            </div>
+
+            {/* Temporary password box */}
+            <div className="bg-amber-50 border border-amber-200 rounded-2xl p-3.5 flex items-center justify-between">
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-amber-800 block">
+                  Contraseña Provisional Generada
+                </span>
+                <span className="text-base font-mono font-black text-amber-950 select-all">
+                  {activeCredentialsModal.temporaryPassword}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  navigator.clipboard.writeText(activeCredentialsModal.temporaryPassword);
+                  setApprovalNotice(`¡Contraseña ${activeCredentialsModal.temporaryPassword} copiada al portapapeles!`);
+                  setTimeout(() => setApprovalNotice(null), 3000);
+                }}
+                className="px-3 py-1.5 bg-amber-400 hover:bg-amber-300 text-slate-950 font-black rounded-xl text-xs flex items-center gap-1 shadow-xs transition-colors"
+              >
+                <Copy className="w-3.5 h-3.5" />
+                <span>Copiar Clave</span>
+              </button>
+            </div>
+
+            {/* Email Letter Preview */}
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="text-xs font-bold text-slate-700">
+                  Carta Oficial Despachada / Texto del Correo:
+                </label>
+                <span className="text-[11px] text-slate-400 truncate max-w-[280px]">
+                  {activeCredentialsModal.subject}
+                </span>
+              </div>
+              <div className="bg-slate-900 text-amber-100/90 text-xs p-3.5 rounded-2xl max-h-52 overflow-y-auto whitespace-pre-wrap font-mono leading-relaxed border border-slate-800 select-all">
+                {activeCredentialsModal.bodyText}
+              </div>
+            </div>
+
+            {/* Action buttons */}
+            <div className="space-y-2 pt-2 border-t border-slate-100">
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigator.clipboard.writeText(activeCredentialsModal.bodyText);
+                    setApprovalNotice('¡Carta oficial copiada al portapapeles!');
+                    setTimeout(() => setApprovalNotice(null), 3000);
+                  }}
+                  className="py-2.5 px-3 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold rounded-xl text-xs border border-slate-300 transition-colors flex items-center justify-center gap-1.5"
+                >
+                  <Copy className="w-3.5 h-3.5 text-slate-600" />
+                  <span>Copiar Carta</span>
+                </button>
+
+                <a
+                  href={activeCredentialsModal.gmailWebUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="py-2.5 px-3 bg-red-600 hover:bg-red-500 text-white font-black rounded-xl text-xs transition-colors flex items-center justify-center gap-1.5 shadow-sm"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                  <span>Abrir en Gmail</span>
+                </a>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setActiveCredentialsModal(null)}
+                className="w-full py-2 bg-slate-900 hover:bg-slate-800 text-amber-300 font-black rounded-xl text-xs transition-colors"
+              >
+                Entendido • Continuar en Rectoría
+              </button>
+            </div>
           </div>
         </div>
       )}

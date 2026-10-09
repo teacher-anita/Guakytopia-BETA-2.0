@@ -13,6 +13,7 @@ export interface OwlCultureCorner {
 export interface PathwaySession {
   sessionCode: 'A' | 'B' | 'C';
   sessionName: string;
+  description?: string;
   itemsRange: string;
   items: {
     number: number;
@@ -36,6 +37,8 @@ export interface PathwayUnit {
   unitNumber: number;
   title: string;
   bookTitle: string;
+  studentBookCode?: string; // Standard format: SG01-SB-U01
+  workbookCode?: string;    // Standard format: SG01-WB-U01
   sbPages: string;
   wbPages: string;
   grammarFocus: string;
@@ -114,14 +117,18 @@ export const PATHWAY_LEVELS: PathwayLevel[] = [
         unitNumber: 1,
         title: 'Good Morning!',
         bookTitle: 'SuperGoal 1',
+        studentBookCode: 'SG01-SB-U01',
+        workbookCode: 'SG01-WB-U01',
         sbPages: 'Pages 2 to 9',
         wbPages: 'Pages 89 to 92 (Integrated at the back of the book)',
         grammarFocus: 'Verb Be (Singular & Plural) • Possessive Adjectives (my, your, his, her)',
         vocabularyTheme: 'Greetings, Farewells, Courtesy Titles (Mr., Mrs., Miss, Ms.), School Supplies',
         tipCokito: 'Never say "Good night" when arriving at a party! Use "Good evening" to say hello at night, and save "Good night" strictly for going to bed or leaving.',
         googleFormUrl: 'https://docs.google.com/forms/d/e/1FAIpQLSc-unit1-sg1/viewform',
-        studentBookPdfUrl: 'https://drive.google.com/file/d/17Oqq95rEd2Qy9fbltoHA_86jYBOoyitE/view?usp=drive_link',
-        workbookPdfUrl: 'https://drive.google.com/file/d/13JNZQ1NpbLF-DodPPkAnHVaMaPqkImmw/view?usp=drive_link',
+        // Student Book: 13JNZQ1NpbLF-DodPPkAnHVaMaPqkImmw (SG01-SB-U01)
+        studentBookPdfUrl: 'https://drive.google.com/file/d/13JNZQ1NpbLF-DodPPkAnHVaMaPqkImmw/view?usp=drive_link',
+        // Workbook: 17Oqq95rEd2Qy9fbltoHA_86jYBOoyitE (SG01-WB-U01)
+        workbookPdfUrl: 'https://drive.google.com/file/d/17Oqq95rEd2Qy9fbltoHA_86jYBOoyitE/view?usp=drive_link',
         owlCulture: {
           owlTitle: 'Cyber Owl Trivia: Greetings Around the World',
           topic: 'Handshakes, Bows & The Anglo-Saxon Rule',
@@ -538,7 +545,115 @@ export const PATHWAY_LEVELS: PathwayLevel[] = [
     ]
   },
 
-  // 4. LEVEL VII: MegaGoal 1 (Intermediate B1+ • Module 3 Preview)
+  // 4. LEVEL IV: SuperGoal 4 (Module 2: Consolidación e Independencia - CEFR A2+/B1)
+  {
+    levelId: 'level_4',
+    levelNumber: 4,
+    levelName: 'Level IV • SuperGoal 4',
+    series: 'SuperGoal',
+    book: 'Super Goal 4 (Integrated Student Book & Workbook)',
+    module: 2,
+    moduleName: 'Consolidación e Independencia',
+    cefrEquiv: 'A2+/B1',
+    audience: 'all',
+    isIntegratedWorkbook: true,
+    bossFights: [
+      {
+        id: 'boss_m2_sg4_1',
+        afterUnit: 4,
+        title: 'EXPANSION Units 1–4: Milestone Exam',
+        badgeName: 'Independent Speaker 🎙️',
+        badgeIcon: '🚀',
+        description: 'Comprehensive review of Past Progressive, Simple Past, and life milestones.',
+        googleFormUrl: 'https://docs.google.com/forms/d/e/1FAIpQLSc-bossfight-sg4-1/viewform'
+      }
+    ],
+    units: [
+      {
+        unitNumber: 1,
+        title: 'There Was a Good Concert Last Night',
+        bookTitle: 'SuperGoal 4',
+        sbPages: 'Pages 2 to 9',
+        wbPages: 'Pages 89 to 92 (Integrated Workbook)',
+        grammarFocus: 'Simple Past of BE (Was / Were) • Past Time Expressions • Music & Entertainment',
+        vocabularyTheme: 'Concerts, festivals, musical genres, describing past events',
+        tipCokito: 'Remember: Use "was" for I/he/she/it and "were" for you/we/they. In questions, put Was/Were first: "Were you at the concert last night?"',
+        googleFormUrl: 'https://docs.google.com/forms/d/e/1FAIpQLSc-unit1-sg4/viewform',
+        studentBookPdfUrl: 'https://drive.google.com/drive/folders/1mJOxkclFXZ6cSRouNVXgt15j-Y4AVB9a?usp=drive_link',
+        workbookPdfUrl: 'https://drive.google.com/drive/folders/1mJOxkclFXZ6cSRouNVXgt15j-Y4AVB9a?usp=drive_link',
+        owlCulture: {
+          owlTitle: 'Cyber Owl Trivia: Music Festivals & Cultural Gatherings',
+          topic: 'How live music experiences differ across global cultures',
+          didYouKnow: 'Woodstock in 1969 had over 400,000 attendees and became a defining cultural moment for youth language in America!',
+          culturalStory: 'When talking about concerts in English, native speakers frequently say "The atmosphere was electric" or "They brought the house down".',
+          inOnAtRule: 'Prepositions with Events: Say "AT the concert", "AT the festival", but "ON stage" and "IN the crowd".',
+          externalLink: {
+            label: 'Exploring Global Music Culture',
+            url: 'https://www.bbc.co.uk/music'
+          }
+        },
+        sessions: [
+          {
+            sessionCode: 'A',
+            sessionName: 'Session A: Vocabulary & Was/Were Grammar',
+            description: 'Learn entertainment terminology and master affirmative, negative, and interrogative Was/Were structures.',
+            itemsRange: 'Items 1 & 2',
+            items: [
+              { number: 1, title: 'Listen and Discuss: At the Music Hall', description: 'Review event vocabulary and identify past time markers.' },
+              { number: 2, title: 'Grammar: Past Tense of BE (Was/Were)', description: 'Master singular vs plural subject agreement in the past tense.' }
+            ],
+            workbookPages: 'Pages 89–90'
+          },
+          {
+            sessionCode: 'B',
+            sessionName: 'Session B: Pronunciation & Interactive Speaking',
+            description: 'Practice the reduction of was/were in fast natural speech and roleplay an event review.',
+            itemsRange: 'Items 3 & 4',
+            items: [
+              { number: 3, title: 'Pronunciation: Was / Were rhythm', description: 'Distinguish stressed vs weak forms in natural speaking.' },
+              { number: 4, title: 'Pair Work: Did You Go?', description: 'Interview your partner about their weekend activities.' }
+            ]
+          },
+          {
+            sessionCode: 'C',
+            sessionName: 'Session C: Reading, Writing & Workbook Mission',
+            description: 'Read an article about the world’s biggest music festivals and complete analytical workbook pages.',
+            itemsRange: 'Items 5 & 6',
+            items: [
+              { number: 5, title: 'Reading: Festivals Around the World', description: 'Explore celebration traditions in New Orleans, Rio, and Edinburgh.' },
+              { number: 6, title: 'Writing & Workbook Assignment', description: 'Write a 1-paragraph review of an unforgettable event.' }
+            ],
+            workbookPages: 'Pages 91–92'
+          }
+        ],
+        quizQuestions: [
+          {
+            id: 1,
+            question: 'Complete the sentence: "The concert _____ amazing, but the tickets _____ very expensive."',
+            options: ['was / were', 'were / was', 'is / are', 'was / was'],
+            correctIndex: 0,
+            explanation: '"The concert" is singular (was) and "the tickets" is plural (were).'
+          },
+          {
+            id: 2,
+            question: 'Choose the correct question form: "_____ you at home yesterday afternoon?"',
+            options: ['Was', 'Were', 'Did', 'Are'],
+            correctIndex: 1,
+            explanation: 'With subject "you", the past tense of BE is "Were".'
+          },
+          {
+            id: 3,
+            question: 'Select the past time expression: "I visited my grandparents _____."',
+            options: ['last weekend', 'next month', 'tomorrow', 'now'],
+            correctIndex: 0,
+            explanation: '"Last weekend" is a past time expression used with simple past.'
+          }
+        ]
+      }
+    ]
+  },
+
+  // 5. LEVEL VII: MegaGoal 1 (Intermediate B1+ • Module 3 Preview)
   {
     levelId: 'level_7',
     levelNumber: 7,

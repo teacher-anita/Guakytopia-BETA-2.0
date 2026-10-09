@@ -286,8 +286,25 @@ export const Header: React.FC<HeaderProps> = ({
                   <Lock className="w-3.5 h-3.5 text-amber-500 shrink-0 ml-0.5" />
                 )}
               </button>
+
+              {/* 7. Library (Biblioteca oficial y repositorio de materiales) */}
+              <button
+                onClick={() => onTabChange('library')}
+                className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 ${
+                  activeTab === 'library'
+                    ? 'bg-white text-indigo-600 shadow-xs font-bold ring-1 ring-indigo-500/30'
+                    : 'hover:text-slate-900'
+                }`}
+                title="Academic Library • Libros, Audios y Workbooks"
+              >
+                <span className="text-sm">📚</span>
+                <span>Library</span>
+                {!isEnrolled && (
+                  <Lock className="w-3.5 h-3.5 text-amber-500 shrink-0 ml-0.5" />
+                )}
+              </button>
               
-              {/* 7. Lab (Con badge de 100 ejercicios) */}
+              {/* 8. Lab (Con badge de 100 ejercicios) */}
               <button
                 onClick={() => onTabChange('lab')}
                 className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 ${
@@ -431,7 +448,27 @@ export const Header: React.FC<HeaderProps> = ({
             <span className="text-[9px] leading-tight truncate w-full text-center mt-0.5">Classroom</span>
           </button>
 
-          {/* 7. Lab */}
+          {/* 7. Library */}
+          <button
+            onClick={() => onTabChange('library')}
+            className={`flex flex-col items-center justify-center py-1 px-1 rounded-xl transition-all flex-1 min-w-0 max-w-[54px] relative ${
+              activeTab === 'library'
+                ? 'text-indigo-600 font-bold bg-indigo-50 scale-102'
+                : 'text-slate-500 hover:text-slate-800'
+            }`}
+          >
+            <div className="relative">
+              <span className="text-base">📚</span>
+              {!isEnrolled && (
+                <span className="absolute -top-1 -right-2 w-3.5 h-3.5 bg-amber-500 rounded-full border border-white flex items-center justify-center">
+                  <Lock className="w-2 h-2 text-white" />
+                </span>
+              )}
+            </div>
+            <span className="text-[9px] leading-tight truncate w-full text-center mt-0.5">Library</span>
+          </button>
+
+          {/* 8. Lab */}
           <button
             onClick={() => onTabChange('lab')}
             className={`flex flex-col items-center justify-center py-1 px-1 rounded-xl transition-all flex-1 min-w-0 max-w-[54px] relative ${
