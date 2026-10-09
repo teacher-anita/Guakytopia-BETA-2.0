@@ -39,6 +39,7 @@ import {
 } from './services/db';
 import { ShieldCheck } from 'lucide-react';
 import { CyberOwlChatbot } from './components/CyberOwlChatbot';
+import { Analytics } from '@vercel/analytics/react';
 
 export default function App() {
   // Navigation & Theme State
@@ -666,6 +667,9 @@ export default function App() {
         studentName={currentStudent?.name}
         teacherWhatsAppUsername="CokitoVZLA"
       />
+
+      {/* Vercel Web Analytics */}
+      <Analytics />
 
     </div>
   );
