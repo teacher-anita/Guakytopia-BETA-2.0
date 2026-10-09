@@ -84,10 +84,12 @@ export default function App() {
   const [teachers, setTeachers] = useState<Teacher[]>(() => getLocalTeachers());
   const [slots, setSlots] = useState<ScheduleSlot[]>(() => getLocalSlots());
 
-  // Current active student selector (Persisted in localStorage so refreshing maintains the active student/ticket!)
+  // A remembered profile is only a convenience after student authentication, never proof of identity.
+  // Visitors always start as guests even if this browser previously selected Ana or another student.
   const [currentStudentId, setCurrentStudentId] = useState<string>(() => {
-    const saved = localStorage.getItem('cokito_active_student_id');
-    return saved || 'student_ana_sandoval';
+    const hasStudentSession = sessionStorage.getItem('cokito_student_auth') === 'true';
+    const saved = hasStudentSession ? localStorage.getItem('cokito_active_student_id') : null;
+    return saved || 'guest';
   });
 
   useEffect(() => {
