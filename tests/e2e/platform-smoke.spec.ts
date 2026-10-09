@@ -34,3 +34,19 @@ test('Language Practice Lab loads its exercise interface', async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'Güakytalkie • Communication & Speaking Lab' })).toBeVisible();
   await expect(page.getByText(/Güakytalkie • 100 High-Yield Practice Drills/)).toBeVisible();
 });
+
+test('Language Practice Lab supports feedback, retry, and moving to the next drill', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: /Lab/ }).click();
+
+  await page.getByRole('button', { name: /Good afternoon/ }).click();
+  await expect(page.getByText('Virtual Teacher Cokitö Explains:')).toBeVisible();
+  await expect(page.getByRole('button', { name: /Good afternoon/ })).toBeDisabled();
+
+  await page.getByRole('button', { name: 'Retry' }).click();
+  await expect(page.getByText('Virtual Teacher Cokitö Explains:')).toHaveCount(0);
+  await expect(page.getByRole('button', { name: /Good afternoon/ })).toBeEnabled();
+
+  await page.getByRole('button', { name: 'Next Drill' }).click();
+  await expect(page.getByText('It is 2:30 PM. You enter the classroom. What greeting should you use?')).toBeVisible();
+});
