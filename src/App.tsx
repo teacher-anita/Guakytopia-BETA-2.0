@@ -522,6 +522,7 @@ export default function App() {
         {/* TAB 6: LABORATORIO DE PRÁCTICA (Language Practice Lab • 100 Drills) */}
         {activeTab === 'lab' && (
           <LanguageLab
+            key={currentStudent?.id || 'guest'}
             currentStudent={currentStudent}
             activeRole={isTeacherAuthenticated ? 'teacher' : 'student'}
             user={user}
