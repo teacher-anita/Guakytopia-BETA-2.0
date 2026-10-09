@@ -1,0 +1,54 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --guaky-teal: #2EC4B6;
+    --cosmic-navy: #243447;
+    --warm-cream: #FFF9F0;
+    --guaky-yellow: #FFD166;
+    --flight-coral: #FF6B4A;
+    --sky-blue: #6EC6FF;
+  }
+
+  [data-theme="calm_mint"] {
+    --warm-cream: #F2F8F6;
+    --guaky-teal: #38A397;
+    --cosmic-navy: #1F3634;
+  }
+
+  [data-theme="soft_pastel"] {
+    --warm-cream: #FDF4F7;
+    --guaky-teal: #D05D84;
+    --cosmic-navy: #381E2C;
+  }
+
+  [data-theme="hyperfocus"] {
+    --warm-cream: #18232F;
+    --cosmic-navy: #F0F4F8;
+    --guaky-teal: #2EC4B6;
+  }
+
+  html, body {
+    overflow-x: hidden;
+    max-width: 100vw;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+.font-fredoka {
+  font-family: 'Fredoka', cursive, sans-serif;
+}
+
+.font-outfit {
+  font-family: 'Outfit', sans-serif;
+}
+
+/* Custom smooth horizontal touch scrolling */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

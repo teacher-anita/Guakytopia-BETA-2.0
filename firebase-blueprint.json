@@ -1,0 +1,67 @@
+{
+  "entities": {
+    "Student": {
+      "title": "Student",
+      "description": "Registered student in La Teacher Cokito academy",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "uid": { "type": "string" },
+        "name": { "type": "string" },
+        "lastName": { "type": "string" },
+        "cedula": { "type": "string" },
+        "email": { "type": "string" },
+        "phone": { "type": "string" },
+        "age": { "type": "number" },
+        "isKid": { "type": "boolean" },
+        "schoolOrProfession": { "type": "string" },
+        "learningGoal": { "type": "string" },
+        "avatar": { "type": "string" },
+        "plan": { "type": "string" },
+        "modality": { "type": "string" },
+        "groupSize": { "type": "string" },
+        "preferredTimeSlot": { "type": "string" },
+        "status": { "type": "string" },
+        "levelId": { "type": "string" },
+        "placementTestScore": { "type": "number" },
+        "placementTestDiagnosis": { "type": "string" },
+        "placementTestDate": { "type": "string" },
+        "registeredAt": { "type": "string" },
+        "currentUnit": { "type": "number" },
+        "completedHours": { "type": "number" },
+        "xp": { "type": "number" },
+        "streak": { "type": "number" },
+        "league": { "type": "string" },
+        "notes": { "type": "string" }
+      },
+      "required": ["id", "email", "name"]
+    },
+    "Slot": {
+      "title": "Schedule Slot",
+      "description": "Weekly teaching schedule block",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "day": { "type": "string" },
+        "startTime": { "type": "string" },
+        "endTime": { "type": "string" },
+        "status": { "type": "string" },
+        "studentId": { "type": "string" },
+        "levelId": { "type": "string" },
+        "meetLink": { "type": "string" },
+        "modality": { "type": "string" }
+      },
+      "required": ["id", "day", "startTime", "endTime", "status"]
+    }
+  },
+  "firestore": {
+    "/students/{studentId}": {
+      "schema": "Student",
+      "description": "Students registered in the academy"
+    },
+    "/slots/{slotId}": {
+      "schema": "Slot",
+      "description": "Schedule calendar slots"
+    }
+  }
+}

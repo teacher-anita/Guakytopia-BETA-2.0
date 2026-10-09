@@ -1,0 +1,8 @@
+{
+  "name": "Güakytopia 2.0",
+  "description": "Plataforma integral para profesores de inglés y alumnos: planes de estudio, agenda confidencial compartida en Google Calendar, materiales de Google Classroom, recordatorios por email y gamificación con retos diarios y clasificación.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
