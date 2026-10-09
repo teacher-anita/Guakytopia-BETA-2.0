@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   validate:
-    name: TypeScript and production build
+    name: TypeScript, production build and runtime smoke test
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -31,3 +31,35 @@ jobs:
         run: npm run lint
       - name: Production build
         run: npm run build
+      - name: Runtime smoke test (server and API validation)
+        run: |
+          npm run dev > /tmp/guakytopia-server.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          ready=0
+          for attempt in $(seq 1 30); do
+            if curl --silent --fail http://127.0.0.1:3000/ -o /tmp/guakytopia-home.html; then
+              ready=1
+              break
+            fi
+            if ! kill -0 "$server_pid" 2>/dev/null; then
+              cat /tmp/guakytopia-server.log
+              exit 1
+            fi
+            sleep 2
+          done
+          if [ "$ready" -ne 1 ]; then
+            cat /tmp/guakytopia-server.log
+            echo "Development server did not become ready in 60 seconds."
+            exit 1
+          fi
+          echo "PASS: development server served the application shell."
+          status=$(curl --silent --show-error -o /tmp/guakytopia-api-response.json -w "%{http_code}" -X POST http://127.0.0.1:3000/api/chat -H 'Content-Type: application/json' -d '{"messages":[]}')
+          if [ "$status" != "400" ]; then
+            cat /tmp/guakytopia-api-response.json
+            echo "Expected API validation to return HTTP 400; got $status."
+            cat /tmp/guakytopia-server.log
+            exit 1
+          fi
+          grep -q 'Se requiere un arreglo de mensajes' /tmp/guakytopia-api-response.json
+          echo "PASS: /api/chat rejects invalid input with HTTP 400."
