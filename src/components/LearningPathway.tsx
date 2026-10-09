@@ -64,6 +64,26 @@ export const LearningPathway: React.FC<LearningPathwayProps> = ({
     currentStudent?.levelId || 'level_1'
   );
 
+  // Level 1 language mode: English first, with an optional playful Spanglish bridge.
+  type LanguageMode = 'english-only' | 'spanglish';
+  const [languageMode, setLanguageMode] = useState<LanguageMode>(() => {
+    try {
+      return localStorage.getItem('cokito_language_mode') === 'spanglish' ? 'spanglish' : 'english-only';
+    } catch {
+      return 'english-only';
+    }
+  });
+  const isSpanglish = languageMode === 'spanglish';
+  const toggleLanguageMode = () => {
+    const nextMode: LanguageMode = isSpanglish ? 'english-only' : 'spanglish';
+    setLanguageMode(nextMode);
+    try {
+      localStorage.setItem('cokito_language_mode', nextMode);
+    } catch {
+      // Keep the mode usable if browser storage is unavailable.
+    }
+  };
+
   // Selected Unit for Quiz
   const [quizUnit, setQuizUnit] = useState<PathwayUnit | null>(null);
 
@@ -276,22 +296,32 @@ ${unit.owlCulture.culturalStory}
         </div>
       )}
 
-      {/* 1. ENGLISH ONLY ZONE IMMERSIVE BANNER */}
-      <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 rounded-2xl px-5 py-3 text-white flex items-center justify-between shadow-md">
-        <div className="flex items-center gap-2.5">
-          <span className="text-lg">🇬🇧 🇺🇸</span>
+      {/* 1. INTERACTIVE LANGUAGE MODE SWITCH */}
+      <div className={`rounded-2xl px-4 sm:px-5 py-3 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md transition-colors ${isSpanglish ? 'bg-gradient-to-r from-violet-600 via-fuchsia-600 to-orange-500' : 'bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700'}`}>
+        <div className="flex items-center gap-2.5 min-w-0">
+          <span className="text-xl shrink-0">{isSpanglish ? '🌈' : '🇬🇧 🇺🇸'}</span>
           <div>
             <strong className="text-xs font-black uppercase tracking-wider block">
-              English-Only Immersion Zone
+              {isSpanglish ? 'Spanglish Party • ¡Mix It Up!' : 'English Only • Immersion Mode'}
             </strong>
-            <span className="text-[11px] text-emerald-100">
-              Welcome to the Cokitö Classroom! Speak, read, think, and dream in English.
+            <span className="text-[11px] text-white/90 block mt-0.5">
+              {isSpanglish
+                ? 'English leads the way, with Spanish hints when you need a boost. ¡You got this!'
+                : 'Welcome to the Cokitö Classroom! Speak, read, think, and dream in English.'}
             </span>
           </div>
         </div>
-        <span className="text-[10px] font-bold uppercase tracking-wider bg-white/20 px-2.5 py-1 rounded-full border border-white/30 hidden sm:inline-block">
-          Active Immersion
-        </span>
+        <button
+          type="button"
+          onClick={toggleLanguageMode}
+          aria-pressed={isSpanglish}
+          aria-label={`Switch to ${isSpanglish ? 'English Only Immersion Mode' : 'Spanglish Party mode'}`}
+          className={`inline-flex items-center justify-center gap-2 self-start sm:self-auto shrink-0 px-4 py-2 rounded-xl text-xs font-black border transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800 ${isSpanglish ? 'bg-white text-violet-700 border-white hover:bg-violet-50' : 'bg-white/15 text-white border-white/50 hover:bg-white/25'}`}
+        >
+          <Globe2 className="w-4 h-4" />
+          {isSpanglish ? 'Switch to English Only' : 'Try Spanglish Party'}
+          <ArrowRight className="w-3.5 h-3.5" />
+        </button>
       </div>
 
       {/* 2. CLASSROOM HERO BANNER */}
@@ -300,7 +330,7 @@ ${unit.owlCulture.culturalStory}
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <span className="text-xs font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 px-3 py-0.5 rounded-full border border-emerald-400/30">
-                {isTeacher ? 'Teacher Mode • La Teacher Cokitö' : 'Official Enrolled Student'}
+                {isTeacher ? 'Teacher Mode • La Teacher Cokitö' : (isSpanglish ? 'Student Mode • ¡Let’s Learn!' : 'Official Enrolled Student')}
               </span>
               <span className="text-xs text-blue-200">
                 {activeLevel.book}
@@ -310,18 +340,18 @@ ${unit.owlCulture.culturalStory}
               {isTeacher ? 'Master Curriculum & Classroom Hub' : `Learning Pathway: ${currentStudent?.name || 'Student'}`}
             </h2>
             <p className="text-xs sm:text-sm text-blue-100 max-w-2xl leading-relaxed">
-              Every unit follows our 3-Session chunking: **Session A** (Vocabulary & Grammar), **Session B** (Pronunciation & Real Talk), and **Session C** (Reading, Writing & Workbook). Complete sessions and quizzes to earn XP!
+              {isSpanglish ? 'Each unit has 3 sessions: A (Vocabulary & Grammar), B (Pronunciation & Real Talk), and C (Reading, Writing & Workbook). Complete your sessions and quizzes to earn XP. ¡Let’s go!' : 'Every unit follows our 3-session structure: Session A (Vocabulary & Grammar), Session B (Pronunciation & Real Talk), and Session C (Reading, Writing & Workbook). Complete sessions and quizzes to earn XP!'}
             </p>
           </div>
 
           {/* Quick Meet / Class info */}
           <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20 space-y-3 min-w-[240px]">
             <div className="flex items-center justify-between text-xs">
-              <span className="text-blue-200">Next Live Class:</span>
+              <span className="text-blue-200">{isSpanglish ? 'Next Live Class / Próxima clase:' : 'Next Live Class:'}</span>
               <span className="font-bold text-amber-300">Live on Meet</span>
             </div>
             <div className="text-xs font-semibold">
-              <span className="block text-white">Teacher: La Teacher Cokitö</span>
+              <span className="block text-white">{isSpanglish ? 'Teacher / Profe: La Teacher Cokitö' : 'Teacher: La Teacher Cokitö'}</span>
               <span className="text-blue-200 text-[11px] block mt-0.5">
                 {currentStudent?.assignedSlots && currentStudent.assignedSlots.length > 0
                   ? currentStudent.assignedSlots.join(', ')
@@ -417,16 +447,16 @@ ${unit.owlCulture.culturalStory}
 
                   <div className="flex items-center gap-1.5 bg-amber-50 border border-amber-300 px-3.5 py-1.5 rounded-full text-xs font-bold text-amber-900 self-start sm:self-auto shadow-2xs">
                     <Lock className="w-3.5 h-3.5 text-amber-600 shrink-0" />
-                    <span>Bloqueado • Requiere aprobar Quiz de Unit {prevUnitNum}</span>
+                    <span>{isSpanglish ? `Locked / Bloqueado • Pass Unit ${prevUnitNum} Quiz` : `Locked • Pass Unit ${prevUnitNum} Quiz to unlock`}</span>
                   </div>
                 </div>
 
                 <div className="p-6 bg-slate-50/50 space-y-2 text-xs text-slate-600">
                   <p>
-                    🔒 <strong>Requisito Pedagógico:</strong> Para acceder a las lecciones de la <strong>Unidad {unit.unitNumber}</strong>, primero debes completar la <strong>Unidad {prevUnitNum}</strong> y aprobar su evaluación oficial con al menos 70% de aciertos.
+                    🔒 <strong>{isSpanglish ? 'Learning checkpoint / Requisito:' : 'Unlock requirement:'}</strong> {isSpanglish ? <>To access Unit {unit.unitNumber}, primero completa Unit {prevUnitNum} and pass its official quiz with at least 70%.</> : <>Complete Unit {prevUnitNum} and pass its official quiz with at least 70% to unlock Unit {unit.unitNumber}.</>}
                   </p>
                   <p className="text-[11px] text-slate-500">
-                    Regresa a la Unidad {prevUnitNum} y haz clic en el botón verde <strong>"Unit Quiz (+50 XP)"</strong> para presentar tu examen interactivo.
+                    {isSpanglish ? <>Go back to Unit {prevUnitNum} y haz clic en <strong>"Unit Quiz (+50 XP)"</strong> to unlock your next mission.</> : <>Go back to Unit {prevUnitNum} and select the green <strong>"Unit Quiz (+50 XP)"</strong> button to take your interactive quiz.</>}
                   </p>
                 </div>
               </div>
@@ -454,7 +484,7 @@ ${unit.owlCulture.culturalStory}
                       </strong>
                     </div>
                     <p className="text-xs text-slate-900 font-medium max-w-2xl leading-snug">
-                      Descarga tu <strong>Student Book</strong> ({unit.sbPages}) y las hojas oficiales de práctica del <strong>Workbook</strong> ({unit.wbPages}) directamente en PDF.
+                      {isSpanglish ? <>Download your <strong>Student Book</strong> ({unit.sbPages}) y las hojas de práctica del <strong>Workbook</strong> ({unit.wbPages}) en PDF.</> : <>Download your <strong>Student Book</strong> ({unit.sbPages}) and official <strong>Workbook</strong> practice pages ({unit.wbPages}) as PDFs.</>}
                     </p>
                   </div>
                 </div>
@@ -525,7 +555,7 @@ ${unit.owlCulture.culturalStory}
                       className="flex items-center gap-1.5 px-4 py-2 bg-amber-400 hover:bg-amber-300 text-slate-950 rounded-xl text-xs font-black shadow-md transition-all active:scale-95"
                     >
                       <Sparkles className="w-3.5 h-3.5 text-blue-900" />
-                      <span>Abrir Aula Interactiva Unidad 1</span>
+                      <span>{isSpanglish ? 'Open Unit 1 Interactive Classroom • ¡Let’s go!' : 'Open Unit 1 Interactive Classroom'}</span>
                     </button>
                   )}
                   <button
