@@ -35,6 +35,7 @@ interface StudentProfileModalProps {
   onCredentialsLogin?: (emailOrUser: string, pass: string) => boolean;
   onLogout: () => void;
   isLoggingIn?: boolean;
+  isStudentAuthenticated?: boolean;
   onOpenCoupon: () => void;
   onOpenPlacementTest: () => void;
   onOpenRegister?: () => void;
@@ -52,6 +53,7 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({
   onCredentialsLogin,
   onLogout,
   isLoggingIn = false,
+  isStudentAuthenticated = false,
   onOpenCoupon,
   onOpenPlacementTest,
   onOpenRegister,
@@ -68,8 +70,8 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({
   if (!isOpen) return null;
   const isKids = audienceTheme === 'kids';
 
-  // An account is considered active if a Firebase user is logged in OR a real student profile is active
-  const isLoggedIn = Boolean(user || (student && student.id !== 'guest'));
+  // A selected profile is not proof of authentication. Require a real signed-in session.
+  const isLoggedIn = Boolean(user || isStudentAuthenticated);
   const displayName = student?.name 
     ? `${student.name} ${student.lastName || ''}`.trim()
     : user?.displayName || 'Alumno Cokitö';
@@ -93,7 +95,7 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({
         setPassword('');
         setCredentialsError(null);
       } else {
-        setCredentialsError('No se encontró una cuenta con esos datos o la contraseña es incorrecta. Si aún no te has registrado, puedes inscribirte abajo.');
+        setCredentialsError('No se encontró una cuenta con esos datos o la contraseña es incorrecta. Si tu cuenta aún no tiene contraseña configurada, entra con Google o contacta a la academia para recuperar el acceso.');
       }
     }
   };
@@ -167,7 +169,7 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({
                 <div className="p-3 bg-orange-50 border border-orange-200/80 rounded-2xl">
                   <div className="flex items-center justify-center gap-1 text-orange-600 font-black text-base sm:text-lg">
                     <Flame className="w-4 h-4 fill-orange-500" />
-                    <span>{student?.streak || 1}</span>
+                    <span>{student?.streak ?? 0}</span>
                   </div>
                   <p className="text-[10px] font-bold text-orange-800 uppercase tracking-wider mt-0.5">Días Racha</p>
                 </div>
@@ -175,7 +177,7 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({
                 <div className="p-3 bg-emerald-50 border border-emerald-200/80 rounded-2xl">
                   <div className="flex items-center justify-center gap-1 text-emerald-600 font-black text-base sm:text-lg">
                     <Zap className="w-4 h-4 fill-emerald-500" />
-                    <span>{student?.xp || 200}</span>
+                    <span>{student?.xp ?? 0}</span>
                   </div>
                   <p className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider mt-0.5">Puntos XP</p>
                 </div>
@@ -183,7 +185,7 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({
                 <div className="p-3 bg-purple-50 border border-purple-200/80 rounded-2xl">
                   <div className="flex items-center justify-center gap-1 text-purple-600 font-black text-base sm:text-lg">
                     <Award className="w-4 h-4" />
-                    <span>{student?.league || 'Bronce'}</span>
+                    <span>{student?.league || 'Sin liga'}</span>
                   </div>
                   <p className="text-[10px] font-bold text-purple-800 uppercase tracking-wider mt-0.5">Liga</p>
                 </div>
