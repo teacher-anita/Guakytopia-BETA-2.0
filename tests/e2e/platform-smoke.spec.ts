@@ -148,6 +148,19 @@ test('Language Practice Lab supports feedback, retry, and moving to the next dri
   await expect(page.getByText('It is 2:30 PM. You enter the classroom. What greeting should you use?')).toBeVisible();
 });
 
+test('Daily quest marks a correct answer complete and prevents a second attempt', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: /Arena/ }).click();
+
+  await page.getByRole('button', { name: 'Resolver Misión' }).first().click();
+  await page.getByRole('button', { name: 'Pretty good, thanks! How about you?' }).click();
+  await page.getByRole('button', { name: 'Comprobar' }).click();
+
+  await expect(page.getByText('¡Respuesta Correcta! 🎉')).toBeVisible();
+  await page.getByRole('button', { name: 'Continuar' }).click();
+  await expect(page.getByRole('button', { name: '¡Completada!' }).first()).toBeDisabled();
+});
+
 test('Arena offers English mini-games and displays five rechargeable lives', async ({ page }) => {
   await page.goto('/');
   await page.getByRole('button', { name: /Arena/ }).click();
