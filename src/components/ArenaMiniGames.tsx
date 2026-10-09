@@ -11,6 +11,21 @@ interface ArenaMiniGamesProps {
 
 type GameId = 'wordsearch' | 'scrabble' | 'hangman';
 type LifeState = { lives: number; updatedAt: number };
+type LearningSignal = { game: GameId; word: string; correct: boolean; unit: string; at: number };
+const MAX_LEARNING_SIGNALS = 200;
+
+function loadLearningSignals(key: string): LearningSignal[] {
+  try {
+    const saved = localStorage.getItem(key);
+    if (!saved) return [];
+    const parsed = JSON.parse(saved);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter((item): item is LearningSignal =>
+      item && typeof item.word === 'string' && typeof item.game === 'string' &&
+      typeof item.correct === 'boolean' && typeof item.at === 'number'
+    ).slice(-MAX_LEARNING_SIGNALS);
+  } catch { return []; }
+}
 
 const MAX_LIVES = 5;
 const REFILL_MS = 30 * 60 * 1000;
@@ -67,6 +82,8 @@ export const ArenaMiniGames: React.FC<ArenaMiniGamesProps> = ({ currentStudent, 
   const [lifeState, setLifeState] = useState<LifeState>(() => loadLifeState(storageKey));
   const [cloudReadyFor, setCloudReadyFor] = useState<string | null>(null);
   const [clockNow, setClockNow] = useState(() => Date.now());
+  const signalsKey = `guakytopia_cokito_learning_signals_${currentStudent?.id || 'guest'}`;
+  const [learningSignals, setLearningSignals] = useState<LearningSignal[]>(() => loadLearningSignals(signalsKey));
   const [activeGame, setActiveGame] = useState<GameId>('wordsearch');
   const [message, setMessage] = useState('');
   const [round, setRound] = useState(0);
@@ -82,13 +99,14 @@ export const ArenaMiniGames: React.FC<ArenaMiniGamesProps> = ({ currentStudent, 
 
   useEffect(() => {
     setLifeState(loadLifeState(storageKey));
+    setLearningSignals(loadLearningSignals(signalsKey));
     setMessage('');
     setSelectedLetters([]);
     setScrabbleInput('');
     setHangmanGuesses([]);
     setFinished(false);
     setRound(0);
-  }, [storageKey]);
+  }, [storageKey, signalsKey]);
 
   useEffect(() => {
     const timer = window.setInterval(() => {
@@ -125,6 +143,10 @@ export const ArenaMiniGames: React.FC<ArenaMiniGamesProps> = ({ currentStudent, 
   }, [storageKey, lifeState]);
 
   useEffect(() => {
+    try { localStorage.setItem(signalsKey, JSON.stringify(learningSignals.slice(-MAX_LEARNING_SIGNALS))); } catch {}
+  }, [signalsKey, learningSignals]);
+
+  useEffect(() => {
     const studentId = currentStudent?.id;
     if (!canSyncCloud || !studentId || studentId === 'guest' || cloudReadyFor !== studentId) return;
     void saveArenaLives(studentId, lifeState);
@@ -150,14 +172,26 @@ export const ArenaMiniGames: React.FC<ArenaMiniGamesProps> = ({ currentStudent, 
     });
   };
 
+  const recordLearningSignal = (correct: boolean, targetWord = word.word) => {
+    setLearningSignals(previous => [...previous, {
+      game: activeGame,
+      word: targetWord,
+      correct,
+      unit: 'level_1_unit_1',
+      at: Date.now()
+    }].slice(-MAX_LEARNING_SIGNALS));
+  };
+
   const winRound = (xp = 10) => {
     if (finished) return;
+    recordLearningSignal(true, activeGame === 'hangman' ? hangman.word : word.word);
     setFinished(true);
     setMessage(`Brilliant! +${xp} XP. You did it! 🎉`);
     if (currentStudent && currentStudent.id !== 'guest') onAwardXp(currentStudent.id, xp);
   };
 
   const failAttempt = (text: string) => {
+    recordLearningSignal(false, activeGame === 'hangman' ? hangman.word : word.word);
     consumeLife();
     setMessage(text);
   };
@@ -196,6 +230,7 @@ export const ArenaMiniGames: React.FC<ArenaMiniGamesProps> = ({ currentStudent, 
     const guesses = [...hangmanGuesses, letter];
     setHangmanGuesses(guesses);
     if (!hangman.word.includes(letter)) {
+      recordLearningSignal(false, hangman.word);
       consumeLife();
       setMessage('Miss! One life used.');
       return;
@@ -206,6 +241,12 @@ export const ArenaMiniGames: React.FC<ArenaMiniGamesProps> = ({ currentStudent, 
   };
 
   const isOutOfLives = lifeState.lives <= 0;
+  const correctSignals = learningSignals.filter(signal => signal.correct).length;
+  const missedSignals = learningSignals.filter(signal => !signal.correct).length;
+  const difficultWords = Object.entries(learningSignals.reduce<Record<string, number>>((counts, signal) => {
+    if (!signal.correct) counts[signal.word] = (counts[signal.word] || 0) + 1;
+    return counts;
+  }, {})).sort((a, b) => b[1] - a[1]);
   const gameButton = (id: GameId, title: string, subtitle: string, emoji: string) => (
     <button key={id} type="button" onClick={() => chooseGame(id)} className={`rounded-2xl border p-3 text-left transition-all ${activeGame === id ? 'border-indigo-500 bg-indigo-50 ring-2 ring-indigo-100' : 'border-slate-200 bg-white hover:border-indigo-300'}`}>
       <span className="text-xl">{emoji}</span>
@@ -306,6 +347,16 @@ export const ArenaMiniGames: React.FC<ArenaMiniGamesProps> = ({ currentStudent, 
           {finished && <button type="button" onClick={nextRound} className="mt-4 w-full rounded-xl bg-emerald-600 px-4 py-3 text-sm font-black text-white"><CheckCircle2 className="mr-1 inline h-4 w-4" />Play next challenge</button>}
         </div>
       )}
+      <section aria-label="Cokitö learning signals" className="rounded-2xl border border-violet-100 bg-white p-4 sm:p-5">
+        <div className="flex items-center gap-2"><Sparkles className="h-5 w-5 text-violet-600" /><h4 className="font-black text-slate-900">Cokitö’s learning signals</h4></div>
+        <p className="mt-1 text-xs text-slate-600">A first step toward evidence-based feedback: recent Arena answers are recorded by game and curriculum unit.</p>
+        <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
+          <div className="rounded-xl bg-emerald-50 p-3"><span className="block text-xs text-emerald-700">Correct answers</span><strong className="text-xl text-emerald-900">{correctSignals}</strong></div>
+          <div className="rounded-xl bg-amber-50 p-3"><span className="block text-xs text-amber-700">Incorrect attempts</span><strong className="text-xl text-amber-900">{missedSignals}</strong></div>
+          <div className="col-span-2 rounded-xl bg-violet-50 p-3 sm:col-span-1"><span className="block text-xs text-violet-700">Words to review</span><strong className="text-sm text-violet-900">{difficultWords[0]?.[0] || 'Keep exploring!'}</strong>{difficultWords[0] && <span className="block text-[11px] text-violet-700">{difficultWords[0][1]} missed attempt(s)</span>}</div>
+        </div>
+        <p className="mt-3 text-[11px] leading-relaxed text-slate-500">Privacy note: these learning signals are currently stored only in this browser, separately for each local profile. They are not yet sent to a central Cokitö analytics service or shared across devices.</p>
+      </section>
       <p className="text-[11px] leading-relaxed text-slate-500">The games follow the current curriculum vocabulary pack (Level 1 · Unit 1 for now). Guests can play too. XP rewards are added only to an authenticated student account. Google-authenticated students sync lives and recharge time across devices; Guest and other local-only sessions keep lives on this browser.</p>
     </section>
   );
