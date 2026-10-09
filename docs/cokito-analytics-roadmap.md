@@ -52,3 +52,46 @@ A focused review found that the current student selector is browser-persisted an
 - Do not place secrets, credentials, or personal student data in this document, source control, or logs.
 - Do not change Firebase security rules, authentication, migrations, or deployment settings as part of an unrelated feature.
 - Verify build/type checks and review the diff before proposing a merge.
+
+
+## Approved 15-point optimization program (2026-10-09)
+
+The owner authorized all 15 optimization areas for this development branch only. No production deployment, merge, real-data mutation, or external-service change is authorized. Work autonomously on reversible code/documentation improvements, run validation, and stop before high-risk changes or when external credentials/environment access are required.
+
+### Workstream status and sequencing
+
+| # | Workstream | Current understanding | Next safe action |
+|---|---|---|---|
+| 1 | Security and student privacy | **Critical blocker:** Firestore rules allow public student reads/creates and effectively public slot writes. Student profile shape includes a password field. | Map all read/write paths and identity ownership first. Do not deploy/tighten rules blindly or migrate credentials without a reviewed migration plan. |
+| 2 | Cokitö pedagogical intelligence | Schema and opt-in academic-event writer exist. Arena currently records up to 200 local learning signals per browser profile; it is not central analytics. | Keep activity, progress, and mastery distinct; unify event contracts only after identity authorization is trustworthy. |
+| 3 | Curriculum progression | Arena has a verified Level 1 Unit 1 vocabulary pack; later-unit banks are not yet validated in the available source. Lab has 100 Unit 1 exercises. | Reuse only verified curriculum content; do not invent later-unit vocabulary. Map authoritative curriculum sources before adding banks. |
+| 4 | Mobile/tablet UX | Arena received responsive layout changes and a 320px viewport smoke test. Other screens still need systematic coverage. | Add viewport and touch-usage coverage module by module; fix measured issues. |
+| 5 | Authentication and roles | Browser-selected profiles and client-side staff gates are not identity proof. Student credentials are not yet safely linked to Firebase UID ownership. | Design UID linking and trusted staff-role authorization; do not force account migration or change login behavior without a tested plan. |
+| 6 | Central learning history | Academic-event schema/writer are present but logging is disabled by default; Arena signals remain local. | Keep the feature flag off until database targeting and Firestore authorization are verified. |
+| 7 | Teacher progress dashboard | Existing teacher dashboards display roster/classroom information; Cokitö evidence-based insights are not yet fully connected. | Build only on authorized, validated event data; display evidence and uncertainty, not unsupported mastery claims. |
+| 8 | Games, XP and rewards | Arena includes three mini-games and XP/lives. Daily quest state/reward persistence requires further review. | Audit repeat reward paths and progression without resetting learner state. |
+| 9 | Speech/audio | Language Lab uses browser/media audio paths; speech quality varies by browser/device. | Improve graceful fallback and controls; any paid/neural voice service requires separate owner credentials and approval. |
+| 10 | Schedule/calendar | Slots are stored through local/cloud data paths; public-write rule makes authorization review urgent. | Review booking, assignment, capacity and concurrency paths before changing persistence or rules. |
+| 11 | Performance | Vite/React build and CI checks are available. No current performance baseline is recorded here. | Measure bundle/build and key render paths before optimizing. |
+| 12 | Data integrity/sync | LocalStorage and Firestore coexist; cloud student/slot persistence and Arena lives sync need consistent ownership rules. | Add idempotency/conflict tests and avoid destructive sync or migration. |
+| 13 | Automated tests | GitHub Actions checks TypeScript, production build, Playwright E2E and a runtime smoke test. Latest Arena learning-signal workflow succeeded. | Expand negative authorization and cross-profile isolation tests as safe test seams become available. |
+| 14 | Accessibility/age adaptation | Kids/adult theme variants exist; full accessibility audit is not yet recorded. | Test labels, keyboard flow, contrast, zoom and touch targets across key screens. |
+| 15 | Maintenance/documentation | Existing technical plans cover account migration, event schema and auth authorization. | Keep these docs aligned with verified implementation and test results. |
+
+### Arena learning-signal implementation note
+
+The Arena now records local signals for correct round completion and incorrect attempts, tagged with game, word, a Unit 1 curriculum key, and timestamp; it shows a small local summary. A Playwright test verifies a Scrabble incorrect attempt is stored. This is a **local prototype**, not the central academic-event pipeline. Do not describe it as cross-device analytics, and do not enable Firestore event writes until UID ownership and database-specific rules are reviewed.
+
+### Non-negotiable stop conditions
+
+- Do not deploy or change Firebase rules, production config, OAuth scopes, paid services, or external integrations.
+- Do not create, merge, delete, or bulk-link student/staff accounts or mutate real student records.
+- Do not enable central academic-event logging while student ownership and staff authorization remain unresolved.
+- Do not invent curriculum content for unverified units or report mastery from XP/attempt counts alone.
+- If a change could lock out legitimate users, expose student information, or irreversibly alter data, document the finding and stop for owner review.
+
+### Validation record
+
+- Arena curriculum/mobile smoke workflow: successful at commit `db751b7666bd048ab698132e2a1385e8deb8ee28`.
+- Arena learning-signal E2E workflow: successful at commit `5ed83d8de4dba6c02b62cc1ea50bc20d8b8ee141`.
+- These are historical workflow results for their respective commits, not proof that all 15 workstreams are complete.
