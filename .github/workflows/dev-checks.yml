@@ -17,7 +17,7 @@ jobs:
   validate:
     name: TypeScript, production build and runtime smoke test
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 25
     steps:
       - name: Check out development branch
         uses: actions/checkout@v4
@@ -27,10 +27,14 @@ jobs:
           node-version: 22
       - name: Install dependencies
         run: npm install --no-audit --no-fund
+      - name: Install Chromium for browser tests
+        run: npx playwright install --with-deps chromium
       - name: TypeScript check
         run: npm run lint
       - name: Production build
         run: npm run build
+      - name: Browser end-to-end smoke tests
+        run: npm run test:e2e
       - name: Runtime smoke test (server and API validation)
         run: |
           npm run dev > /tmp/guakytopia-server.log 2>&1 &
