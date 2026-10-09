@@ -26,6 +26,7 @@ import {
   Download
 } from 'lucide-react';
 import { Student, AudienceTheme } from '../types';
+import { User } from 'firebase/auth';
 import { PATHWAY_LEVELS, PathwayLevel, PathwayUnit, PathwaySession } from '../data/pathwayData';
 import { UnitQuizModal } from './UnitQuizModal';
 import { UnitOneMasterClass } from './UnitOneMasterClass';
@@ -33,6 +34,7 @@ import { downloadUnitPdf, downloadUnitAudio } from '../services/materialDownload
 
 interface LearningPathwayProps {
   currentStudent: Student | null;
+  user?: User | null;
   activeRole: 'student' | 'teacher';
   audienceTheme: AudienceTheme;
   onOpenRegister: () => void;
@@ -44,6 +46,7 @@ interface LearningPathwayProps {
 
 export const LearningPathway: React.FC<LearningPathwayProps> = ({
   currentStudent,
+  user,
   activeRole,
   audienceTheme,
   onOpenRegister,
@@ -735,6 +738,9 @@ ${unit.owlCulture.culturalStory}
           isOpen={!!quizUnit}
           onClose={() => setQuizUnit(null)}
           onQuizFinished={handleQuizFinished}
+          currentStudent={currentStudent}
+          user={user}
+          activeRole={activeRole}
         />
       )}
 
