@@ -39,6 +39,7 @@ interface LanguageLabProps {
   activeRole: 'student' | 'teacher';
   user?: User | null;
   isTeacherAuthenticated?: boolean;
+  isStudentAuthenticated?: boolean;
   onAwardXp: (studentId: string, amount: number) => void;
   onGoToClassroom?: () => void;
   onLogin?: () => void;
@@ -50,12 +51,13 @@ export const LanguageLab: React.FC<LanguageLabProps> = ({
   activeRole,
   user,
   isTeacherAuthenticated,
+  isStudentAuthenticated,
   onAwardXp,
   onGoToClassroom,
   onLogin,
   onStartRegistration
 }) => {
-  const isUnlocked = isTeacherAuthenticated || !!user;
+  const isUnlocked = isTeacherAuthenticated || !!user || !!isStudentAuthenticated;
 
   // Persistence key for student answers
   const storageKey = `cokito_lab_u1_${currentStudent?.id || 'guest'}`;
