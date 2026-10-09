@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { 
   Flame, 
   Zap, 
@@ -84,13 +84,18 @@ export const GamificationHub: React.FC<GamificationHubProps> = ({
   const [activeQuestId, setActiveQuestId] = useState<string | null>(null);
   const [selectedOpt, setSelectedOpt] = useState<number | null>(null);
   const [answeredState, setAnsweredState] = useState<'idle' | 'correct' | 'wrong'>('idle');
+  // Prevent duplicate XP awards from rapid repeated submissions in the same mounted session.
+  const awardedQuestIdsRef = useRef<Set<string>>(new Set());
 
   const activeQuest = quests.find(q => q.id === activeQuestId);
 
   const handleVerifyQuest = () => {
-    if (!activeQuest || selectedOpt === null) return;
+    if (!activeQuest || selectedOpt === null || answeredState !== 'idle') return;
 
     if (selectedOpt === activeQuest.correctIndex) {
+      if (activeQuest.completed || awardedQuestIdsRef.current.has(activeQuest.id)) return;
+      // Mark synchronously before state updates so rapid double-clicks cannot award twice.
+      awardedQuestIdsRef.current.add(activeQuest.id);
       setAnsweredState('correct');
       try {
         confetti({ particleCount: 70, spread: 60, origin: { y: 0.6 } });
