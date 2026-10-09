@@ -1531,6 +1531,7 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
                     <th className="py-3 px-4">Alumno</th>
                     <th className="py-3 px-4">Nivel Actual</th>
                     <th className="py-3 px-4">Unidad</th>
+                    <th className="py-3 px-4">Código de cupón</th>
                     <th className="py-3 px-4">Teacher & Horarios</th>
                     <th className="py-3 px-4">Estado</th>
                     <th className="py-3 px-4 text-right">Acciones de Directora</th>
@@ -1563,6 +1564,13 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
                         <td className="py-3 px-4 font-mono font-bold text-slate-700">
                           Unidad {student.currentUnit || 1}
                         </td>
+                        <td className="py-3 px-4 min-w-[190px]">
+                          <div className="font-bold text-slate-800 mb-1">{student.couponCodeUsed || student.couponCodeAssigned || "Sin cupón registrado"}</div>
+                          <select aria-label={"Asignar cupón a " + student.name} value={student.couponCodeAssigned || ""} onChange={e => { const selected = couponsList.find(c => c.code === e.target.value); onUpdateStudent({ ...student, couponCodeAssigned: selected?.code || undefined, notes: (student.notes || "") + (selected ? " | Cupón asignado por Directora Waky: " + selected.code : " | Asignación manual de cupón retirada") }); setCouponNotice(selected ? "Cupón " + selected.code + " registrado. Beneficios/pagos no se modifican automáticamente." : "Asignación retirada."); setTimeout(() => setCouponNotice(null), 4000); }} className="w-full max-w-[220px] rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-[11px] font-semibold text-slate-700">
+                            <option value="">Asignar cupón…</option>
+                            {couponsList.filter(c => c.isActive).map(coupon => <option key={coupon.id} value={coupon.code}>{coupon.code} — {coupon.title}</option>)}
+                          </select>
+                        </td>
 
                         <td className="py-3 px-4 text-slate-700">
                           <div className="space-y-1">
@@ -1581,7 +1589,9 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
                               </span>
                             </div>
 
-                            {hasClasses ? (
+                            {student.isDigitalPass ? (
+                              <div className="text-[10px] font-bold text-violet-800 bg-violet-50 px-2 py-0.5 rounded-lg border border-violet-200 inline-flex items-center gap-1"><Smartphone className="w-3 h-3" /><span>Pase Digital · sin horario requerido</span></div>
+                            ) : hasClasses ? (
                               <div className="text-[10px] font-bold text-indigo-800 bg-indigo-50 px-2 py-0.5 rounded-lg border border-indigo-200 inline-flex items-center gap-1">
                                 <Calendar className="w-3 h-3 text-indigo-600" />
                                 <span>{student.assignedSlots.join(' • ')}</span>

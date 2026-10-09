@@ -52,6 +52,12 @@ export interface Student {
   
   // Package & Registration
   plan: PlanIntensity;
+  /** True for the self-paced $5 Digital Pass; no live schedule is required. */
+  isDigitalPass?: boolean;
+  /** Coupon applied during registration, when known. */
+  couponCodeUsed?: string;
+  /** Coupon assigned later by the director. */
+  couponCodeAssigned?: string;
   modality: ClassModality;
   groupSize: GroupSize;
   preferredTimeSlot: string; // "Mañanas", "Tardes", "Noches", "Sábados"
