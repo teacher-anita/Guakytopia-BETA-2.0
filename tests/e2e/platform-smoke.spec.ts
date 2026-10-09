@@ -31,6 +31,6 @@ test('Classroom switches between interactive classroom and materials Hub', async
 test('Language Practice Lab loads its exercise interface', async ({ page }) => {
   await page.goto('/');
   await page.getByRole('button', { name: /Lab/ }).click();
-  await expect(page.getByText('Güakytalkie • Laboratorio de Idiomas')).toBeVisible();
-  await expect(page.getByText(/100 Drills/).first()).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Güakytalkie • Communication & Speaking Lab' })).toBeVisible();
+  await expect(page.getByText(/Güakytalkie • 100 High-Yield Practice Drills/)).toBeVisible();
 });
