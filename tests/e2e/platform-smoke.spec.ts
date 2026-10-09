@@ -26,8 +26,8 @@ test('Student account does not expose a selected profile before sign-in', async 
   await page.getByTitle('Ver mi perfil').click();
 
   await expect(page.getByRole('heading', { name: 'Acceso & Sesión' })).toBeVisible();
-  await expect(page.getByLabel('Correo Electrónico o Nombre de Usuario:')).toBeVisible();
-  await expect(page.getByLabel('Contraseña:')).toHaveAttribute('required', '');
+  await expect(page.getByPlaceholder('ejemplo@correo.com o tu nombre')).toBeVisible();
+  await expect(page.getByPlaceholder('••••••••')).toHaveAttribute('required', '');
   await expect(page.getByText('Mi Cuenta de Alumno')).toHaveCount(0);
 });
 
