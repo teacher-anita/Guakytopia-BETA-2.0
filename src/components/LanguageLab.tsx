@@ -32,6 +32,7 @@ import {
   UNIT_1_LAB_EXERCISES, 
   LabExercise 
 } from '../data/labExercisesData';
+import { recordAcademicEvent } from '../services/academicEvents';
 
 interface LanguageLabProps {
   currentStudent: Student | null;
@@ -164,6 +165,29 @@ export const LanguageLab: React.FC<LanguageLabProps> = ({
       }
     }));
     setShowExplanation(true);
+
+    // Capture only authenticated student attempts. The writer is disabled by
+    // default and Firestore rules must explicitly authorize it before rollout.
+    // Never store the selected/free-text answer in the academic timeline.
+    if (currentStudent && user && activeRole === 'student') {
+      void recordAcademicEvent({
+        schemaVersion: 1,
+        studentId: currentStudent.id,
+        source: 'language_practice_lab',
+        eventType: 'answer_submitted',
+        occurredAt: new Date().toISOString(),
+        actor: { role: 'student', id: user.uid },
+        curriculum: {
+          unitId: `unit_${selectedUnit}`,
+          activityId: String(activeExercise.id),
+        },
+        outcome: isCorrect ? 'correct' : 'incorrect',
+        evidence: { questionId: String(activeExercise.id), isCorrect },
+      }).catch((error) => {
+        // A logging failure must never block the learner's practice flow.
+        console.warn('Academic event was not recorded:', error);
+      });
+    }
 
     if (isCorrect) {
       if (!wasAlreadyCorrect) {
