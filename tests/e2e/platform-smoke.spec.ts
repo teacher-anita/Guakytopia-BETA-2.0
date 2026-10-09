@@ -14,13 +14,13 @@ test('landing page renders and primary navigation reaches the Learning Hub', asy
   await expect(page).toHaveTitle(/Güakytopia/);
   await expect(page.getByRole('button', { name: /Home/ })).toBeVisible();
 
-  await page.getByRole('button', { name: /^Hub/ }).click();
+  await page.getByRole('button', { name: /Hub/ }).click();
   await expect(page.getByText('Master Curriculum & Classroom Hub')).toBeVisible();
 });
 
 test('Classroom switches between interactive classroom and materials Hub', async ({ page }) => {
   await page.goto('/');
-  await page.getByRole('button', { name: /^Classroom/ }).click();
+  await page.getByRole('button', { name: /Classroom/ }).click();
   await expect(page.getByRole('button', { name: 'Aula interactiva' })).toBeVisible();
 
   await page.getByRole('button', { name: 'Classroom y nuestro Hub' }).click();
@@ -30,7 +30,7 @@ test('Classroom switches between interactive classroom and materials Hub', async
 
 test('Language Practice Lab loads its exercise interface', async ({ page }) => {
   await page.goto('/');
-  await page.getByRole('button', { name: /^Lab/ }).click();
+  await page.getByRole('button', { name: /Lab/ }).click();
   await expect(page.getByText('Güakytalkie • Laboratorio de Idiomas')).toBeVisible();
   await expect(page.getByText(/100 Drills/).first()).toBeVisible();
 });
