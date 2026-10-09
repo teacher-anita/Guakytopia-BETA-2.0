@@ -913,7 +913,7 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
       </div>
 
       {/* 3. TABS NAVIGATION */}
-      <div role="group" aria-label="Secciones del panel de dirección" className="flex items-center gap-2 overflow-x-auto pb-1 border-b border-slate-200 text-xs font-bold">
+      <div role="group" aria-label="Principal's Office sections" className="flex items-center gap-2 overflow-x-auto pb-1 border-b border-slate-200 text-xs font-bold">
         <button
           onClick={() => setActiveTab('payments')}
           aria-pressed={activeTab === 'payments'}
@@ -924,7 +924,7 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
           }`}
         >
           <Smartphone className="w-4 h-4 text-emerald-400" />
-          <span>Gestión de Pagos & Matrícula</span>
+          <span>Payments & Enrollment</span>
           {students.filter(s => s.paymentStatus === 'pending_approval' || (s.status === 'pending_evaluation' && s.pagoMovilRef)).length > 0 && (
             <span className="bg-amber-400 text-slate-950 px-2 py-0.5 rounded-full text-[10px] font-black shadow-xs animate-pulse">
               🔔 {students.filter(s => s.paymentStatus === 'pending_approval' || (s.status === 'pending_evaluation' && s.pagoMovilRef)).length}
@@ -942,7 +942,7 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
           }`}
         >
           <Coffee className="w-4 h-4 text-amber-500" />
-          <span>☕ Teacher's Lounge & Cartelera</span>
+          <span>☕ Teacher's Lounge & Bulletin Board</span>
         </button>
 
         <button
@@ -968,7 +968,7 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
           }`}
         >
           <Users className="w-4 h-4 text-emerald-400" />
-          <span>Mover y Gestionar Alumnos ({students.length})</span>
+          <span>Manage Students ({students.length})</span>
         </button>
 
         <button
@@ -994,7 +994,7 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
           }`}
         >
           <Gift className="w-4 h-4 text-amber-500" />
-          <span>Cupones, Becas & Promos ({couponsList.length})</span>
+          <span>Scholarships & Rewards ({couponsList.length})</span>
         </button>
 
         <button
@@ -1007,7 +1007,7 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
           }`}
         >
           <Crown className="w-4 h-4 text-amber-300" />
-          <span>👑 Despacho Rectora Waky</span>
+          <span>👑 Waky's Office</span>
         </button>
       </div>
 
