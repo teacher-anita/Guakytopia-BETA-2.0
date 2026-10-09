@@ -57,7 +57,7 @@ export const LanguageLab: React.FC<LanguageLabProps> = ({
   onLogin,
   onStartRegistration
 }) => {
-  const isUnlocked = isTeacherAuthenticated || !!user || !!isStudentAuthenticated;
+  const isUnlocked = isTeacherAuthenticated || !!user || !!isStudentAuthenticated || currentStudent?.status === 'enrolled';
 
   // Persistence key for student answers
   const storageKey = `cokito_lab_u1_${currentStudent?.id || 'guest'}`;
