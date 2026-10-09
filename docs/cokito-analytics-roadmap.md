@@ -33,6 +33,10 @@ The shared event schema and guarded writer have been added on the development br
 6. **Build recommendations.** Only after event capture is reliable, derive patterns and propose next steps with supporting evidence.
 7. **Surface insights in teacher dashboards.** Show evidence, trends, uncertainty, and suggested actions; leave pedagogical decisions to humans.
 
+## Authentication and event-authorization review (2026-10-08)
+
+A focused review found that the current student selector is browser-persisted and is not identity proof; student credential login is client-side and does not create a Firebase Auth identity; student records have no Firebase UID link; staff role checks are client-side; and the app auth listener depends on a cached Google API access token before setting its authenticated user state. The Lab event guard therefore does not yet prove that the authenticated UID owns the selected student profile. Details and safe prerequisites are documented in `docs/cokito-auth-and-event-authorization.md`. Event writes remain disabled. No rules or live authentication behavior were changed.
+
 ## Initial audit findings
 
 - Language Practice Lab answers are currently persisted in browser localStorage under a per-student key; they are not yet a shared academic event history.
