@@ -14,19 +14,19 @@ type LifeState = { lives: number; updatedAt: number };
 
 const MAX_LIVES = 5;
 const REFILL_MS = 30 * 60 * 1000;
-const WORDS = [
-  { word: 'PLANET', hint: 'A world that orbits a star' },
-  { word: 'FRIEND', hint: 'Someone you like and trust' },
-  { word: 'BRIDGE', hint: 'A structure built over water or a road' },
-  { word: 'GARDEN', hint: 'A place where flowers and vegetables grow' },
-  { word: 'ORANGE', hint: 'A fruit and a colour' },
-  { word: 'SCHOOL', hint: 'A place where students learn' },
+const UNIT_1_WORDS = [
+  { word: 'HELLO', hint: 'A common greeting when you meet someone' },
+  { word: 'NAME', hint: 'What people call you' },
+  { word: 'FINE', hint: 'A word used in the reply: “I’m ___, thanks.”' },
+  { word: 'FRIEND', hint: 'A person you like and know well' },
+  { word: 'TEACHER', hint: 'A person who teaches a class' },
+  { word: 'MORNING', hint: 'The early part of the day' },
 ];
-const HANGMAN_WORDS = [
-  { word: 'JOURNEY', hint: 'A trip from one place to another' },
-  { word: 'RAINBOW', hint: 'A colourful arc after rain' },
-  { word: 'TEACHER', hint: 'A person who helps you learn' },
-  { word: 'MYSTERY', hint: 'Something difficult to explain or understand' },
+const UNIT_1_HANGMAN_WORDS = [
+  { word: 'HELLO', hint: 'A greeting when you meet someone' },
+  { word: 'GOOD', hint: 'The first word in “___ morning”' },
+  { word: 'NIGHT', hint: 'The last word in “Good ___”' },
+  { word: 'FRIEND', hint: 'Someone you like and trust' },
 ];
 
 function loadLifeState(key: string): LifeState {
@@ -74,6 +74,11 @@ export const ArenaMiniGames: React.FC<ArenaMiniGamesProps> = ({ currentStudent, 
   const [scrabbleInput, setScrabbleInput] = useState('');
   const [hangmanGuesses, setHangmanGuesses] = useState<string[]>([]);
   const [finished, setFinished] = useState(false);
+  // Only Unit 1 vocabulary is currently validated against the available curriculum data.
+  // Never silently serve beginner words to a learner working in a later unit/level.
+  const hasCurriculumBank = (currentStudent?.levelId ?? 'level_1') === 'level_1' && (currentStudent?.currentUnit ?? 1) === 1;
+  const words = UNIT_1_WORDS;
+  const hangmanWords = UNIT_1_HANGMAN_WORDS;
 
   useEffect(() => {
     setLifeState(loadLifeState(storageKey));
@@ -125,8 +130,8 @@ export const ArenaMiniGames: React.FC<ArenaMiniGamesProps> = ({ currentStudent, 
     void saveArenaLives(studentId, lifeState);
   }, [canSyncCloud, currentStudent?.id, cloudReadyFor, lifeState]);
 
-  const word = WORDS[round % WORDS.length];
-  const hangman = HANGMAN_WORDS[round % HANGMAN_WORDS.length];
+  const word = words[round % words.length];
+  const hangman = hangmanWords[round % hangmanWords.length];
   const grid = useMemo(() => makeGrid(word.word, round), [word.word, round]);
   const scrambled = useMemo(() => {
     const letters = word.word.split('');
@@ -210,14 +215,14 @@ export const ArenaMiniGames: React.FC<ArenaMiniGamesProps> = ({ currentStudent, 
   );
 
   return (
-    <section className="space-y-5 rounded-3xl border border-indigo-100 bg-gradient-to-br from-white via-indigo-50/40 to-amber-50/50 p-4 sm:p-6">
+    <section className="w-full min-w-0 space-y-5 rounded-3xl border border-indigo-100 bg-gradient-to-br from-white via-indigo-50/40 to-amber-50/50 p-3 sm:p-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <div className="flex items-center gap-2 text-xs font-black uppercase tracking-wider text-indigo-600"><Swords className="h-4 w-4" /> The Flock Arcade</div>
           <h3 className="mt-1 text-xl font-black text-slate-900">Play in English. Come back for more!</h3>
-          <p className="mt-1 text-sm text-slate-600">Three quick games to build vocabulary, spelling and confidence.</p>
+          <p className="mt-1 text-sm text-slate-600">Level 1 · Unit 1: greetings, introductions and classroom English.</p>
         </div>
-        <div className="rounded-2xl border border-rose-100 bg-white px-4 py-3 shadow-sm">
+        <div className="w-full rounded-2xl border border-rose-100 bg-white px-3 py-3 shadow-sm sm:w-auto sm:px-4">
           <div className="flex items-center gap-1.5 text-sm font-black text-slate-900">
             {Array.from({ length: MAX_LIVES }, (_, i) => <Heart key={i} className={`h-4 w-4 ${i < lifeState.lives ? 'fill-rose-500 text-rose-500' : 'text-slate-300'}`} />)}
             <span className="ml-1">{lifeState.lives}/{MAX_LIVES}</span>
@@ -233,7 +238,13 @@ export const ArenaMiniGames: React.FC<ArenaMiniGamesProps> = ({ currentStudent, 
         {gameButton('hangman', 'Hangman', 'Guess the secret word', '🪢')}
       </div>
 
-      {isOutOfLives ? (
+      {!hasCurriculumBank ? (
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5 text-center" role="status">
+          <BookOpen className="mx-auto h-8 w-8 text-amber-600" />
+          <h4 className="mt-2 font-black text-slate-900">Your next vocabulary pack is being prepared</h4>
+          <p className="mt-1 text-sm text-slate-700">These games only use vocabulary verified for Level 1 · Unit 1. We’ll unlock the matching word bank when the curriculum for your current level and unit is ready.</p>
+        </div>
+      ) : isOutOfLives ? (
         <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5 text-center">
           <Heart className="mx-auto h-8 w-8 text-rose-500" />
           <h4 className="mt-2 font-black text-slate-900">Your lives are recharging!</h4>
@@ -241,21 +252,21 @@ export const ArenaMiniGames: React.FC<ArenaMiniGamesProps> = ({ currentStudent, 
           <p className="mt-2 text-sm font-bold text-indigo-700">Next life in {timeLabel}</p>
         </div>
       ) : (
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6">
+        <div className="min-w-0 rounded-2xl border border-slate-200 bg-white p-3 sm:p-6">
           {activeGame === 'wordsearch' && (
             <div className="space-y-4">
               <div className="flex items-center gap-2"><Search className="h-5 w-5 text-indigo-600" /><h4 className="font-black text-slate-900">Word Search</h4></div>
               <p className="text-sm text-slate-600">Find the word that means: <strong>{word.hint}</strong></p>
-              <div className="mx-auto grid max-w-md grid-cols-8 gap-1.5">
+              <div className="mx-auto grid w-full max-w-sm grid-cols-8 gap-1 sm:gap-1.5">
                 {grid.flatMap((row, r) => row.map((letter, c) => {
                   const key = `${r}-${c}`;
                   const selected = selectedLetters.includes(key);
-                  return <button key={key} type="button" disabled={finished} aria-label={`Row ${r + 1}, column ${c + 1}, ${letter}`} onClick={() => setSelectedLetters(previous => selected ? previous.filter(item => item !== key) : [...previous, key])} className={`aspect-square rounded-lg border text-sm font-black ${selected ? 'border-indigo-600 bg-indigo-600 text-white' : 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-indigo-100'}`}>{letter}</button>;
+                  return <button key={key} type="button" disabled={finished} aria-label={`Row ${r + 1}, column ${c + 1}, ${letter}`} onClick={() => setSelectedLetters(previous => selected ? previous.filter(item => item !== key) : [...previous, key])} className={`aspect-square min-w-0 rounded-lg border text-xs font-black sm:text-sm ${selected ? 'border-indigo-600 bg-indigo-600 text-white' : 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-indigo-100'}`}>{letter}</button>;
                 }))}
               </div>
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <span className="text-xs text-slate-500">Letters selected: {selectedLetters.map(key => { const [r, c] = key.split('-').map(Number); return grid[r][c]; }).join('')}</span>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   <button type="button" onClick={() => setSelectedLetters([])} className="rounded-xl border px-3 py-2 text-xs font-bold text-slate-600"><RotateCcw className="mr-1 inline h-3 w-3" />Clear</button>
                   <button type="button" onClick={() => { const answer = selectedLetters.map(key => { const [r, c] = key.split('-').map(Number); return grid[r][c]; }).join(''); if (answer === word.word) winRound(); else failAttempt('Not quite! One life used. Select the letters in the right order.'); }} disabled={finished || selectedLetters.length === 0} className="rounded-xl bg-indigo-600 px-4 py-2 text-xs font-black text-white disabled:opacity-40">Check word</button>
                 </div>
@@ -284,8 +295,8 @@ export const ArenaMiniGames: React.FC<ArenaMiniGamesProps> = ({ currentStudent, 
               <div className="flex flex-wrap justify-center gap-2 py-2">
                 {hangman.word.split('').map((letter, index) => <span key={index} className="flex h-10 w-8 items-center justify-center border-b-2 border-indigo-400 text-lg font-black">{hangmanGuesses.includes(letter) || finished ? letter : '_'}</span>)}
               </div>
-              <div className="flex flex-wrap justify-center gap-2">
-                {'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').map(letter => <button key={letter} type="button" onClick={() => guessLetter(letter)} disabled={finished || hangmanGuesses.includes(letter)} className="h-9 w-9 rounded-lg border border-slate-200 bg-slate-50 text-xs font-black text-slate-700 hover:bg-indigo-100 disabled:opacity-30">{letter}</button>)}
+              <div className="mx-auto grid w-full max-w-md grid-cols-7 gap-1.5 sm:flex sm:flex-wrap sm:justify-center sm:gap-2">
+                {'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').map(letter => <button key={letter} type="button" onClick={() => guessLetter(letter)} disabled={finished || hangmanGuesses.includes(letter)} className="min-h-10 min-w-0 rounded-lg border border-slate-200 px-1 text-sm sm:h-10 sm:w-10 sm:px-0 bg-slate-50 text-xs font-black text-slate-700 hover:bg-indigo-100 disabled:opacity-30">{letter}</button>)}
               </div>
               <p className="text-center text-xs text-slate-500">Wrong guesses use one life. Correct letters are free.</p>
             </div>
@@ -295,7 +306,7 @@ export const ArenaMiniGames: React.FC<ArenaMiniGamesProps> = ({ currentStudent, 
           {finished && <button type="button" onClick={nextRound} className="mt-4 w-full rounded-xl bg-emerald-600 px-4 py-3 text-sm font-black text-white"><CheckCircle2 className="mr-1 inline h-4 w-4" />Play next challenge</button>}
         </div>
       )}
-      <p className="text-[11px] leading-relaxed text-slate-500">Guests can play too. XP rewards are added only to an authenticated student account. Google-authenticated students sync lives and recharge time across devices; Guest and other local-only sessions keep lives on this browser.</p>
+      <p className="text-[11px] leading-relaxed text-slate-500">The games follow the current curriculum vocabulary pack (Level 1 · Unit 1 for now). Guests can play too. XP rewards are added only to an authenticated student account. Google-authenticated students sync lives and recharge time across devices; Guest and other local-only sessions keep lives on this browser.</p>
     </section>
   );
 };
