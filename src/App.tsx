@@ -169,7 +169,7 @@ export default function App() {
       `${s.name} ${s.lastName || ''}`.trim().toLowerCase() === clean
     );
     if (matched) {
-      if (!matched.password || matched.password === pass || pass === '') {
+      if (matched.password && pass.length > 0 && matched.password === pass) {
         setCurrentStudentId(matched.id);
         setIsStudentAuthenticated(true);
         sessionStorage.setItem('cokito_student_auth', 'true');
@@ -606,6 +606,7 @@ export default function App() {
         onClose={() => setIsProfileOpen(false)}
         student={currentStudent}
         user={user}
+        isStudentAuthenticated={isStudentAuthenticated}
         onLogin={handleLogin}
         onCredentialsLogin={handleCredentialsLogin}
         isLoggingIn={isLoggingIn}
