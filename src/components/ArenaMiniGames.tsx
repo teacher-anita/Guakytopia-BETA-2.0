@@ -1,10 +1,12 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { BookOpen, CheckCircle2, Clock3, Heart, RotateCcw, Search, Sparkles, Swords } from 'lucide-react';
 import { Student } from '../types';
+import { saveArenaLives, subscribeToArenaLives } from '../services/db';
 
 interface ArenaMiniGamesProps {
   currentStudent: Student | null;
   onAwardXp: (studentId: string, amount: number) => void;
+  canSyncCloud: boolean;
 }
 
 type GameId = 'wordsearch' | 'scrabble' | 'hangman';
@@ -60,9 +62,11 @@ function makeGrid(word: string, seed: number): string[][] {
   );
 }
 
-export const ArenaMiniGames: React.FC<ArenaMiniGamesProps> = ({ currentStudent, onAwardXp }) => {
+export const ArenaMiniGames: React.FC<ArenaMiniGamesProps> = ({ currentStudent, onAwardXp, canSyncCloud }) => {
   const storageKey = `guakytopia_arena_lives_${currentStudent?.id || 'guest'}`;
   const [lifeState, setLifeState] = useState<LifeState>(() => loadLifeState(storageKey));
+  const [cloudReadyFor, setCloudReadyFor] = useState<string | null>(null);
+  const [clockNow, setClockNow] = useState(() => Date.now());
   const [activeGame, setActiveGame] = useState<GameId>('wordsearch');
   const [message, setMessage] = useState('');
   const [round, setRound] = useState(0);
@@ -83,14 +87,36 @@ export const ArenaMiniGames: React.FC<ArenaMiniGamesProps> = ({ currentStudent, 
 
   useEffect(() => {
     const timer = window.setInterval(() => {
-      setLifeState(previous => applyRecharge(previous, Date.now()));
-    }, 15000);
+      const now = Date.now();
+      setClockNow(now);
+      setLifeState(previous => applyRecharge(previous, now));
+    }, 1000);
     return () => window.clearInterval(timer);
   }, []);
 
   useEffect(() => {
+    const studentId = currentStudent?.id;
+    if (!canSyncCloud || !studentId || studentId === 'guest') {
+      setCloudReadyFor(null);
+      return;
+    }
+
+    setCloudReadyFor(null);
+    return subscribeToArenaLives(studentId, remoteState => {
+      if (remoteState) setLifeState(applyRecharge(remoteState, Date.now()));
+      setCloudReadyFor(studentId);
+    });
+  }, [canSyncCloud, currentStudent?.id]);
+
+  useEffect(() => {
     try { localStorage.setItem(storageKey, JSON.stringify(lifeState)); } catch {}
   }, [storageKey, lifeState]);
+
+  useEffect(() => {
+    const studentId = currentStudent?.id;
+    if (!canSyncCloud || !studentId || studentId === 'guest' || cloudReadyFor !== studentId) return;
+    void saveArenaLives(studentId, lifeState);
+  }, [canSyncCloud, currentStudent?.id, cloudReadyFor, lifeState]);
 
   const word = WORDS[round % WORDS.length];
   const hangman = HANGMAN_WORDS[round % HANGMAN_WORDS.length];
@@ -101,7 +127,7 @@ export const ArenaMiniGames: React.FC<ArenaMiniGamesProps> = ({ currentStudent, 
   }, [word.word]);
   const refillIn = lifeState.lives >= MAX_LIVES
     ? 0
-    : Math.max(0, REFILL_MS - (Date.now() - lifeState.updatedAt));
+    : Math.max(0, REFILL_MS - (clockNow - lifeState.updatedAt));
   const timeLabel = `${Math.floor(refillIn / 60000)}:${String(Math.floor((refillIn % 60000) / 1000)).padStart(2, '0')}`;
 
   const consumeLife = () => {
@@ -262,7 +288,7 @@ export const ArenaMiniGames: React.FC<ArenaMiniGamesProps> = ({ currentStudent, 
           {finished && <button type="button" onClick={nextRound} className="mt-4 w-full rounded-xl bg-emerald-600 px-4 py-3 text-sm font-black text-white"><CheckCircle2 className="mr-1 inline h-4 w-4" />Play next challenge</button>}
         </div>
       )}
-      <p className="text-[11px] leading-relaxed text-slate-500">Guests can play too. XP rewards are added only to an authenticated student account; your lives are saved separately for each profile on this browser.</p>
+      <p className="text-[11px] leading-relaxed text-slate-500">Guests can play too. XP rewards are added only to an authenticated student account. Signed-in students sync lives and recharge time across devices; Guest lives stay on this browser.</p>
     </section>
   );
 };
