@@ -29,11 +29,15 @@ Design note only. No authentication flow, Firestore rules, production configurat
 
 ## Safe implementation order
 
-1. Correctly represent Firebase auth state independently of Google API access-token availability.
+1. **Done in development branch (not yet tested):** represent Firebase auth state independently of Google API access-token availability.
 2. Design and review student UID linking and staff authorization without changing the live student platform.
 3. Write and test database-specific rules in an isolated environment.
 4. Add event-writer integration tests and a controlled end-to-end test using non-production test accounts.
 5. Only then consider enabling event writes in the development environment.
+
+## Validation status
+
+The auth-listener correction is committed on the development branch, but no TypeScript check, build, automated test, or sign-in regression test has been run yet. Verify Google sign-in, refresh persistence, sign-out, and Firebase email/password sessions before considering this change ready.
 
 ## Explicit non-goals for this step
 
