@@ -1,0 +1,34 @@
+name: Güakytopia development checks
+
+on:
+  push:
+    branches:
+      - codex/guakytopia-lab-2026-10-08
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: guakytopia-dev-checks-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: TypeScript and production build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out development branch
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: TypeScript check
+        run: npm run lint
+      - name: Production build
+        run: npm run build
