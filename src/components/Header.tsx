@@ -308,7 +308,7 @@ export const Header: React.FC<HeaderProps> = ({
                 )}
               </button>
 
-              {/* 8. Teacher / Rectoría Portal (OCULTO PARA ALUMNOS LOGUEADOS) */}
+              {/* 8. Teacher / Principal's Office Portal (hidden for signed-in students) */}
               {!isStudentLoggedIn && (
                 <button
                   onClick={() => onTabChange('teacher')}
@@ -319,10 +319,10 @@ export const Header: React.FC<HeaderProps> = ({
                         : 'bg-[#243447] text-white shadow-xs font-bold'
                       : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
                   }`}
-                  title={staffRole === 'principal' ? 'Portal de Rectoría' : 'Portal Teacher'}
+                  title={staffRole === 'principal' ? "Principal's Office portal" : 'Teacher portal'}
                 >
                   <span className="text-sm">{staffRole === 'principal' ? '👑' : '👩‍🏫'}</span>
-                  <span>{staffRole === 'principal' ? 'Rectoría' : 'Teacher'}</span>
+                  <span>{staffRole === 'principal' ? "Principal's Office" : 'Teacher'}</span>
                   <Lock className={`w-3.5 h-3.5 shrink-0 ml-0.5 ${isTeacherAuthenticated ? 'text-emerald-400' : 'text-amber-500'}`} />
                 </button>
               )}
@@ -455,7 +455,7 @@ export const Header: React.FC<HeaderProps> = ({
             <span className="text-[9px] leading-tight truncate w-full text-center mt-0.5">Lab</span>
           </button>
 
-          {/* 8. Teacher / Rectoría (OCULTO PARA ALUMNOS) */}
+          {/* 8. Teacher / Principal's Office (hidden for signed-in students) */}
           {!isStudentLoggedIn && (
             <button
               onClick={() => onTabChange('teacher')}
@@ -476,7 +476,7 @@ export const Header: React.FC<HeaderProps> = ({
                 </span>
               </div>
               <span className="text-[9px] leading-tight truncate w-full text-center mt-0.5 font-bold">
-                {staffRole === 'principal' ? 'Rectoría' : 'Teacher'}
+                {staffRole === 'principal' ? "Principal's Office" : 'Teacher'}
               </span>
             </button>
           )}
