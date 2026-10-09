@@ -884,7 +884,7 @@ export const LanguageLab: React.FC<LanguageLabProps> = ({
 
           {/* 100 Grid */}
           <div className="grid grid-cols-5 sm:grid-cols-10 md:grid-cols-12 lg:grid-cols-20 gap-2">
-            {UNIT_1_LAB_EXERCISES.map((ex, idx) => {
+            {filteredExercises.map((ex, idx) => {
               const isAnswered = userAnswers[ex.id]?.isCorrect;
               const isSelected = activeExercise.id === ex.id;
               return (
