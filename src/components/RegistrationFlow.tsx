@@ -559,6 +559,8 @@ export const RegistrationFlow: React.FC<RegistrationFlowProps> = ({
       modality: selectedModality,
       groupSize: selectedPlanId === 'digital_5' ? 'individual' : selectedGroupSize,
       preferredTimeSlot,
+      isDigitalPass: selectedPlanId === 'digital_5',
+      couponCodeUsed: appliedCoupon?.code,
       status: appliedCoupon ? 'enrolled' : 'pending_evaluation',
       paymentStatus: appliedCoupon ? 'scholarship' : 'pending_approval',
       depositAmountUsd: appliedCoupon ? 0 : 5,
