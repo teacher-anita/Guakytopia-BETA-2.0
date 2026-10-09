@@ -121,8 +121,10 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({
             </div>
           </div>
           <button
+            type="button"
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors shrink-0"
+            aria-label="Cerrar ventana de cuenta"
+            className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 flex items-center justify-center text-white transition-colors shrink-0"
           >
             <X className="w-4 h-4" />
           </button>
@@ -318,10 +320,13 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({
               {loginMethod === 'credentials' && (
                 <form onSubmit={handleCredentialsSubmit} className="space-y-3 bg-slate-50 p-4 rounded-2xl border border-slate-200">
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                    <label htmlFor="student-login-identifier" className="block text-[11px] font-bold text-slate-700 mb-1">
                       Correo Electrónico o Nombre de Usuario:
                     </label>
                     <input
+                      id="student-login-identifier"
+                      name="username"
+                      autoComplete="username"
                       type="text"
                       value={emailOrUser}
                       onChange={(e) => setEmailOrUser(e.target.value)}
@@ -332,11 +337,14 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({
                   </div>
 
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                    <label htmlFor="student-login-password" className="block text-[11px] font-bold text-slate-700 mb-1">
                       Contraseña:
                     </label>
                     <div className="relative">
                       <input
+                        id="student-login-password"
+                        name="password"
+                        autoComplete="current-password"
                         type={showPassword ? 'text' : 'password'}
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
@@ -347,7 +355,9 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600"
+                        aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                        aria-pressed={showPassword}
+                        className="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded"
                         title={showPassword ? 'Ocultar contraseña' : 'Ver contraseña'}
                       >
                         {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -356,7 +366,7 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({
                   </div>
 
                   {credentialsError && (
-                    <div className="p-2.5 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl text-[11px] flex items-start gap-1.5 leading-tight">
+                    <div role="alert" className="p-2.5 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl text-[11px] flex items-start gap-1.5 leading-tight">
                       <AlertCircle className="w-4 h-4 shrink-0 text-rose-600 mt-0.5" />
                       <span>{credentialsError}</span>
                     </div>
