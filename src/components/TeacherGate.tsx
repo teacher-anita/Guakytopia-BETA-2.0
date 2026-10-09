@@ -79,7 +79,7 @@ export const TeacherGate: React.FC<TeacherGateProps> = ({
               onClick={() => onAuthenticated('principal')}
               className="py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 rounded-xl font-black text-xs shadow-md transition-colors"
             >
-              Entrar a Rectoría
+              Enter Principal's Office
             </button>
             <button
               type="button"
