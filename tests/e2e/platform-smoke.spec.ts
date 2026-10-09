@@ -35,6 +35,19 @@ test('Language Practice Lab loads its exercise interface', async ({ page }) => {
   await expect(page.getByText(/Güakytalkie • 100 High-Yield Practice Drills/)).toBeVisible();
 });
 
+test('Language Practice Lab can jump directly to incorrectly answered drills', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: /Lab/ }).click();
+
+  await page.getByRole('button', { name: /Good afternoon/ }).click();
+  const reviewMistakesButton = page.getByRole('button', { name: /Review Mistakes/ });
+  await expect(reviewMistakesButton).toContainText('1');
+  await reviewMistakesButton.click();
+
+  await expect(page.getByText('Virtual Teacher Cokitö Explains:')).toBeVisible();
+  await expect(page.getByText('Exercise 1 of 100 in this view')).toBeVisible();
+});
+
 test('Language Practice Lab supports feedback, retry, and moving to the next drill', async ({ page }) => {
   await page.goto('/');
   await page.getByRole('button', { name: /Lab/ }).click();
