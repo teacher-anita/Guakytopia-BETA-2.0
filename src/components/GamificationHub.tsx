@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { Student, AudienceTheme } from '../types';
+import { ArenaMiniGames } from './ArenaMiniGames';
 
 interface GamificationHubProps {
   currentStudent: Student | null;
@@ -289,6 +290,9 @@ export const GamificationHub: React.FC<GamificationHubProps> = ({
         </div>
 
       </div>
+
+      {/* Arena Arcade: shared lives, word search, Scrabble Mix and Hangman */}
+      <ArenaMiniGames currentStudent={currentStudent} onAwardXp={onAwardXp} />
 
       {/* Quest Modal */}
       {activeQuest && (
