@@ -159,3 +159,16 @@ test('Arena offers English mini-games and displays five rechargeable lives', asy
   await expect(page.getByText('5/5')).toBeVisible();
   await expect(page.getByText('One life recharges every 30 minutes.')).toBeVisible();
 });
+
+test('Arena consumes a shared guest life after an incorrect word attempt', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: /Arena/ }).click();
+  await page.getByRole('button', { name: /Scrabble Mix/ }).click();
+  await page.getByRole('label', { name: 'Your word' }).fill('WRONG');
+  await page.getByRole('button', { name: 'Check', exact: true }).click();
+
+  await expect(page.getByText('4/5')).toBeVisible();
+  const savedLives = await page.evaluate(() => JSON.parse(localStorage.getItem('guakytopia_arena_lives_guest') || '{}'));
+  expect(savedLives.lives).toBe(4);
+});
+
