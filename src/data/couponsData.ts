@@ -31,6 +31,12 @@ export interface CouponItem {
   notes?: string;
   createdAt: string;
   testerRole?: string;
+  /** Included live teaching hours per week (0 = digital pass / self-paced webapp only) */
+  includedHoursPerWeek?: number;
+  /** Discount percentage (0-100) */
+  discountPercent?: number;
+  /** True if coupon grants digital web app access with no live schedule needed */
+  isDigitalPass?: boolean;
 }
 
 export const INITIAL_COUPONS: CouponItem[] = [
@@ -46,6 +52,9 @@ export const INITIAL_COUPONS: CouponItem[] = [
     maxUses: 15,
     currentUses: 2,
     isActive: true,
+    includedHoursPerWeek: 0,
+    isDigitalPass: true,
+    discountPercent: 100,
     notes: 'Exalumnas y teachers del Colegio Simón Bolívar',
     createdAt: '2026-10-01'
   },
@@ -60,6 +69,9 @@ export const INITIAL_COUPONS: CouponItem[] = [
     maxUses: 25,
     currentUses: 5,
     isActive: true,
+    includedHoursPerWeek: 0,
+    isDigitalPass: true,
+    discountPercent: 100,
     notes: 'Teachers colaboradoras del CSB',
     createdAt: '2026-10-01'
   },
@@ -74,6 +86,7 @@ export const INITIAL_COUPONS: CouponItem[] = [
     maxUses: null,
     currentUses: 8,
     isActive: true,
+    discountPercent: 20,
     notes: 'Comunidad CSB abierta (padres, alumnos, teachers)',
     createdAt: '2026-10-01'
   },
@@ -90,6 +103,8 @@ export const INITIAL_COUPONS: CouponItem[] = [
     maxUses: 1,
     currentUses: 0,
     isActive: true,
+    includedHoursPerWeek: 2,
+    discountPercent: 100,
     notes: 'Beca de excelencia académica #1',
     createdAt: '2026-10-02'
   },
@@ -104,6 +119,8 @@ export const INITIAL_COUPONS: CouponItem[] = [
     maxUses: 1,
     currentUses: 0,
     isActive: true,
+    includedHoursPerWeek: 2,
+    discountPercent: 100,
     notes: 'Beca de excelencia académica #2',
     createdAt: '2026-10-02'
   },
@@ -118,6 +135,7 @@ export const INITIAL_COUPONS: CouponItem[] = [
     maxUses: 10,
     currentUses: 1,
     isActive: true,
+    discountPercent: 50,
     notes: 'Becas parciales por mérito',
     createdAt: '2026-10-02'
   },
@@ -132,6 +150,7 @@ export const INITIAL_COUPONS: CouponItem[] = [
     maxUses: 15,
     currentUses: 3,
     isActive: true,
+    discountPercent: 20,
     notes: 'Subsidio inicial de estudio',
     createdAt: '2026-10-02'
   },

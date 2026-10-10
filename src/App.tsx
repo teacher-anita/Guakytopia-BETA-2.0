@@ -294,6 +294,7 @@ export default function App() {
   };
 
   const handleUpdateStudent = async (updatedStudent: Student) => {
+    setStudents(prev => prev.map(s => s.id === updatedStudent.id ? updatedStudent : s));
     await saveStudent(updatedStudent);
 
     // Also update slots if assigned

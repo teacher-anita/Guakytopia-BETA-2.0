@@ -58,10 +58,10 @@ const OFFICIAL_BOOK_LINKS: Record<string, {
 }> = {
   level_1: {
     // SG01-SB-U: Student Book 1
-    studentBookUrl: 'https://drive.google.com/file/d/13JNZQ1NpbLF-DodPPkAnHVaMaPqkImmw/view?usp=drive_link',
+    studentBookUrl: 'https://drive.google.com/file/d/17Oqq95rEd2Qy9fbltoHA_86jYBOoyitE/view?usp=drive_link',
     // SG01-WB-U: WorkBook 1
-    workbookUrl: 'https://drive.google.com/file/d/17Oqq95rEd2Qy9fbltoHA_86jYBOoyitE/view?usp=drive_link',
-    // Carpeta General de Materiales Nivel 1 (libros, workbooks, guías y audios)
+    workbookUrl: 'https://drive.google.com/file/d/13JNZQ1NpbLF-DodPPkAnHVaMaPqkImmw/view?usp=drive_link',
+    // Carpeta General de Materiales Nivel 1 (Reservada exclusivamente para Teachers y Rectora Waky)
     folderUrl: 'https://drive.google.com/drive/folders/18M-iUz1w4PTH2kaTkoXGj6p02fs1MYtc',
     studentBookCode: 'SG01-SB-U',
     workbookCode: 'SG01-WB-U'
@@ -259,6 +259,102 @@ export const AcademicLibrary: React.FC<AcademicLibraryProps> = ({
     });
   };
 
+  const isEnrolled = isTeacher || Boolean(
+    currentStudent &&
+    currentStudent.status === 'enrolled' &&
+    (currentStudent.paymentStatus === 'fully_paid' ||
+     currentStudent.paymentStatus === 'scholarship' ||
+     currentStudent.paymentStatus === 'trial_24h' ||
+     currentStudent.paymentStatus === 'deposit_5_paid' ||
+     currentStudent.isDigitalPass ||
+     Boolean(currentStudent.couponCodeUsed) ||
+     Boolean(currentStudent.couponCodeAssigned))
+  );
+
+  // 🔒 GATED VIEW: If user is not enrolled and not a teacher, display the lock screen
+  if (!isEnrolled) {
+    return (
+      <div className="max-w-4xl mx-auto py-12 px-4 space-y-8 animate-fadeIn">
+        <div className="bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 rounded-3xl p-8 sm:p-12 text-white shadow-2xl border-2 border-amber-400/40 text-center space-y-6 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute bottom-0 left-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+          
+          <div className="w-20 h-20 mx-auto rounded-3xl bg-amber-400/20 border-2 border-amber-400 text-amber-300 flex items-center justify-center text-4xl shadow-lg relative">
+            <Lock className="w-10 h-10 text-amber-400" />
+            <span className="absolute -top-1 -right-1 flex h-4 w-4">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-4 w-4 bg-amber-500"></span>
+            </span>
+          </div>
+
+          <div className="space-y-2 max-w-xl mx-auto">
+            <span className="bg-amber-400/20 text-amber-300 text-xs font-black uppercase tracking-wider px-3.5 py-1 rounded-full border border-amber-400/30 inline-flex items-center gap-1.5">
+              <span>Biblioteca Académica Oficial • Acceso Exclusivo</span>
+            </span>
+            <h1 className="text-2xl sm:text-4xl font-black tracking-tight text-white">
+              Academic Library Bloqueada
+            </h1>
+            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+              El repositorio de <strong>Student Books</strong>, cuadernos de práctica <strong>Workbook</strong>, pistas de fonética nativa en audio MP3 y guías de estudio de McGraw-Hill está reservado exclusivamente para alumnos con matrícula activa, miembros del Pase Digital ($5/mes) o becados de Güakytopia.
+            </p>
+          </div>
+
+          {/* Features Included List */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-2xl mx-auto text-left pt-2">
+            <div className="bg-white/5 border border-white/10 p-4 rounded-2xl space-y-1">
+              <div className="text-amber-400 font-bold text-xs flex items-center gap-1.5">
+                <BookOpen className="w-4 h-4" />
+                <span>Student Books</span>
+              </div>
+              <p className="text-[11px] text-slate-300">
+                Páginas oficiales de cada unidad (SG01-SB-U) en PDF de alta resolución.
+              </p>
+            </div>
+
+            <div className="bg-white/5 border border-white/10 p-4 rounded-2xl space-y-1">
+              <div className="text-blue-400 font-bold text-xs flex items-center gap-1.5">
+                <FileText className="w-4 h-4" />
+                <span>Workbooks</span>
+              </div>
+              <p className="text-[11px] text-slate-300">
+                Cuadernos analíticos de ejercicios y tareas (SG01-WB-U).
+              </p>
+            </div>
+
+            <div className="bg-white/5 border border-white/10 p-4 rounded-2xl space-y-1">
+              <div className="text-emerald-400 font-bold text-xs flex items-center gap-1.5">
+                <Headphones className="w-4 h-4" />
+                <span>Audios Fonéticos</span>
+              </div>
+              <p className="text-[11px] text-slate-300">
+                Listening tracks en MP3 con acento y pronunciación estadounidense oficial.
+              </p>
+            </div>
+          </div>
+
+          {/* Actions */}
+          <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-3">
+            <button
+              onClick={onGoToClassroom || onGoToHub}
+              className="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-slate-950 font-black rounded-xl text-xs shadow-lg transition-transform active:scale-95 flex items-center justify-center gap-2"
+            >
+              <Sparkles className="w-4 h-4" />
+              <span>Inscribirme o Activar Membresía ($5/mes)</span>
+            </button>
+
+            <button
+              onClick={onGoToHub}
+              className="w-full sm:w-auto px-6 py-3 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold rounded-xl text-xs transition-colors flex items-center justify-center gap-2"
+            >
+              <span>Canjear Código de Cupón / Beca</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-7xl mx-auto py-6 px-4 space-y-6 animate-fadeIn">
 
@@ -310,17 +406,19 @@ export const AcademicLibrary: React.FC<AcademicLibraryProps> = ({
               </button>
             )}
 
-            <a
-              href={OFFICIAL_BOOK_LINKS[activeLevelData.id]?.folderUrl || 'https://drive.google.com/drive/folders/18M-iUz1w4PTH2kaTkoXGj6p02fs1MYtc'}
-              target="_blank"
-              rel="noreferrer"
-              className="px-4 py-2.5 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold rounded-xl text-xs transition-colors flex items-center justify-center gap-2"
-              title="Abrir Carpeta General de Drive con todos los materiales oficiales del nivel"
-            >
-              <FolderOpen className="w-4 h-4 text-blue-300" />
-              <span>Carpeta Drive de Materiales</span>
-              <ExternalLink className="w-3.5 h-3.5 text-blue-200" />
-            </a>
+            {isTeacher && (
+              <a
+                href={OFFICIAL_BOOK_LINKS[activeLevelData.id]?.folderUrl || 'https://drive.google.com/drive/folders/18M-iUz1w4PTH2kaTkoXGj6p02fs1MYtc'}
+                target="_blank"
+                rel="noreferrer"
+                className="px-4 py-2.5 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold rounded-xl text-xs transition-colors flex items-center justify-center gap-2"
+                title="Abrir Carpeta General de Drive con todos los materiales oficiales del nivel (Docente)"
+              >
+                <FolderOpen className="w-4 h-4 text-blue-300" />
+                <span>Carpeta Drive de Materiales (Docente)</span>
+                <ExternalLink className="w-3.5 h-3.5 text-blue-200" />
+              </a>
+            )}
 
             {isTeacher && (
               <button

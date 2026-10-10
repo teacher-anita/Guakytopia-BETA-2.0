@@ -14,10 +14,7 @@ service cloud.firestore {
 
     // Students collection
     match /students/{studentId} {
-      allow read: if true;
-      allow create: if true;
-      allow update: if isTeacher() || (isSignedIn() && (request.auth.uid == studentId || request.auth.token.email == resource.data.email));
-      allow delete: if isTeacher();
+      allow read, write: if true;
     }
 
     // Slots collection

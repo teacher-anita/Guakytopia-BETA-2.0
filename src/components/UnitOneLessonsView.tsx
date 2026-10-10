@@ -585,17 +585,6 @@ export const UnitOneLessonsView: React.FC<UnitOneLessonsViewProps> = ({
             <span>SG01-WB-U01 • Workbook</span>
           </button>
 
-          <a
-            href="https://drive.google.com/drive/folders/18M-iUz1w4PTH2kaTkoXGj6p02fs1MYtc"
-            target="_blank"
-            rel="noreferrer"
-            className="flex-1 sm:flex-none px-3.5 py-2.5 bg-blue-50 hover:bg-blue-100 text-blue-900 border border-blue-300 rounded-xl text-xs font-bold shadow-xs transition-colors flex items-center justify-center gap-1.5"
-            title="Abrir Carpeta General de Drive Nivel 1"
-          >
-            <FolderOpen className="w-3.5 h-3.5 text-blue-600" />
-            <span>Carpeta Drive</span>
-          </a>
-
           <button
             onClick={() => downloadUnitAudio(2)}
             className="flex-1 sm:flex-none px-3 py-2.5 bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 rounded-xl text-xs font-bold shadow-xs transition-colors flex items-center justify-center gap-1.5"

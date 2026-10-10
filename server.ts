@@ -199,6 +199,52 @@ app.delete('/api/coupons/:id', (req: Request, res: Response) => {
   res.json({ success: true });
 });
 
+// Students Backend Dual Persistence Mirror
+const STUDENTS_FILE = path.join(process.cwd(), 'students-data.json');
+let serverStudentsCache: any[] = [];
+try {
+  if (fs.existsSync(STUDENTS_FILE)) {
+    const raw = fs.readFileSync(STUDENTS_FILE, 'utf-8');
+    serverStudentsCache = JSON.parse(raw);
+  }
+} catch (e) {
+  console.warn('[Students] Could not read students-data.json:', e);
+}
+
+function persistServerStudents() {
+  try {
+    fs.writeFileSync(STUDENTS_FILE, JSON.stringify(serverStudentsCache, null, 2), 'utf-8');
+  } catch (e) {
+    console.warn('[Students] Could not write students-data.json:', e);
+  }
+}
+
+app.get('/api/students', (_req: Request, res: Response) => {
+  res.json(serverStudentsCache);
+});
+
+app.post('/api/students', (req: Request, res: Response) => {
+  const student = req.body;
+  if (!student || !student.id) {
+    return res.status(400).json({ error: 'ID de alumno requerido' });
+  }
+  const existingIdx = serverStudentsCache.findIndex(s => s.id === student.id);
+  if (existingIdx >= 0) {
+    serverStudentsCache[existingIdx] = { ...serverStudentsCache[existingIdx], ...student };
+  } else {
+    serverStudentsCache.unshift(student);
+  }
+  persistServerStudents();
+  res.json({ success: true, student: serverStudentsCache[existingIdx >= 0 ? existingIdx : 0] });
+});
+
+app.delete('/api/students/:id', (req: Request, res: Response) => {
+  const { id } = req.params;
+  serverStudentsCache = serverStudentsCache.filter(s => s.id !== id);
+  persistServerStudents();
+  res.json({ success: true });
+});
+
 // Endpoint for Gemini multi-turn chat
 app.post('/api/chat', async (req: Request, res: Response) => {
   try {

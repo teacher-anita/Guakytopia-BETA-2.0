@@ -46,11 +46,21 @@ import {
   RefreshCw,
   Send,
   Copy,
-  ExternalLink
+  ExternalLink,
+  Brain,
+  LayoutGrid,
+  LayoutList,
+  SlidersHorizontal,
+  MoreVertical,
+  Flame,
+  RotateCcw,
+  Zap
 } from 'lucide-react';
 import { Student, Teacher, ScheduleSlot, EnglishLevel } from '../types';
 import { ENGLISH_LEVELS } from '../data/curriculumData';
 import { TeachersLounge } from './TeachersLounge';
+import { StudentMasterDossierModal } from './StudentMasterDossierModal';
+import { analyzeStudentWithCoquito } from '../services/coquitoBrainService';
 import { 
   OFFICIAL_PAGO_MOVIL, 
   getBcvExchangeRate, 
@@ -140,6 +150,8 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
     benefitType: BenefitType;
     maxUses: string;
     notes: string;
+    includedHoursPerWeek: number;
+    discountPercent: number;
   }>({
     code: '',
     title: '',
@@ -147,7 +159,9 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
     category: 'scholarship',
     benefitType: 'scholar_100',
     maxUses: '1',
-    notes: ''
+    notes: '',
+    includedHoursPerWeek: 2,
+    discountPercent: 100
   });
 
   const handleToggleCouponActive = async (couponId: string) => {
@@ -215,6 +229,9 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
       maxUses: isNaN(maxU as number) ? null : maxU,
       currentUses: 0,
       isActive: true,
+      includedHoursPerWeek: newCouponData.includedHoursPerWeek,
+      discountPercent: newCouponData.discountPercent,
+      isDigitalPass: newCouponData.includedHoursPerWeek === 0,
       notes: newCouponData.notes.trim() || 'Creado directamente por Directora Waky',
       createdAt: new Date().toISOString().split('T')[0]
     };
@@ -234,7 +251,9 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
       category: 'scholarship',
       benefitType: 'scholar_100',
       maxUses: '1',
-      notes: ''
+      notes: '',
+      includedHoursPerWeek: 2,
+      discountPercent: 100
     });
     setCouponNotice(`¡Cupón [${cleanCode}] creado y activo inmediatamente en Güakytopia y la nube! ✨`);
     setTimeout(() => setCouponNotice(null), 3500);
@@ -256,14 +275,19 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
       ...editingStudent,
       ...editStudentForm,
       name: editStudentForm.name?.trim() || editingStudent.name,
-      lastName: editStudentForm.lastName?.trim() || '',
+      lastName: editStudentForm.lastName !== undefined ? editStudentForm.lastName.trim() : (editingStudent.lastName || ''),
       email: editStudentForm.email?.trim().toLowerCase() || editingStudent.email,
       username: editStudentForm.username?.trim().toLowerCase() || editingStudent.username,
+      password: editStudentForm.password ? editStudentForm.password.trim() : editingStudent.password,
+      plan: editStudentForm.plan || editingStudent.plan,
+      status: editStudentForm.status || editingStudent.status,
+      levelId: editStudentForm.levelId || editingStudent.levelId,
+      currentUnit: editStudentForm.currentUnit || editingStudent.currentUnit,
       notes: `${editStudentForm.notes || ''} | Modificado por Directora Waky el ${new Date().toLocaleDateString('es-VE')}`
     };
     onUpdateStudent(updated);
     setEditingStudent(null);
-    setApprovalNotice(`¡Perfil de ${updated.name} actualizado con éxito!`);
+    setApprovalNotice(`¡Perfil de ${updated.name} ${updated.lastName || ''} actualizado con éxito! ✨`);
     setTimeout(() => setApprovalNotice(null), 3000);
   };
 
@@ -589,6 +613,12 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
   const [studentSearch, setStudentSearch] = useState('');
   const [studentLevelFilter, setStudentLevelFilter] = useState('all');
   const [studentStatusFilter, setStudentStatusFilter] = useState('all');
+  const [studentCouponFilter, setStudentCouponFilter] = useState<'all' | 'with_coupon' | 'without_coupon' | 'digital_pass' | 'live_classes'>('all');
+  const [studentScheduleFilter, setStudentScheduleFilter] = useState<'all' | 'with_schedule' | 'without_schedule'>('all');
+  const [studentSortBy, setStudentSortBy] = useState<'registered_desc' | 'registered_asc' | 'name_asc' | 'name_desc' | 'unit_desc' | 'xp_desc'>('registered_desc');
+  const [studentViewMode, setStudentViewMode] = useState<'table' | 'cards'>('table');
+  const [selectedDetailStudent, setSelectedDetailStudent] = useState<Student | null>(null);
+  const [activeActionDropdownStudentId, setActiveActionDropdownStudentId] = useState<string | null>(null);
 
   // Teacher Modals
   const [editingTeacher, setEditingTeacher] = useState<Teacher | null>(null);
@@ -755,16 +785,60 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
     }
   };
 
-  // Filtered Students
-  const filteredStudents = students.filter(s => {
-    const fullName = `${s.name} ${s.lastName || ''}`.toLowerCase();
-    const matchesSearch = !studentSearch || 
-      fullName.includes(studentSearch.toLowerCase()) || 
-      s.email.toLowerCase().includes(studentSearch.toLowerCase());
-    const matchesLevel = studentLevelFilter === 'all' || s.levelId === studentLevelFilter;
-    const matchesStatus = studentStatusFilter === 'all' || s.status === studentStatusFilter;
-    return matchesSearch && matchesLevel && matchesStatus;
-  });
+  // Filtered & Sorted Students
+  const filteredStudents = students
+    .filter(s => {
+      const fullName = `${s.name} ${s.lastName || ''}`.toLowerCase();
+      const matchesSearch = !studentSearch || 
+        fullName.includes(studentSearch.toLowerCase()) || 
+        s.email.toLowerCase().includes(studentSearch.toLowerCase()) ||
+        (s.phone && s.phone.includes(studentSearch)) ||
+        (s.cedula && s.cedula.toLowerCase().includes(studentSearch.toLowerCase())) ||
+        (s.schoolOrProfession && s.schoolOrProfession.toLowerCase().includes(studentSearch.toLowerCase()));
+      const matchesLevel = studentLevelFilter === 'all' || s.levelId === studentLevelFilter;
+      const matchesStatus = studentStatusFilter === 'all' || s.status === studentStatusFilter;
+
+      const hasCoupon = Boolean(s.couponCodeUsed || s.couponCodeAssigned || (s.coupons && s.coupons.length > 0));
+      const matchesCoupon = 
+        studentCouponFilter === 'all' ? true :
+        studentCouponFilter === 'with_coupon' ? hasCoupon :
+        studentCouponFilter === 'without_coupon' ? !hasCoupon :
+        studentCouponFilter === 'digital_pass' ? Boolean(s.isDigitalPass) :
+        studentCouponFilter === 'live_classes' ? !s.isDigitalPass : true;
+
+      const hasSchedule = Boolean(s.assignedSlots && s.assignedSlots.length > 0);
+      const matchesSchedule =
+        studentScheduleFilter === 'all' ? true :
+        studentScheduleFilter === 'with_schedule' ? hasSchedule :
+        studentScheduleFilter === 'without_schedule' ? !hasSchedule : true;
+
+      return matchesSearch && matchesLevel && matchesStatus && matchesCoupon && matchesSchedule;
+    })
+    .sort((a, b) => {
+      if (studentSortBy === 'name_asc') {
+        return (a.name || '').localeCompare(b.name || '');
+      }
+      if (studentSortBy === 'name_desc') {
+        return (b.name || '').localeCompare(a.name || '');
+      }
+      if (studentSortBy === 'registered_desc') {
+        const da = a.registeredAt ? new Date(a.registeredAt).getTime() : 0;
+        const db = b.registeredAt ? new Date(b.registeredAt).getTime() : 0;
+        return db - da;
+      }
+      if (studentSortBy === 'registered_asc') {
+        const da = a.registeredAt ? new Date(a.registeredAt).getTime() : 0;
+        const db = b.registeredAt ? new Date(b.registeredAt).getTime() : 0;
+        return da - db;
+      }
+      if (studentSortBy === 'unit_desc') {
+        return (b.currentUnit || 1) - (a.currentUnit || 1);
+      }
+      if (studentSortBy === 'xp_desc') {
+        return (b.xp || 0) - (a.xp || 0);
+      }
+      return 0;
+    });
 
   // Calculate Statistics
   const activeStudentsCount = students.filter(s => s.status === 'enrolled').length;
@@ -1436,42 +1510,172 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
             </button>
           </div>
 
-          {/* Search & Filters */}
-          <div className="flex flex-col sm:flex-row items-center gap-3">
-            <div className="relative flex-1 w-full">
-              <Search className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
-              <input
-                type="text"
-                value={studentSearch}
-                onChange={e => setStudentSearch(e.target.value)}
-                placeholder="Buscar por nombre o correo de alumno..."
-                className="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-amber-500 focus:outline-hidden"
-              />
+          {/* Enhanced Search, View Mode & Filters Control Center */}
+          <div className="bg-white p-4 sm:p-5 rounded-3xl border border-slate-200 shadow-2xs space-y-3.5">
+            {/* Top Row: Search + View Switcher + Sorter */}
+            <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
+              {/* Search Bar */}
+              <div className="relative flex-1">
+                <Search className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
+                <input
+                  type="text"
+                  value={studentSearch}
+                  onChange={e => setStudentSearch(e.target.value)}
+                  placeholder="Buscar alumno por nombre, apellido, correo, cédula, teléfono..."
+                  className="w-full pl-10 pr-9 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-amber-500 focus:bg-white focus:outline-hidden"
+                />
+                {studentSearch && (
+                  <button 
+                    onClick={() => setStudentSearch('')}
+                    className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 p-0.5"
+                    title="Limpiar búsqueda"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+
+              {/* View Mode Segmented Switcher & Sorter */}
+              <div className="flex items-center gap-2 flex-wrap">
+                {/* Segmented Button: Table vs Cards */}
+                <div className="flex items-center p-1 bg-slate-100 rounded-xl border border-slate-200 text-xs">
+                  <button
+                    type="button"
+                    onClick={() => setStudentViewMode('table')}
+                    className={`px-3 py-1.5 rounded-lg font-bold transition-all flex items-center gap-1.5 ${
+                      studentViewMode === 'table'
+                        ? 'bg-white text-slate-900 shadow-xs'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                    title="Vista en tabla simplificada"
+                  >
+                    <LayoutList className="w-3.5 h-3.5" />
+                    <span>Tabla</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setStudentViewMode('cards')}
+                    className={`px-3 py-1.5 rounded-lg font-bold transition-all flex items-center gap-1.5 ${
+                      studentViewMode === 'cards'
+                        ? 'bg-white text-slate-900 shadow-xs'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                    title="Vista en tarjetas cuadrícula"
+                  >
+                    <LayoutGrid className="w-3.5 h-3.5" />
+                    <span>Tarjetas</span>
+                  </button>
+                </div>
+
+                {/* Sorter Dropdown */}
+                <select
+                  value={studentSortBy}
+                  onChange={e => setStudentSortBy(e.target.value as any)}
+                  className="px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:ring-2 focus:ring-amber-500"
+                >
+                  <option value="registered_desc">📅 Más recientes</option>
+                  <option value="registered_asc">📅 Más antiguos</option>
+                  <option value="name_asc">🔤 Nombre (A-Z)</option>
+                  <option value="name_desc">🔤 Nombre (Z-A)</option>
+                  <option value="unit_desc">📖 Mayor unidad</option>
+                  <option value="xp_desc">⚡ Más experiencia (XP)</option>
+                </select>
+              </div>
             </div>
 
-            <div className="flex items-center gap-2 w-full sm:w-auto">
-              <select
-                value={studentLevelFilter}
-                onChange={e => setStudentLevelFilter(e.target.value)}
-                className="px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-700"
-              >
-                <option value="all">Todos los Niveles</option>
-                {ENGLISH_LEVELS.map(lvl => (
-                  <option key={lvl.id} value={lvl.id}>{lvl.levelName} ({lvl.book})</option>
-                ))}
-              </select>
+            {/* Filter Dropdowns Grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2 border-t border-slate-100">
+              {/* Nivel */}
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Nivel</label>
+                <select
+                  value={studentLevelFilter}
+                  onChange={e => setStudentLevelFilter(e.target.value)}
+                  className="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700"
+                >
+                  <option value="all">Todos los Niveles</option>
+                  {ENGLISH_LEVELS.map(lvl => (
+                    <option key={lvl.id} value={lvl.id}>{lvl.levelName} ({lvl.book})</option>
+                  ))}
+                </select>
+              </div>
 
-              <select
-                value={studentStatusFilter}
-                onChange={e => setStudentStatusFilter(e.target.value)}
-                className="px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-700"
-              >
-                <option value="all">Todos los Estados</option>
-                <option value="enrolled">Inscritos</option>
-                <option value="pending_evaluation">Pendientes</option>
-                <option value="paused">Pausados</option>
-                <option value="completed">Graduados</option>
-              </select>
+              {/* Estado */}
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Estado</label>
+                <select
+                  value={studentStatusFilter}
+                  onChange={e => setStudentStatusFilter(e.target.value)}
+                  className="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700"
+                >
+                  <option value="all">Todos los Estados</option>
+                  <option value="enrolled">Inscritos</option>
+                  <option value="pending_evaluation">Pendientes</option>
+                  <option value="paused">Pausados</option>
+                  <option value="completed">Graduados</option>
+                </select>
+              </div>
+
+              {/* Cupón / Membresía */}
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Membresía & Cupones</label>
+                <select
+                  value={studentCouponFilter}
+                  onChange={e => setStudentCouponFilter(e.target.value as any)}
+                  className="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700"
+                >
+                  <option value="all">Todos los Planes</option>
+                  <option value="with_coupon">Con Cupón / Beca</option>
+                  <option value="without_coupon">Sin Cupón Asignado</option>
+                  <option value="digital_pass">Pase Digital Autónomo</option>
+                  <option value="live_classes">Clases en Vivo</option>
+                </select>
+              </div>
+
+              {/* Horario */}
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Horario Agendado</label>
+                <select
+                  value={studentScheduleFilter}
+                  onChange={e => setStudentScheduleFilter(e.target.value as any)}
+                  className="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700"
+                >
+                  <option value="all">Todos los Horarios</option>
+                  <option value="with_schedule">Con Horario Asignado</option>
+                  <option value="without_schedule">⚠️ Sin Horario Asignado</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Results bar & Reset filters */}
+            <div className="flex items-center justify-between text-xs pt-1 text-slate-500">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span>
+                  Mostrando <strong className="text-slate-800">{filteredStudents.length}</strong> de <strong className="text-slate-800">{students.length}</strong> alumnos
+                </span>
+                <span aria-hidden="true" className="hidden sm:inline">·</span>
+                <span className="text-[11px] text-amber-700 font-semibold hidden sm:inline">
+                  💡 Haz clic en cualquier alumno para abrir su <strong>Expediente Maestro & Cerebro Cokitö</strong>
+                </span>
+              </div>
+
+              {(studentSearch || studentLevelFilter !== 'all' || studentStatusFilter !== 'all' || studentCouponFilter !== 'all' || studentScheduleFilter !== 'all' || studentSortBy !== 'registered_desc') && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setStudentSearch('');
+                    setStudentLevelFilter('all');
+                    setStudentStatusFilter('all');
+                    setStudentCouponFilter('all');
+                    setStudentScheduleFilter('all');
+                    setStudentSortBy('registered_desc');
+                  }}
+                  className="text-amber-800 hover:text-amber-950 font-bold text-xs flex items-center gap-1 hover:underline"
+                >
+                  <RotateCcw className="w-3 h-3" />
+                  <span>Restablecer filtros</span>
+                </button>
+              )}
             </div>
           </div>
 
@@ -1543,192 +1747,405 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
             </div>
           )}
 
-          {/* Students Table */}
-          <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-2xs">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold uppercase tracking-wider text-[11px]">
-                  <tr>
-                    <th className="py-3 px-4">Alumno</th>
-                    <th className="py-3 px-4">Nivel Actual</th>
-                    <th className="py-3 px-4">Unidad</th>
-                    <th className="py-3 px-4">Código de cupón</th>
-                    <th className="py-3 px-4">Teacher & Horarios</th>
-                    <th className="py-3 px-4">Estado</th>
-                    <th className="py-3 px-4 text-right">Acciones de Directora</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {filteredStudents.map(student => {
-                    const matchedLevel = ENGLISH_LEVELS.find(l => l.id === student.levelId);
-                    const hasClasses = student.assignedSlots && student.assignedSlots.length > 0;
-                    return (
-                      <tr key={student.id} className="hover:bg-slate-50/80 transition-colors">
-                        <td className="py-3 px-4">
-                          <div className="flex items-center gap-2.5">
-                            <img
-                              src={student.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${student.name}`}
-                              alt={student.name}
-                              className="w-8 h-8 rounded-full border border-slate-200 object-cover"
-                            />
-                            <div>
-                              <div className="font-bold text-slate-900">{student.name} {student.lastName || ''}</div>
-                              <div className="text-[11px] text-slate-400">{student.email}</div>
+          {/* Empty State */}
+          {filteredStudents.length === 0 && (
+            <div className="bg-white rounded-3xl border border-slate-200 p-10 text-center space-y-3">
+              <div className="text-3xl">🔍</div>
+              <h3 className="text-base font-black text-slate-800">
+                No se encontraron alumnos con los filtros seleccionados
+              </h3>
+              <p className="text-xs text-slate-500 max-w-md mx-auto">
+                Intenta cambiar el término de búsqueda o restablecer los filtros de nivel, estado o cupones.
+              </p>
+              <button
+                onClick={() => {
+                  setStudentSearch('');
+                  setStudentLevelFilter('all');
+                  setStudentStatusFilter('all');
+                  setStudentCouponFilter('all');
+                  setStudentScheduleFilter('all');
+                  setStudentSortBy('registered_desc');
+                }}
+                className="px-4 py-2 bg-slate-900 text-white rounded-xl text-xs font-bold transition-colors inline-flex items-center gap-1.5"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                <span>Restablecer Filtros</span>
+              </button>
+            </div>
+          )}
+
+          {/* VIEW MODE 1: COMPACT TABLE (Optimized to NOT overflow screen) */}
+          {studentViewMode === 'table' && filteredStudents.length > 0 && (
+            <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-2xs">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold uppercase tracking-wider text-[11px]">
+                    <tr>
+                      <th className="py-3 px-4">Alumno</th>
+                      <th className="py-3 px-3">Nivel & Unidad</th>
+                      <th className="py-3 px-3">Cerebro Cokitö</th>
+                      <th className="py-3 px-3">Cupón / Beca</th>
+                      <th className="py-3 px-3">Horario & Clases</th>
+                      <th className="py-3 px-3">Estado</th>
+                      <th className="py-3 px-4 text-right">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {filteredStudents.map(student => {
+                      const matchedLevel = ENGLISH_LEVELS.find(l => l.id === student.levelId);
+                      const hasClasses = student.assignedSlots && student.assignedSlots.length > 0;
+                      const coquito = analyzeStudentWithCoquito(student);
+                      const isDropdownOpen = activeActionDropdownStudentId === student.id;
+
+                      return (
+                        <tr 
+                          key={student.id} 
+                          onClick={() => setSelectedDetailStudent(student)}
+                          className="hover:bg-amber-50/40 transition-colors cursor-pointer group"
+                        >
+                          {/* Alumno Info */}
+                          <td className="py-3 px-4">
+                            <div className="flex items-center gap-2.5">
+                              <img
+                                src={student.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${student.name}`}
+                                alt={student.name}
+                                className="w-9 h-9 rounded-xl border border-slate-200 object-cover shrink-0"
+                              />
+                              <div className="min-w-0">
+                                <div className="font-bold text-slate-900 group-hover:text-amber-900 transition-colors flex items-center gap-1.5 truncate">
+                                  <span>{student.name} {student.lastName || ''}</span>
+                                </div>
+                                <div className="text-[11px] text-slate-400 truncate">{student.email}</div>
+                              </div>
                             </div>
-                          </div>
-                        </td>
+                          </td>
 
-                        <td className="py-3 px-4 font-bold text-indigo-700">
-                          {matchedLevel ? `${matchedLevel.levelName} (${matchedLevel.book})` : student.levelId || 'Sin asignar'}
-                        </td>
-
-                        <td className="py-3 px-4 font-mono font-bold text-slate-700">
-                          Unidad {student.currentUnit || 1}
-                        </td>
-                        <td className="py-3 px-4 min-w-[190px]">
-                          <div className="font-bold text-slate-800 mb-1">{student.couponCodeUsed || student.couponCodeAssigned || "Sin cupón registrado"}</div>
-                          <select aria-label={"Asignar cupón a " + student.name} value={student.couponCodeAssigned || ""} onChange={e => { const selected = couponsList.find(c => c.code === e.target.value); onUpdateStudent({ ...student, couponCodeAssigned: selected?.code || undefined, notes: (student.notes || "") + (selected ? " | Cupón asignado por Directora Waky: " + selected.code : " | Asignación manual de cupón retirada") }); setCouponNotice(selected ? "Cupón " + selected.code + " registrado. Beneficios/pagos no se modifican automáticamente." : "Asignación retirada."); setTimeout(() => setCouponNotice(null), 4000); }} className="w-full max-w-[220px] rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-[11px] font-semibold text-slate-700">
-                            <option value="">Asignar cupón…</option>
-                            {couponsList.filter(c => c.isActive).map(coupon => <option key={coupon.id} value={coupon.code}>{coupon.code} — {coupon.title}</option>)}
-                          </select>
-                        </td>
-
-                        <td className="py-3 px-4 text-slate-700">
-                          <div className="space-y-1">
-                            <div className="flex items-center gap-1.5 flex-wrap">
-                              <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-md ${
-                                student.isExclusiveTeacher 
-                                  ? 'bg-purple-100 text-purple-900 border border-purple-200' 
-                                  : 'bg-emerald-100 text-emerald-900 border border-emerald-200'
-                              }`}>
-                                {student.isExclusiveTeacher ? '🔒 Mentor Exclusivo' : '🌟 La Manada (Rotativo)'}
-                              </span>
-                              <span className="font-semibold text-slate-900 text-xs">
-                                {student.isExclusiveTeacher 
-                                  ? (student.teacherName || 'Por asignar') 
-                                  : 'Mentores del Nivel'}
-                              </span>
+                          {/* Nivel & Unidad */}
+                          <td className="py-3 px-3 whitespace-nowrap">
+                            <div className="font-bold text-indigo-700">
+                              {matchedLevel ? matchedLevel.levelName : student.levelId || 'Sin nivel'}
                             </div>
+                            <div className="text-[11px] text-slate-500 font-mono">
+                              Unidad {student.currentUnit || 1} {matchedLevel ? `• ${matchedLevel.book}` : ''}
+                            </div>
+                          </td>
 
+                          {/* Cerebro Coquito tag with thematic color */}
+                          <td className="py-3 px-3 whitespace-nowrap">
+                            <span 
+                              className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-[11px] font-bold border ${coquito.styleColor.badgeBg}`}
+                              title={`Superpoder: ${coquito.superpower}`}
+                            >
+                              <span>🧠</span>
+                              <span>{coquito.learningStyle}</span>
+                            </span>
+                          </td>
+
+                          {/* Cupón / Beca */}
+                          <td className="py-3 px-3 whitespace-nowrap" onClick={e => e.stopPropagation()}>
+                            <div className="space-y-1">
+                              {student.couponCodeUsed && (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-900 border border-emerald-300 text-[10px] font-black uppercase">
+                                  <span>🎟️</span>
+                                  <span className="font-mono">{student.couponCodeUsed}</span>
+                                </span>
+                              )}
+                              {student.couponCodeAssigned && student.couponCodeAssigned !== student.couponCodeUsed && (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-purple-100 text-purple-900 border border-purple-300 text-[10px] font-black uppercase">
+                                  <span>👑</span>
+                                  <span className="font-mono">{student.couponCodeAssigned}</span>
+                                </span>
+                              )}
+                              {!student.couponCodeUsed && !student.couponCodeAssigned && (
+                                <span className="text-slate-400 text-[11px] font-medium italic block">Sin cupón</span>
+                              )}
+                            </div>
+                          </td>
+
+                          {/* Teacher & Horarios */}
+                          <td className="py-3 px-3 whitespace-nowrap" onClick={e => e.stopPropagation()}>
                             {student.isDigitalPass ? (
-                              <div className="text-[10px] font-bold text-violet-800 bg-violet-50 px-2 py-0.5 rounded-lg border border-violet-200 inline-flex items-center gap-1"><Smartphone className="w-3 h-3" /><span>Pase Digital · sin horario requerido</span></div>
+                              <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-violet-100 text-violet-900 border border-violet-200 text-[10px] font-black">
+                                <Smartphone className="w-3 h-3 text-violet-700" />
+                                <span>Pase Digital Autónomo</span>
+                              </div>
                             ) : hasClasses ? (
-                              <div className="text-[10px] font-bold text-indigo-800 bg-indigo-50 px-2 py-0.5 rounded-lg border border-indigo-200 inline-flex items-center gap-1">
-                                <Calendar className="w-3 h-3 text-indigo-600" />
-                                <span>{student.assignedSlots.join(' • ')}</span>
+                              <div className="text-xs space-y-0.5">
+                                <div className="font-bold text-slate-800 text-[11px] flex items-center gap-1">
+                                  <Calendar className="w-3 h-3 text-indigo-600 shrink-0" />
+                                  <span className="truncate max-w-[170px]">{student.assignedSlots[0]}</span>
+                                </div>
+                                <div className="text-[10px] text-slate-400">
+                                  {student.teacherName || 'Teacher Cokitö'}
+                                </div>
                               </div>
                             ) : (
-                              <div className="text-[10px] font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded-lg border border-amber-300 inline-flex items-center gap-1">
-                                <AlertCircle className="w-3 h-3 text-amber-600" />
+                              <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-100 text-amber-900 border border-amber-300 text-[10px] font-black">
+                                <AlertCircle className="w-3 h-3 text-amber-700" />
                                 <span>⚠️ Sin horario agendado</span>
                               </div>
                             )}
-                          </div>
-                        </td>
+                          </td>
 
-                        <td className="py-3 px-4">
-                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase ${
-                            student.status === 'enrolled'
-                              ? 'bg-emerald-100 text-emerald-800'
-                              : student.status === 'pending_evaluation'
-                              ? 'bg-amber-100 text-amber-800'
-                              : 'bg-slate-100 text-slate-700'
-                          }`}>
-                            {student.status === 'enrolled' ? 'Inscrito' : student.status}
-                          </span>
-                        </td>
+                          {/* Estado */}
+                          <td className="py-3 px-3 whitespace-nowrap">
+                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase ${
+                              student.status === 'enrolled'
+                                ? 'bg-emerald-100 text-emerald-800'
+                                : student.status === 'pending_evaluation'
+                                ? 'bg-amber-100 text-amber-800'
+                                : 'bg-slate-100 text-slate-700'
+                            }`}>
+                              {student.status === 'enrolled' ? 'Inscrito' : student.status}
+                            </span>
+                          </td>
 
-                        <td className="py-3 px-4 text-right">
-                          <div className="flex items-center justify-end gap-1.5">
-                            {/* Ver Carta Oficial y Credenciales */}
-                            <button
-                              onClick={() => handleOpenStudentLetterModal(student)}
-                              className="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl transition-colors"
-                              title="Ver carnet oficial y carta de bienvenida"
-                            >
-                              <FileText className="w-3.5 h-3.5 text-slate-600" />
-                            </button>
+                          {/* Streamlined Actions (No Overflow) */}
+                          <td className="py-3 px-4 text-right whitespace-nowrap" onClick={e => e.stopPropagation()}>
+                            <div className="flex items-center justify-end gap-1.5 relative">
+                              {/* Open Dossier button */}
+                              <button
+                                onClick={() => setSelectedDetailStudent(student)}
+                                className="px-2.5 py-1.5 bg-slate-900 hover:bg-slate-800 text-amber-300 font-bold rounded-xl text-xs transition-colors flex items-center gap-1 shadow-2xs"
+                                title="Ver Expediente Maestro completo y Cerebro Cokitö"
+                              >
+                                <Eye className="w-3.5 h-3.5 text-amber-400" />
+                                <span className="hidden sm:inline">Expediente</span>
+                              </button>
 
-                            {/* Resend Welcome Email with Credentials */}
-                            <button
-                              onClick={() => handleResendStudentEmail(student)}
-                              className="p-1.5 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 rounded-xl transition-colors"
-                              title="Reenviar carta oficial con credenciales y acceso al Campus por correo"
-                            >
-                              <Send className="w-3.5 h-3.5 text-amber-700" />
-                            </button>
+                              {/* Assign / Edit Classes */}
+                              <button
+                                onClick={() => handleOpenAssignClasses(student)}
+                                className={`p-1.5 rounded-xl border transition-colors ${
+                                  hasClasses 
+                                    ? 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200' 
+                                    : 'bg-amber-400 hover:bg-amber-300 text-slate-950 border-amber-500 shadow-2xs font-bold'
+                                }`}
+                                title={hasClasses ? 'Modificar clases y horarios' : 'Asignar horario ahora'}
+                              >
+                                <Calendar className="w-3.5 h-3.5" />
+                              </button>
 
-                            {/* Assign / Edit Classes Button */}
-                            <button
-                              onClick={() => handleOpenAssignClasses(student)}
-                              className={`px-2.5 py-1.5 font-bold rounded-xl border transition-all flex items-center gap-1 text-xs ${
-                                !hasClasses
-                                  ? 'bg-amber-400 hover:bg-amber-300 text-slate-950 border-amber-500 shadow-xs'
-                                  : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border-emerald-300'
-                              }`}
-                              title={hasClasses ? 'Modificar clases y notificar' : 'Asignar horario y notificar a la alumna'}
-                            >
-                              <Calendar className={`w-3.5 h-3.5 ${!hasClasses ? 'text-slate-950' : 'text-emerald-700'}`} />
-                              <span>{!hasClasses ? 'Asignar Clases' : 'Clases'}</span>
-                            </button>
+                              {/* Secondary Actions Dropdown (•••) */}
+                              <div className="relative">
+                                <button
+                                  type="button"
+                                  onClick={() => setActiveActionDropdownStudentId(isDropdownOpen ? null : student.id)}
+                                  className="p-1.5 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-xl transition-colors border border-slate-200"
+                                  title="Más opciones de alumna"
+                                >
+                                  <MoreVertical className="w-3.5 h-3.5" />
+                                </button>
 
-                            <button
-                              onClick={() => handleOpenEditStudent(student)}
-                              className="px-2.5 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-900 font-bold border border-blue-200 rounded-xl transition-colors flex items-center gap-1"
-                              title="Editar perfil completo, credenciales y plan"
-                            >
-                              <Edit3 className="w-3.5 h-3.5" />
-                              <span>Editar</span>
-                            </button>
+                                {isDropdownOpen && (
+                                  <div 
+                                    className="absolute right-0 top-full mt-1.5 w-48 bg-white rounded-2xl shadow-xl border border-slate-200 py-1.5 z-40 animate-fadeIn text-left"
+                                    onClick={() => setActiveActionDropdownStudentId(null)}
+                                  >
+                                    <button
+                                      onClick={() => handleOpenEditStudent(student)}
+                                      className="w-full px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 flex items-center gap-2"
+                                    >
+                                      <Edit3 className="w-3.5 h-3.5 text-blue-600" />
+                                      <span>Editar Perfil</span>
+                                    </button>
 
-                            <button
-                              onClick={() => handleToggleStudentStatus(student)}
-                              className={`p-1.5 rounded-lg border transition-colors ${
-                                student.status === 'enrolled'
-                                  ? 'bg-amber-50 hover:bg-amber-100 text-amber-700 border-amber-200'
-                                  : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border-emerald-200'
-                              }`}
-                              title={student.status === 'enrolled' ? 'Pausar o suspender alumno temporalmente' : 'Reactivar alumno'}
-                            >
-                              <Power className="w-3.5 h-3.5" />
-                            </button>
+                                    <button
+                                      onClick={() => handleOpenStudentLetterModal(student)}
+                                      className="w-full px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 flex items-center gap-2"
+                                    >
+                                      <FileText className="w-3.5 h-3.5 text-slate-600" />
+                                      <span>Carnet & Credenciales</span>
+                                    </button>
 
-                            <button
-                              onClick={() => {
-                                setMovingStudent(student);
-                                setTargetLevelId(student.levelId || 'level_1');
-                                setTargetUnit(student.currentUnit || 1);
-                                setTargetTeacherId(student.teacherId || '');
-                                setTargetStatus(student.status || 'enrolled');
-                                setTargetSlotId(student.assignedSlots?.[0] || 'none');
-                              }}
-                              className="px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-900 font-bold border border-amber-300 rounded-xl transition-colors flex items-center gap-1"
-                              title="Mover de nivel, unidad o teacher"
-                            >
-                              <ArrowRightLeft className="w-3.5 h-3.5" />
-                              <span>Mover</span>
-                            </button>
+                                    <button
+                                      onClick={() => handleResendStudentEmail(student)}
+                                      className="w-full px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 flex items-center gap-2"
+                                    >
+                                      <Send className="w-3.5 h-3.5 text-amber-600" />
+                                      <span>Reenviar Correo</span>
+                                    </button>
 
-                            <button
-                              onClick={() => {
-                                if (confirm(`¿Dar de baja y eliminar a ${student.name} del sistema?`)) {
-                                  onDeleteStudent(student.id);
-                                }
-                              }}
-                              className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                              title="Dar de baja definitiva y eliminar al alumno"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+                                    <button
+                                      onClick={() => {
+                                        setMovingStudent(student);
+                                        setTargetLevelId(student.levelId || 'level_1');
+                                        setTargetUnit(student.currentUnit || 1);
+                                        setTargetTeacherId(student.teacherId || '');
+                                        setTargetStatus(student.status || 'enrolled');
+                                        setTargetSlotId(student.assignedSlots?.[0] || 'none');
+                                      }}
+                                      className="w-full px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 flex items-center gap-2"
+                                    >
+                                      <ArrowRightLeft className="w-3.5 h-3.5 text-purple-600" />
+                                      <span>Mover de Nivel / Teacher</span>
+                                    </button>
+
+                                    <button
+                                      onClick={() => handleToggleStudentStatus(student)}
+                                      className="w-full px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 flex items-center gap-2"
+                                    >
+                                      <Power className={`w-3.5 h-3.5 ${student.status === 'enrolled' ? 'text-amber-600' : 'text-emerald-600'}`} />
+                                      <span>{student.status === 'enrolled' ? 'Pausar Alumno' : 'Reactivar Alumno'}</span>
+                                    </button>
+
+                                    <div className="my-1 border-t border-slate-100" />
+
+                                    <button
+                                      onClick={() => {
+                                        if (confirm(`¿Dar de baja y eliminar definitivamente a ${student.name} del sistema?`)) {
+                                          onDeleteStudent(student.id);
+                                        }
+                                      }}
+                                      className="w-full px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-50 flex items-center gap-2"
+                                    >
+                                      <Trash2 className="w-3.5 h-3.5 text-red-600" />
+                                      <span>Dar de Baja</span>
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
             </div>
-          </div>
+          )}
+
+          {/* VIEW MODE 2: CARDS GRID VIEW */}
+          {studentViewMode === 'cards' && filteredStudents.length > 0 && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filteredStudents.map(student => {
+                const matchedLevel = ENGLISH_LEVELS.find(l => l.id === student.levelId);
+                const hasClasses = student.assignedSlots && student.assignedSlots.length > 0;
+                const coquito = analyzeStudentWithCoquito(student);
+
+                return (
+                  <div
+                    key={student.id}
+                    onClick={() => setSelectedDetailStudent(student)}
+                    className="bg-white rounded-3xl border border-slate-200 p-5 shadow-2xs hover:shadow-md hover:border-amber-300 transition-all cursor-pointer flex flex-col justify-between group space-y-4"
+                  >
+                    {/* Card Header */}
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <img
+                          src={student.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${student.name}`}
+                          alt={student.name}
+                          className="w-12 h-12 rounded-2xl border border-slate-200 object-cover shrink-0"
+                        />
+                        <div className="min-w-0">
+                          <h3 className="font-bold text-slate-900 text-sm group-hover:text-amber-900 transition-colors truncate">
+                            {student.name} {student.lastName || ''}
+                          </h3>
+                          <div className="text-[11px] text-slate-400 truncate">{student.email}</div>
+                          {student.schoolOrProfession && (
+                            <div className="text-[10px] text-slate-500 truncate mt-0.5">
+                              {student.schoolOrProfession}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="shrink-0 flex flex-col items-end gap-1">
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase ${
+                          student.status === 'enrolled'
+                            ? 'bg-emerald-100 text-emerald-800'
+                            : 'bg-amber-100 text-amber-800'
+                        }`}>
+                          {student.status === 'enrolled' ? 'Activo' : 'Pausado'}
+                        </span>
+                        <span 
+                          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-bold border ${coquito.styleColor.badgeBg}`}
+                          title={`Estilo cognitivo Cokitö: ${coquito.learningStyle}`}
+                        >
+                          <span>🧠</span>
+                          <span>{coquito.learningStyle}</span>
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Level & Unit Strip */}
+                    <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200 space-y-1.5 text-xs">
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-indigo-700">
+                          {matchedLevel ? `${matchedLevel.levelName} (${matchedLevel.book})` : student.levelId || 'Sin asignar'}
+                        </span>
+                        <span className="font-mono font-bold text-slate-700">
+                          Unidad {student.currentUnit || 1}
+                        </span>
+                      </div>
+
+                      {/* Coupon Info */}
+                      <div className="flex items-center gap-1.5 text-[11px] pt-1 border-t border-slate-200/80">
+                        <span className="text-slate-400">Cupón:</span>
+                        {student.couponCodeUsed || student.couponCodeAssigned ? (
+                          <span className="font-mono font-bold text-emerald-800 bg-emerald-100 px-1.5 py-0.5 rounded-md text-[10px]">
+                            {student.couponCodeAssigned || student.couponCodeUsed}
+                          </span>
+                        ) : (
+                          <span className="text-slate-400 italic">Ninguno</span>
+                        )}
+                        <span aria-hidden="true" className="text-slate-300">·</span>
+                        <span className="text-slate-500 truncate">
+                          {student.isDigitalPass ? 'Plataforma' : `${student.plan} (${hasClasses ? 'Agendado' : 'Sin horario'})`}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Progress Metrics & Action Buttons */}
+                    <div className="space-y-3 pt-1">
+                      <div className="flex items-center justify-between text-[11px] text-slate-500">
+                        <div className="flex items-center gap-1">
+                          <Flame className="w-3.5 h-3.5 text-orange-500" />
+                          <span>{student.streak || 0} días</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Zap className="w-3.5 h-3.5 text-amber-500" />
+                          <span>{student.xp || 0} XP</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Clock className="w-3.5 h-3.5 text-slate-400" />
+                          <span>{student.completedHours || 0}h vistas</span>
+                        </div>
+                      </div>
+
+                      {/* Card Footer Actions */}
+                      <div className="flex items-center gap-2 pt-2 border-t border-slate-100" onClick={e => e.stopPropagation()}>
+                        <button
+                          onClick={() => setSelectedDetailStudent(student)}
+                          className="flex-1 py-2 bg-slate-900 hover:bg-slate-800 text-amber-300 font-bold rounded-xl text-xs transition-colors flex items-center justify-center gap-1.5 shadow-2xs"
+                        >
+                          <Eye className="w-3.5 h-3.5 text-amber-400" />
+                          <span>Expediente Completo</span>
+                        </button>
+
+                        <button
+                          onClick={() => handleOpenAssignClasses(student)}
+                          className="p-2 bg-amber-50 hover:bg-amber-100 text-amber-900 font-bold border border-amber-300 rounded-xl text-xs transition-colors"
+                          title="Asignar o editar horarios"
+                        >
+                          <Calendar className="w-3.5 h-3.5 text-amber-700" />
+                        </button>
+
+                        <button
+                          onClick={() => handleOpenEditStudent(student)}
+                          className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition-colors"
+                          title="Editar perfil"
+                        >
+                          <Edit3 className="w-3.5 h-3.5 text-slate-600" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       )}
 
@@ -3436,7 +3853,23 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
                   </label>
                   <select
                     value={newCouponData.benefitType}
-                    onChange={e => setNewCouponData({ ...newCouponData, benefitType: e.target.value as any })}
+                    onChange={e => {
+                      const bType = e.target.value as BenefitType;
+                      let h = newCouponData.includedHoursPerWeek;
+                      let d = newCouponData.discountPercent;
+                      if (bType === 'free_webapp_3m' || bType === 'webapp_5usd_3m') {
+                        h = 0;
+                        d = 100;
+                      } else if (bType === 'scholar_50') {
+                        d = 50;
+                      } else if (bType === 'scholar_20') {
+                        d = 20;
+                      } else if (bType === 'scholar_100') {
+                        d = 100;
+                        if (h === 0) h = 2;
+                      }
+                      setNewCouponData({ ...newCouponData, benefitType: bType, includedHoursPerWeek: h, discountPercent: d });
+                    }}
                     className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold text-slate-800"
                   >
                     <option value="scholar_100">Beca Total 100% (Clases + Web App)</option>
@@ -3459,6 +3892,42 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
                     placeholder="1 (uso único) o 'unlimited'"
                     className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold text-slate-800"
                   />
+                </div>
+              </div>
+
+              {/* Horas Semanales Incluidas & Descuento Real */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 bg-amber-50/60 p-3 rounded-2xl border border-amber-200">
+                <div>
+                  <label className="font-bold text-amber-950 block mb-1">
+                    ⏰ Horas en Vivo Incluidas (semanales):
+                  </label>
+                  <select
+                    value={newCouponData.includedHoursPerWeek}
+                    onChange={e => setNewCouponData({ ...newCouponData, includedHoursPerWeek: Number(e.target.value) })}
+                    className="w-full p-2 bg-white border border-amber-300 rounded-xl font-bold text-slate-900"
+                  >
+                    <option value={0}>0 horas (Solo Plataforma Digital / Sin clases en vivo)</option>
+                    <option value={2}>2 horas / semana (Plan Súper Básico)</option>
+                    <option value={3}>3 horas / semana (Plan Regular)</option>
+                    <option value={4}>4 horas / semana (Plan Intensivo)</option>
+                    <option value={6}>6 horas / semana (Plan Súper Intensivo)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="font-bold text-amber-950 block mb-1">
+                    💰 Porcentaje de Descuento:
+                  </label>
+                  <select
+                    value={newCouponData.discountPercent}
+                    onChange={e => setNewCouponData({ ...newCouponData, discountPercent: Number(e.target.value) })}
+                    className="w-full p-2 bg-white border border-amber-300 rounded-xl font-bold text-slate-900"
+                  >
+                    <option value={100}>100% OFF (Beca Completa Gratuita)</option>
+                    <option value={50}>50% OFF (Beca Parcial)</option>
+                    <option value={20}>20% OFF (Descuento)</option>
+                    <option value={10}>10% OFF (Descuento Leve)</option>
+                  </select>
                 </div>
               </div>
 
@@ -3509,6 +3978,43 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
             </div>
           </form>
         </div>
+      )}
+
+      {/* MODAL: EXPEDIENTE MAESTRO DE ALUMNO & CEREBRO COQUITO */}
+      {selectedDetailStudent && (
+        <StudentMasterDossierModal
+          student={selectedDetailStudent}
+          allLevels={ENGLISH_LEVELS}
+          couponsList={couponsList}
+          onClose={() => setSelectedDetailStudent(null)}
+          onUpdateStudent={(updated) => {
+            onUpdateStudent(updated);
+            setSelectedDetailStudent(updated);
+          }}
+          onOpenEditStudent={(stu) => {
+            handleOpenEditStudent(stu);
+          }}
+          onOpenAssignClasses={(stu) => {
+            handleOpenAssignClasses(stu);
+          }}
+          onOpenStudentLetter={(stu) => {
+            handleOpenStudentLetterModal(stu);
+          }}
+          onResendWelcomeEmail={(stu) => {
+            handleResendStudentEmail(stu);
+          }}
+          onMoveStudent={(stu) => {
+            setMovingStudent(stu);
+            setTargetLevelId(stu.levelId || 'level_1');
+            setTargetUnit(stu.currentUnit || 1);
+            setTargetTeacherId(stu.teacherId || '');
+            setTargetStatus(stu.status || 'enrolled');
+            setTargetSlotId(stu.assignedSlots?.[0] || 'none');
+          }}
+          onToggleStatus={(stu) => {
+            handleToggleStudentStatus(stu);
+          }}
+        />
       )}
 
       {/* MODAL: EDITAR PERFIL COMPLETO DE ALUMNO (RECTORÍA WAKY) */}

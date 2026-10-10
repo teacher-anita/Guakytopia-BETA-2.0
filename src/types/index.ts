@@ -58,6 +58,8 @@ export interface Student {
   couponCodeUsed?: string;
   /** Coupon assigned later by the director. */
   couponCodeAssigned?: string;
+  /** List of all coupons / scholarships associated with this student */
+  coupons?: string[];
   modality: ClassModality;
   groupSize: GroupSize;
   preferredTimeSlot: string; // "Mañanas", "Tardes", "Noches", "Sábados"

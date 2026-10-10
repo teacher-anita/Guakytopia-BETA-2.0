@@ -530,16 +530,19 @@ export const UnitOneMasterClass: React.FC<UnitOneMasterClassProps> = ({
             <span>SG01-WB-U01 • Workbook</span>
           </button>
 
-          <a
-            href="https://drive.google.com/drive/folders/18M-iUz1w4PTH2kaTkoXGj6p02fs1MYtc"
-            target="_blank"
-            rel="noreferrer"
-            className="flex-1 sm:flex-none px-3.5 py-2.5 bg-blue-50 hover:bg-blue-100 text-blue-900 border border-blue-300 rounded-xl font-bold text-xs shadow-xs transition-colors flex items-center justify-center gap-1.5"
-            title="Abrir Carpeta General de Drive Nivel 1"
-          >
-            <FolderOpen className="w-3.5 h-3.5 text-blue-600" />
-            <span>Carpeta Drive</span>
-          </a>
+          {/* Carpeta Drive General Nivel 1 (Solo Teachers y Directora Waky) */}
+          {activeRole === 'teacher' && (
+            <a
+              href="https://drive.google.com/drive/folders/18M-iUz1w4PTH2kaTkoXGj6p02fs1MYtc"
+              target="_blank"
+              rel="noreferrer"
+              className="flex-1 sm:flex-none px-3.5 py-2.5 bg-blue-50 hover:bg-blue-100 text-blue-900 border border-blue-300 rounded-xl font-bold text-xs shadow-xs transition-colors flex items-center justify-center gap-1.5"
+              title="Abrir Carpeta General de Drive Nivel 1 (Docente)"
+            >
+              <FolderOpen className="w-3.5 h-3.5 text-blue-600" />
+              <span>Carpeta Drive (Docente)</span>
+            </a>
+          )}
 
           <button
             onClick={() => downloadUnitAudio(2)}
@@ -1546,7 +1549,7 @@ export const UnitOneMasterClass: React.FC<UnitOneMasterClassProps> = ({
                   <span>En Plataforma</span>
                 </button>
                 <a
-                  href="https://drive.google.com/file/d/13JNZQ1NpbLF-DodPPkAnHVaMaPqkImmw/view?usp=drive_link"
+                  href="https://drive.google.com/file/d/17Oqq95rEd2Qy9fbltoHA_86jYBOoyitE/view?usp=drive_link"
                   target="_blank"
                   rel="noreferrer"
                   className="py-2 px-3 bg-white hover:bg-slate-50 text-blue-700 border border-blue-300 rounded-xl font-bold flex items-center justify-center gap-1 transition-colors"
@@ -1588,7 +1591,7 @@ export const UnitOneMasterClass: React.FC<UnitOneMasterClassProps> = ({
                   <span>Interactivo</span>
                 </button>
                 <a
-                  href="https://drive.google.com/file/d/17Oqq95rEd2Qy9fbltoHA_86jYBOoyitE/view?usp=drive_link"
+                  href="https://drive.google.com/file/d/13JNZQ1NpbLF-DodPPkAnHVaMaPqkImmw/view?usp=drive_link"
                   target="_blank"
                   rel="noreferrer"
                   className="py-2 px-3 bg-white hover:bg-slate-50 text-purple-700 border border-purple-300 rounded-xl font-bold flex items-center justify-center gap-1 transition-colors"
@@ -1600,39 +1603,41 @@ export const UnitOneMasterClass: React.FC<UnitOneMasterClassProps> = ({
               </div>
             </div>
 
-            {/* Carpeta Drive General Nivel 1 */}
-            <div className="p-5 rounded-3xl bg-emerald-50/60 border border-emerald-200 space-y-3 flex flex-col justify-between sm:col-span-2 lg:col-span-1">
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <div className="w-10 h-10 rounded-2xl bg-emerald-600 text-white flex items-center justify-center font-bold">
-                    <FolderOpen className="w-5 h-5 text-white" />
+            {/* Carpeta Drive General Nivel 1 (Docentes y Waky solamente) */}
+            {activeRole === 'teacher' && (
+              <div className="p-5 rounded-3xl bg-emerald-50/60 border border-emerald-200 space-y-3 flex flex-col justify-between sm:col-span-2 lg:col-span-1">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="w-10 h-10 rounded-2xl bg-emerald-600 text-white flex items-center justify-center font-bold">
+                      <FolderOpen className="w-5 h-5 text-white" />
+                    </div>
+                    <span className="text-[10px] font-black uppercase text-emerald-900 bg-emerald-200/80 px-2 py-0.5 rounded-md">
+                      Docente Oficial
+                    </span>
                   </div>
-                  <span className="text-[10px] font-black uppercase text-emerald-900 bg-emerald-200/80 px-2 py-0.5 rounded-md">
-                    Carpeta Oficial
-                  </span>
+                  <div>
+                    <strong className="text-sm font-bold text-emerald-950 block">
+                      Carpeta Drive de Materiales (Nivel 1)
+                    </strong>
+                    <span className="text-[11px] text-slate-500 block">
+                      Acceso exclusivo para docentes a todos los libros, ejercicios, guías y audios del nivel general.
+                    </span>
+                  </div>
                 </div>
-                <div>
-                  <strong className="text-sm font-bold text-emerald-950 block">
-                    Carpeta Drive de Materiales (Nivel 1)
-                  </strong>
-                  <span className="text-[11px] text-slate-500 block">
-                    Acceso a todos los libros, ejercicios, guías y audios del nivel general.
-                  </span>
-                </div>
-              </div>
 
-              <div className="pt-2">
-                <a
-                  href="https://drive.google.com/drive/folders/18M-iUz1w4PTH2kaTkoXGj6p02fs1MYtc"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold flex items-center justify-center gap-1.5 transition-colors"
-                >
-                  <FolderOpen className="w-3.5 h-3.5" />
-                  <span>Abrir Carpeta General</span>
-                </a>
+                <div className="pt-2">
+                  <a
+                    href="https://drive.google.com/drive/folders/18M-iUz1w4PTH2kaTkoXGj6p02fs1MYtc"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold flex items-center justify-center gap-1.5 transition-colors"
+                  >
+                    <FolderOpen className="w-3.5 h-3.5" />
+                    <span>Abrir Carpeta General (Docente)</span>
+                  </a>
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Audio Tracks Guide */}
             <div className="p-5 rounded-3xl bg-amber-50/60 border border-amber-200 space-y-3 flex flex-col justify-between">

@@ -519,7 +519,7 @@ ${unit.owlCulture.culturalStory}
                 <div className="flex items-center gap-2 flex-wrap w-full md:w-auto shrink-0">
                   {/* Real Student Book Google Drive Link (SG01-SB-U) */}
                   <a
-                    href={unit.studentBookPdfUrl || 'https://drive.google.com/file/d/13JNZQ1NpbLF-DodPPkAnHVaMaPqkImmw/view?usp=drive_link'}
+                    href={unit.studentBookPdfUrl || 'https://drive.google.com/file/d/17Oqq95rEd2Qy9fbltoHA_86jYBOoyitE/view?usp=drive_link'}
                     target="_blank"
                     rel="noreferrer"
                     className="flex-1 sm:flex-none px-4 py-2.5 bg-slate-950 hover:bg-slate-900 text-amber-300 rounded-xl text-xs font-black shadow-md transition-all active:scale-95 flex items-center justify-center gap-1.5"
@@ -531,7 +531,7 @@ ${unit.owlCulture.culturalStory}
 
                   {/* Real Workbook Google Drive Link (SG01-WB-U) */}
                   <a
-                    href={unit.workbookPdfUrl || 'https://drive.google.com/file/d/17Oqq95rEd2Qy9fbltoHA_86jYBOoyitE/view?usp=drive_link'}
+                    href={unit.workbookPdfUrl || 'https://drive.google.com/file/d/13JNZQ1NpbLF-DodPPkAnHVaMaPqkImmw/view?usp=drive_link'}
                     target="_blank"
                     rel="noreferrer"
                     className="flex-1 sm:flex-none px-4 py-2.5 bg-white hover:bg-slate-100 text-slate-950 border-2 border-slate-900 rounded-xl text-xs font-black shadow-xs transition-colors flex items-center justify-center gap-1.5"
@@ -541,17 +541,19 @@ ${unit.owlCulture.culturalStory}
                     <span>{unit.workbookCode || 'SG01-WB-U01'} • Workbook</span>
                   </a>
 
-                  {/* Carpeta Drive General Nivel 1 */}
-                  <a
-                    href="https://drive.google.com/drive/folders/18M-iUz1w4PTH2kaTkoXGj6p02fs1MYtc"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="flex-1 sm:flex-none px-3.5 py-2.5 bg-blue-50 hover:bg-blue-100 text-blue-900 border border-blue-300 rounded-xl text-xs font-bold shadow-xs transition-colors flex items-center justify-center gap-1.5"
-                    title="Abrir Carpeta Drive General con todos los materiales oficiales del Nivel 1"
-                  >
-                    <FolderOpen className="w-3.5 h-3.5 text-blue-600" />
-                    <span>Carpeta Drive</span>
-                  </a>
+                  {/* Carpeta Drive General Nivel 1 (Docentes y Waky solamente) */}
+                  {activeRole === 'teacher' && (
+                    <a
+                      href="https://drive.google.com/drive/folders/18M-iUz1w4PTH2kaTkoXGj6p02fs1MYtc"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex-1 sm:flex-none px-3.5 py-2.5 bg-blue-50 hover:bg-blue-100 text-blue-900 border border-blue-300 rounded-xl text-xs font-bold shadow-xs transition-colors flex items-center justify-center gap-1.5"
+                      title="Abrir Carpeta Drive General con todos los materiales oficiales del Nivel 1 (Docente)"
+                    >
+                      <FolderOpen className="w-3.5 h-3.5 text-blue-600" />
+                      <span>Carpeta Drive (Docente)</span>
+                    </a>
+                  )}
 
                   {/* Audio MP3 */}
                   <button

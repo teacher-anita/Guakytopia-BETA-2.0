@@ -50,10 +50,10 @@ export const getUnitDownloadableMaterial = (levelId: string, unitNumber: number)
       workbookFileName: 'SG01-WB-U01.pdf',
       pdfTitle: 'SG01-SB-U01 • Super Goal 1 — Unit 1: Good Morning! (Student Book)',
       pdfDescription: 'Student Book oficial de McGraw-Hill (Páginas 2 a 9): Greetings, Introductions, Verb BE, Pronunciation, Conversation, Reading & School Supplies.',
-      // Student Book: 13JNZQ1NpbLF-DodPPkAnHVaMaPqkImmw
-      driveUrl: 'https://drive.google.com/file/d/13JNZQ1NpbLF-DodPPkAnHVaMaPqkImmw/view?usp=drive_link',
-      // Workbook: 17Oqq95rEd2Qy9fbltoHA_86jYBOoyitE
-      workbookDriveUrl: 'https://drive.google.com/file/d/17Oqq95rEd2Qy9fbltoHA_86jYBOoyitE/view?usp=drive_link',
+      // Student Book (SG01-SB-U01): 17Oqq95rEd2Qy9fbltoHA_86jYBOoyitE
+      driveUrl: 'https://drive.google.com/file/d/17Oqq95rEd2Qy9fbltoHA_86jYBOoyitE/view?usp=drive_link',
+      // Workbook (SG01-WB-U01): 13JNZQ1NpbLF-DodPPkAnHVaMaPqkImmw
+      workbookDriveUrl: 'https://drive.google.com/file/d/13JNZQ1NpbLF-DodPPkAnHVaMaPqkImmw/view?usp=drive_link',
       audioPackageUrl: '/audio/supergoal1/track02.mp3'
     };
   }
@@ -75,8 +75,8 @@ export const getUnitDownloadableMaterial = (levelId: string, unitNumber: number)
     workbookFileName: `${wbCode}.pdf`,
     pdfTitle: `${sbCode} • Unit ${unitNumber} Official Student Book`,
     pdfDescription: `Material oficial de trabajo para la Unidad ${unitNumber}.`,
-    driveUrl: 'https://drive.google.com/drive/folders/1mJOxkclFXZ6cSRouNVXgt15j-Y4AVB9a?usp=drive_link',
-    workbookDriveUrl: 'https://drive.google.com/drive/folders/1mJOxkclFXZ6cSRouNVXgt15j-Y4AVB9a?usp=drive_link'
+    driveUrl: 'https://drive.google.com/drive/folders/18M-iUz1w4PTH2kaTkoXGj6p02fs1MYtc',
+    workbookDriveUrl: 'https://drive.google.com/drive/folders/18M-iUz1w4PTH2kaTkoXGj6p02fs1MYtc'
   };
 };
 
@@ -87,8 +87,8 @@ export const getUnitDownloadableMaterial = (levelId: string, unitNumber: number)
 export const downloadUnitPdf = (levelId: string, unitNumber: number, unitTitle: string, type: 'student_book' | 'workbook' = 'student_book') => {
   if (levelId === 'level_1' && unitNumber === 1) {
     const url = type === 'student_book'
-      ? 'https://drive.google.com/file/d/13JNZQ1NpbLF-DodPPkAnHVaMaPqkImmw/view?usp=drive_link' // SG01-SB-U01
-      : 'https://drive.google.com/file/d/17Oqq95rEd2Qy9fbltoHA_86jYBOoyitE/view?usp=drive_link'; // SG01-WB-U01
+      ? 'https://drive.google.com/file/d/17Oqq95rEd2Qy9fbltoHA_86jYBOoyitE/view?usp=drive_link' // SG01-SB-U01
+      : 'https://drive.google.com/file/d/13JNZQ1NpbLF-DodPPkAnHVaMaPqkImmw/view?usp=drive_link'; // SG01-WB-U01
     window.open(url, '_blank', 'noopener,noreferrer');
     return;
   }

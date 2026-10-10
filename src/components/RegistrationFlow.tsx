@@ -175,7 +175,13 @@ export const RegistrationFlow: React.FC<RegistrationFlowProps> = ({
 
   // Coupon Code State in Registration
   const [couponCode, setCouponCode] = useState('');
-  const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; label: string; discountPercent: number } | null>(null);
+  const [appliedCoupon, setAppliedCoupon] = useState<{ 
+    code: string; 
+    label: string; 
+    discountPercent: number;
+    includedHours?: number;
+    isDigitalPass?: boolean;
+  } | null>(null);
   const [couponError, setCouponError] = useState<string | null>(null);
 
   // Placement Test State
@@ -437,7 +443,7 @@ export const RegistrationFlow: React.FC<RegistrationFlowProps> = ({
         return;
       }
 
-      let discountPct = 100;
+      let discountPct = dbCoupon.discountPercent ?? 100;
       if (dbCoupon.benefitType === 'scholar_50' || dbCoupon.benefitType === 'csb_family_discount') {
         discountPct = 50;
       } else if (dbCoupon.benefitType === 'scholar_20' || dbCoupon.benefitType === 'launch_20_off') {
@@ -452,10 +458,28 @@ export const RegistrationFlow: React.FC<RegistrationFlowProps> = ({
         discountPct = 20;
       }
 
+      // Automatically assign plan intensity according to coupon's included hours
+      const incHours = dbCoupon.includedHoursPerWeek;
+      const isDigi = Boolean(dbCoupon.isDigitalPass || incHours === 0 || dbCoupon.benefitType === 'free_webapp_3m' || dbCoupon.benefitType === 'webapp_5usd_3m');
+      
+      if (isDigi) {
+        setSelectedPlanId('digital_5');
+      } else if (incHours === 2) {
+        setSelectedPlanId('basic_2');
+      } else if (incHours === 3) {
+        setSelectedPlanId('regular_3');
+      } else if (incHours === 4) {
+        setSelectedPlanId('intensive_4');
+      } else if (incHours === 6) {
+        setSelectedPlanId('express_6');
+      }
+
       setAppliedCoupon({
         code: dbCoupon.code,
-        label: `${dbCoupon.title} (${discountPct === 100 ? '100% Bonificado' : `${discountPct}% OFF`})`,
-        discountPercent: discountPct
+        label: `${dbCoupon.title} (${discountPct === 100 ? '100% Bonificado' : `${discountPct}% OFF`}${incHours !== undefined ? ` • ${incHours === 0 ? 'Solo Plataforma' : `${incHours}h/sem incluidas`}` : ''})`,
+        discountPercent: discountPct,
+        includedHours: incHours,
+        isDigitalPass: isDigi
       });
       try { confetti({ particleCount: 75, spread: 65, origin: { y: 0.6 } }); } catch {}
     } else {
@@ -613,8 +637,9 @@ export const RegistrationFlow: React.FC<RegistrationFlowProps> = ({
       modality: selectedModality,
       groupSize: selectedPlanId === 'digital_5' ? 'individual' : selectedGroupSize,
       preferredTimeSlot,
-      isDigitalPass: selectedPlanId === 'digital_5',
+      isDigitalPass: Boolean(appliedCoupon?.isDigitalPass || selectedPlanId === 'digital_5'),
       couponCodeUsed: appliedCoupon?.code,
+      coupons: appliedCoupon ? [appliedCoupon.code] : [],
       status: appliedCoupon ? 'enrolled' : 'pending_evaluation',
       paymentStatus: appliedCoupon ? 'scholarship' : 'pending_approval',
       depositAmountUsd: appliedCoupon ? 0 : 5,

@@ -27,7 +27,7 @@ const STORAGE_KEYS = {
   TEACHERS: 'cokito_teachers_data_v1'
 };
 
-// 1. SAVE STUDENT (Local + Firestore Cloud)
+// 1. SAVE STUDENT (Local + Firestore Cloud + Server Backup)
 export async function saveStudent(student: Student): Promise<void> {
   // Always save locally first for instant offline response
   try {
@@ -38,13 +38,21 @@ export async function saveStudent(student: Student): Promise<void> {
 
   // Persist directly to Firestore Cloud
   try {
-    const path = `students/${student.id}`;
     const docRef = doc(db, 'students', student.id);
     await setDoc(docRef, student, { merge: true });
     console.log('✅ Student persisted to Firestore Cloud:', student.name);
   } catch (e) {
     console.warn('Firestore cloud save note:', e);
   }
+
+  // Backup sync to server endpoint
+  try {
+    await fetch('/api/students', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(student)
+    });
+  } catch {}
 }
 
 // 2. GET STUDENTS LOCAL FALLBACK
@@ -62,10 +70,27 @@ export function getLocalStudents(): Student[] {
   }
 }
 
-// 3. SUBSCRIBE TO STUDENTS IN REALTIME FROM FIRESTORE
+// 3. SUBSCRIBE TO STUDENTS IN REALTIME FROM FIRESTORE & SERVER
 export function subscribeToStudents(callback: (students: Student[]) => void): () => void {
   // Initialize immediately with local data
   callback(getLocalStudents());
+
+  // Also fetch from server cache immediately to bridge cross-device changes
+  fetch('/api/students')
+    .then(res => res.json())
+    .then((serverStudents: Student[]) => {
+      if (Array.isArray(serverStudents) && serverStudents.length > 0) {
+        const map = new Map<string, Student>();
+        getLocalStudents().forEach(s => map.set(s.id, s));
+        serverStudents.forEach(s => map.set(s.id, s));
+        const merged = Array.from(map.values());
+        try {
+          localStorage.setItem(STORAGE_KEYS.STUDENTS, JSON.stringify(merged));
+        } catch {}
+        callback(merged);
+      }
+    })
+    .catch(() => null);
 
   try {
     const studentsCol = collection(db, 'students');
@@ -75,9 +100,16 @@ export function subscribeToStudents(callback: (students: Student[]) => void): ()
         if (!snapshot.empty) {
           const cloudStudents: Student[] = [];
           snapshot.forEach((d) => cloudStudents.push(d.data() as Student));
-          callback(cloudStudents);
+          
+          // Merge with INITIAL_STUDENTS to preserve baseline
+          const map = new Map<string, Student>();
+          INITIAL_STUDENTS.forEach(s => map.set(s.id, s));
+          cloudStudents.forEach(s => map.set(s.id, s));
+          const merged = Array.from(map.values());
+
+          callback(merged);
           try {
-            localStorage.setItem(STORAGE_KEYS.STUDENTS, JSON.stringify(cloudStudents));
+            localStorage.setItem(STORAGE_KEYS.STUDENTS, JSON.stringify(merged));
           } catch {}
         } else {
           // Seed cloud if empty
@@ -138,6 +170,10 @@ export async function deleteStudent(studentId: string): Promise<void> {
   } catch (e) {
     console.warn('Could not sync student deletion to Firestore:', e);
   }
+
+  try {
+    await fetch(`/api/students/${studentId}`, { method: 'DELETE' });
+  } catch {}
 }
 
 // 7. TEACHERS MANAGEMENT (Local + Cloud)
