@@ -1,5 +1,6 @@
 import express, { Request, Response } from 'express';
 import path from 'path';
+import fs from 'fs';
 import { createServer as createViteServer } from 'vite';
 import { GoogleGenAI } from '@google/genai';
 import dotenv from 'dotenv';
@@ -137,6 +138,65 @@ app.post('/api/bcv/sync', async (_req: Request, res: Response) => {
     message: 'Tasa BCV sincronizada directamente con la fuente oficial.',
     nextMidnightInHours: Number((getMsUntilMidnightVET() / 3600000).toFixed(2))
   });
+});
+
+// Coupons Backend Persistence & Real-time Mirror
+const COUPONS_FILE = path.join(process.cwd(), 'coupons-data.json');
+let serverCouponsCache: any[] = [];
+try {
+  if (fs.existsSync(COUPONS_FILE)) {
+    const raw = fs.readFileSync(COUPONS_FILE, 'utf-8');
+    serverCouponsCache = JSON.parse(raw);
+  }
+} catch (e) {
+  console.warn('[Coupons] Could not read coupons-data.json:', e);
+}
+
+function persistServerCoupons() {
+  try {
+    fs.writeFileSync(COUPONS_FILE, JSON.stringify(serverCouponsCache, null, 2), 'utf-8');
+  } catch (e) {
+    console.warn('[Coupons] Could not write coupons-data.json:', e);
+  }
+}
+
+app.get('/api/coupons', (_req: Request, res: Response) => {
+  res.json(serverCouponsCache);
+});
+
+app.post('/api/coupons', (req: Request, res: Response) => {
+  const coupon = req.body;
+  if (!coupon || !coupon.code) {
+    return res.status(400).json({ error: 'Código de cupón requerido' });
+  }
+  const cleanCode = String(coupon.code).trim().toUpperCase();
+  const existingIdx = serverCouponsCache.findIndex(c => c.id === coupon.id || c.code.toUpperCase() === cleanCode);
+  if (existingIdx >= 0) {
+    serverCouponsCache[existingIdx] = { ...serverCouponsCache[existingIdx], ...coupon };
+  } else {
+    serverCouponsCache.unshift(coupon);
+  }
+  persistServerCoupons();
+  res.json({ success: true, coupon });
+});
+
+app.post('/api/coupons/:id/redeem', (req: Request, res: Response) => {
+  const { id } = req.params;
+  const cleanId = String(id).toUpperCase();
+  const target = serverCouponsCache.find(c => c.id === id || c.code.toUpperCase() === cleanId);
+  if (target) {
+    target.currentUses = (target.currentUses || 0) + 1;
+    persistServerCoupons();
+    return res.json({ success: true, currentUses: target.currentUses });
+  }
+  res.json({ success: true });
+});
+
+app.delete('/api/coupons/:id', (req: Request, res: Response) => {
+  const { id } = req.params;
+  serverCouponsCache = serverCouponsCache.filter(c => c.id !== id);
+  persistServerCoupons();
+  res.json({ success: true });
 });
 
 // Endpoint for Gemini multi-turn chat

@@ -37,7 +37,8 @@ import {
   saveTeacher,
   deleteTeacher,
   subscribeToTeachers,
-  getLocalTeachers 
+  getLocalTeachers,
+  subscribeToCoupons 
 } from './services/db';
 import { ShieldCheck } from 'lucide-react';
 import { CyberOwlChatbot } from './components/CyberOwlChatbot';
@@ -116,6 +117,16 @@ export default function App() {
     });
     return () => {
       if (typeof unsubTeachers === 'function') unsubTeachers();
+    };
+  }, []);
+
+  // Real-time Firestore Sync for Coupons & Scholarships
+  useEffect(() => {
+    const unsubCoupons = subscribeToCoupons(() => {
+      // Synchronized across tabs & sessions in real time
+    });
+    return () => {
+      if (typeof unsubCoupons === 'function') unsubCoupons();
     };
   }, []);
 

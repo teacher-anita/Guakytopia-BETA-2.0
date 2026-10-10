@@ -5,12 +5,21 @@ import {
   getDoc, 
   getDocs, 
   onSnapshot, 
-  updateDoc 
+  updateDoc,
+  deleteDoc
 } from 'firebase/firestore';
 import { db, handleFirestoreError, OperationType } from '../firebase';
 import { Student, ScheduleSlot, Teacher } from '../types';
 import { INITIAL_STUDENTS, INITIAL_SCHEDULE_SLOTS } from '../data/curriculumData';
 import { INITIAL_TEACHERS } from '../data/teachersData';
+import { 
+  CouponItem, 
+  INITIAL_COUPONS, 
+  getStoredCoupons, 
+  saveStoredCoupons, 
+  findCouponByCode, 
+  normalizeCouponCode 
+} from '../data/couponsData';
 
 const STORAGE_KEYS = {
   STUDENTS: 'cokito_students_data_v3',
@@ -234,4 +243,173 @@ export async function saveArenaLives(studentId: string, state: ArenaLivesState):
     console.warn('Could not save Arena lives to Firestore:', error);
   }
 }
+
+// ============================================================================
+// COUPONS CLOUD MANAGEMENT & REAL-TIME MULTI-DEVICE SYNCHRONIZATION
+// ============================================================================
+
+export async function saveCoupon(coupon: CouponItem): Promise<void> {
+  // 1. Instant local cache update
+  try {
+    const list = getStoredCoupons();
+    const filtered = list.filter(c => c.id !== coupon.id);
+    const updated = [coupon, ...filtered];
+    saveStoredCoupons(updated);
+  } catch {}
+
+  // 2. Persist to Firestore Cloud (/coupons/{couponId})
+  try {
+    const docRef = doc(db, 'coupons', coupon.id);
+    await setDoc(docRef, coupon, { merge: true });
+    console.log('✅ Coupon synced to Firestore Cloud:', coupon.code);
+  } catch (err) {
+    console.warn('Could not sync coupon to Firestore:', err);
+  }
+
+  // 3. Fallback sync to server endpoint
+  try {
+    await fetch('/api/coupons', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(coupon)
+    });
+  } catch {}
+}
+
+export async function deleteCoupon(couponId: string): Promise<void> {
+  // 1. Update local cache
+  try {
+    const list = getStoredCoupons();
+    const updated = list.filter(c => c.id !== couponId);
+    saveStoredCoupons(updated);
+  } catch {}
+
+  // 2. Delete from Firestore Cloud
+  try {
+    await deleteDoc(doc(db, 'coupons', couponId));
+    console.log('🗑️ Coupon deleted from Firestore Cloud:', couponId);
+  } catch (err) {
+    console.warn('Could not delete coupon from Firestore:', err);
+  }
+
+  // 3. Server endpoint
+  try {
+    await fetch(`/api/coupons/${couponId}`, { method: 'DELETE' });
+  } catch {}
+}
+
+export async function incrementCouponUses(couponId: string): Promise<void> {
+  try {
+    const list = getStoredCoupons();
+    const coupon = list.find(c => c.id === couponId);
+    const newUses = ((coupon?.currentUses) || 0) + 1;
+    if (coupon) {
+      coupon.currentUses = newUses;
+      saveStoredCoupons(list);
+    }
+
+    // Update in Firestore
+    const docRef = doc(db, 'coupons', couponId);
+    await setDoc(docRef, { currentUses: newUses }, { merge: true });
+
+    // Update on server
+    await fetch(`/api/coupons/${couponId}/redeem`, { method: 'POST' });
+  } catch (err) {
+    console.warn('Could not increment coupon uses:', err);
+  }
+}
+
+export function subscribeToCoupons(callback: (coupons: CouponItem[]) => void): () => void {
+  // Emit current local coupons immediately
+  callback(getStoredCoupons());
+
+  try {
+    const couponsCol = collection(db, 'coupons');
+    const unsubscribe = onSnapshot(
+      couponsCol,
+      (snapshot) => {
+        if (!snapshot.empty) {
+          const cloudCoupons: CouponItem[] = [];
+          snapshot.forEach((d) => cloudCoupons.push(d.data() as CouponItem));
+
+          // Merge cloud coupons with INITIAL_COUPONS
+          const map = new Map<string, CouponItem>();
+          INITIAL_COUPONS.forEach(c => map.set(c.id, c));
+          cloudCoupons.forEach(c => map.set(c.id, c));
+          const merged = Array.from(map.values());
+
+          saveStoredCoupons(merged);
+          callback(merged);
+        } else {
+          // If cloud collection is completely empty, seed it with INITIAL_COUPONS
+          const initial = getStoredCoupons();
+          for (const c of initial) {
+            setDoc(doc(db, 'coupons', c.id), c).catch(() => null);
+          }
+        }
+      },
+      (err) => {
+        console.warn('Coupons real-time subscription note:', err.message);
+      }
+    );
+
+    // Also poll server endpoint as background resilience
+    fetch('/api/coupons')
+      .then(res => res.json())
+      .then((serverCoupons: CouponItem[]) => {
+        if (Array.isArray(serverCoupons) && serverCoupons.length > 0) {
+          const map = new Map<string, CouponItem>();
+          getStoredCoupons().forEach(c => map.set(c.id, c));
+          serverCoupons.forEach(c => map.set(c.id, c));
+          const merged = Array.from(map.values());
+          saveStoredCoupons(merged);
+          callback(merged);
+        }
+      })
+      .catch(() => null);
+
+    return unsubscribe;
+  } catch (err) {
+    console.warn('Could not setup coupons onSnapshot:', err);
+    return () => {};
+  }
+}
+
+export async function findCouponByCodeAsync(code: string): Promise<CouponItem | null> {
+  if (!code || typeof code !== 'string') return null;
+
+  // 1. Instant local check
+  const local = findCouponByCode(code);
+  if (local) return local;
+
+  // 2. Direct Firestore Cloud lookup across devices
+  try {
+    const snap = await getDocs(collection(db, 'coupons'));
+    if (!snap.empty) {
+      const cloudList: CouponItem[] = [];
+      snap.forEach(d => cloudList.push(d.data() as CouponItem));
+      saveStoredCoupons(cloudList);
+      const matched = findCouponByCode(code, cloudList);
+      if (matched) return matched;
+    }
+  } catch (err) {
+    console.warn('Direct Firestore coupon lookup error:', err);
+  }
+
+  // 3. Server API fallback lookup
+  try {
+    const res = await fetch('/api/coupons');
+    if (res.ok) {
+      const serverCoupons = await res.json();
+      if (Array.isArray(serverCoupons) && serverCoupons.length > 0) {
+        saveStoredCoupons(serverCoupons);
+        const matched = findCouponByCode(code, serverCoupons);
+        if (matched) return matched;
+      }
+    }
+  } catch {}
+
+  return null;
+}
+
 

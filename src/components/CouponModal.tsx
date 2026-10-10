@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { X, KeyRound, CheckCircle2, Sparkles, AlertCircle, ArrowLeft, Eye, EyeOff, User, Lock, Mail } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { Student } from '../types';
-import { findCouponByCode } from '../data/couponsData';
+import { findCouponByCode, normalizeCouponCode } from '../data/couponsData';
+import { findCouponByCodeAsync, incrementCouponUses } from '../services/db';
 
 interface CouponModalProps {
   isOpen: boolean;
@@ -28,7 +29,7 @@ export const CouponModal: React.FC<CouponModalProps> = ({
 
   if (!isOpen) return null;
 
-  const handleRedeem = (e: React.FormEvent) => {
+  const handleRedeem = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg(null);
 
@@ -55,20 +56,32 @@ export const CouponModal: React.FC<CouponModalProps> = ({
       return;
     }
 
-    // Check against configured coupons database or known coupon formats
-    const matchedCoupon = findCouponByCode(cleanCode);
+    // Check against configured coupons database (local memory and Firestore cloud)
+    let matchedCoupon = findCouponByCode(cleanCode);
+    if (!matchedCoupon) {
+      matchedCoupon = await findCouponByCodeAsync(cleanCode);
+    }
 
     if (matchedCoupon && matchedCoupon.isActive === false) {
       setErrorMsg('Este código o beca se encuentra temporalmente inactivo. Por favor consulta con la Rectoría de Güakytopia.');
       return;
     }
 
-    const isCSB = cleanCode === 'CSB2026' || cleanCode.includes('CSB2026') || cleanCode === 'CSBTEACHERS26' || cleanCode === 'CSBFRIENDS';
+    if (matchedCoupon && matchedCoupon.maxUses !== null && matchedCoupon.maxUses !== undefined && (matchedCoupon.currentUses || 0) >= matchedCoupon.maxUses) {
+      setErrorMsg('Este cupón o código ya alcanzó el límite máximo de canjes permitidos.');
+      return;
+    }
+
+    const isCSB = cleanCode === 'CSB2026' || cleanCode.includes('CSB2026') || cleanCode === 'CSBTEACHERS26' || cleanCode === 'CSBFRIENDS' || cleanCode.includes('CSB');
     const isFriends = cleanCode === 'FRIENDS2026' || cleanCode.startsWith('FRIEND-');
     const isDigital = cleanCode === 'COKITO5';
     const isScholar = Boolean(matchedCoupon && matchedCoupon.category === 'scholarship') || cleanCode.startsWith('SCHOLAR-');
 
     if (matchedCoupon || isCSB || isFriends || isDigital || isScholar) {
+      if (matchedCoupon) {
+        void incrementCouponUses(matchedCoupon.id);
+      }
+
       const benefitTitle = matchedCoupon?.title || (
         isCSB ? 'Pase Directo Comunidad Simón Bolívar (CSB)' :
         isFriends ? 'Pase de Invitación VIP' :

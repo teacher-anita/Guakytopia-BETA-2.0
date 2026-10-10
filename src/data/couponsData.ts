@@ -290,8 +290,18 @@ export const INITIAL_COUPONS: CouponItem[] = [
 
 const LOCAL_STORAGE_COUPONS_KEY = 'guakytopia_coupons_store_v1';
 
+export const normalizeCouponCode = (code: string): string => {
+  return (code || '')
+    .trim()
+    .toUpperCase()
+    .replace(/[^A-Z0-9]/g, '');
+};
+
 export const getStoredCoupons = (): CouponItem[] => {
   try {
+    if (typeof localStorage === 'undefined') {
+      return INITIAL_COUPONS;
+    }
     const raw = localStorage.getItem(LOCAL_STORAGE_COUPONS_KEY);
     if (!raw) {
       localStorage.setItem(LOCAL_STORAGE_COUPONS_KEY, JSON.stringify(INITIAL_COUPONS));
@@ -306,24 +316,40 @@ export const getStoredCoupons = (): CouponItem[] => {
 
 export const saveStoredCoupons = (coupons: CouponItem[]): void => {
   try {
-    localStorage.setItem(LOCAL_STORAGE_COUPONS_KEY, JSON.stringify(coupons));
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem(LOCAL_STORAGE_COUPONS_KEY, JSON.stringify(coupons));
+    }
   } catch (err) {
     console.error('Error saving coupons to localStorage', err);
   }
 };
 
-export const findCouponByCode = (code: string): CouponItem | null => {
+export const findCouponByCode = (code: string, customList?: CouponItem[]): CouponItem | null => {
+  if (!code || typeof code !== 'string') return null;
   const cleanCode = code.trim().toUpperCase().replace(/\s+/g, '');
-  const list = getStoredCoupons();
+  const normalized = normalizeCouponCode(code);
+  const list = customList && customList.length > 0 ? customList : getStoredCoupons();
   
-  // 1. Direct exact match
-  const direct = list.find(c => c.code.toUpperCase() === cleanCode);
+  // 1. Direct exact match (spaces stripped)
+  const direct = list.find(c => c.code.trim().toUpperCase().replace(/\s+/g, '') === cleanCode);
   if (direct) return direct;
 
-  // 2. Pattern match for dynamic prefixes
+  // 2. Normalized match (ignoring dashes, hyphens, underscores, dots)
+  // e.g. "BECA-OCT26" matches "BECA OCT26" or "becaoct26"
+  const normalizedMatch = list.find(c => normalizeCouponCode(c.code) === normalized);
+  if (normalizedMatch) return normalizedMatch;
+
+  // 3. Fallback to INITIAL_COUPONS if customList didn't have it
+  const fromInitial = INITIAL_COUPONS.find(c => 
+    c.code.trim().toUpperCase().replace(/\s+/g, '') === cleanCode || 
+    normalizeCouponCode(c.code) === normalized
+  );
+  if (fromInitial) return fromInitial;
+
+  // 4. Pattern match for dynamic prefixes
   // e.g. FRIEND-[NAME]
-  if (cleanCode.startsWith('FRIEND-')) {
-    const existingFriend = list.find(c => c.code.toUpperCase() === cleanCode);
+  if (cleanCode.startsWith('FRIEND-') || normalized.startsWith('FRIEND')) {
+    const existingFriend = list.find(c => c.code.toUpperCase() === cleanCode || normalizeCouponCode(c.code) === normalized);
     if (existingFriend) return existingFriend;
     // Auto-synthesize ambassador coupon
     return {
@@ -343,8 +369,8 @@ export const findCouponByCode = (code: string): CouponItem | null => {
   }
 
   // e.g. SCHOLAR-100-[ID]
-  if (cleanCode.startsWith('SCHOLAR-100-')) {
-    return list.find(c => c.code.toUpperCase() === cleanCode) || {
+  if (cleanCode.startsWith('SCHOLAR-100-') || normalized.startsWith('SCHOLAR100')) {
+    return list.find(c => c.code.toUpperCase() === cleanCode || normalizeCouponCode(c.code) === normalized) || {
       id: `cp_scholar_${cleanCode}`,
       code: cleanCode,
       category: 'scholarship',
@@ -361,8 +387,8 @@ export const findCouponByCode = (code: string): CouponItem | null => {
   }
 
   // e.g. SCHOLAR-50-[ID]
-  if (cleanCode.startsWith('SCHOLAR-50-')) {
-    return list.find(c => c.code.toUpperCase() === cleanCode) || {
+  if (cleanCode.startsWith('SCHOLAR-50-') || normalized.startsWith('SCHOLAR50')) {
+    return list.find(c => c.code.toUpperCase() === cleanCode || normalizeCouponCode(c.code) === normalized) || {
       id: `cp_scholar50_${cleanCode}`,
       code: cleanCode,
       category: 'scholarship',
@@ -378,8 +404,8 @@ export const findCouponByCode = (code: string): CouponItem | null => {
   }
 
   // e.g. SCHOLAR-20-[ID]
-  if (cleanCode.startsWith('SCHOLAR-20-')) {
-    return list.find(c => c.code.toUpperCase() === cleanCode) || {
+  if (cleanCode.startsWith('SCHOLAR-20-') || normalized.startsWith('SCHOLAR20')) {
+    return list.find(c => c.code.toUpperCase() === cleanCode || normalizeCouponCode(c.code) === normalized) || {
       id: `cp_scholar20_${cleanCode}`,
       code: cleanCode,
       category: 'scholarship',

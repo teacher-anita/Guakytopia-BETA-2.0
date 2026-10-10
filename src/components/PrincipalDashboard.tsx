@@ -73,6 +73,7 @@ import {
   getFlockMentorsLabel 
 } from '../services/matrixEngine';
 import { CouponItem, getStoredCoupons, saveStoredCoupons, BenefitType, CouponCategory } from '../data/couponsData';
+import { saveCoupon, deleteCoupon, subscribeToCoupons } from '../services/db';
 import confetti from 'canvas-confetti';
 import { 
   addStudentNotification, 
@@ -121,6 +122,16 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
   const [isNewCouponModalOpen, setIsNewCouponModalOpen] = useState(false);
   const [couponNotice, setCouponNotice] = useState<string | null>(null);
 
+  // Real-time Firestore Cloud Sync for Coupons across all devices & sessions
+  useEffect(() => {
+    const unsub = subscribeToCoupons((latest) => {
+      setCouponsList(latest);
+    });
+    return () => {
+      if (typeof unsub === 'function') unsub();
+    };
+  }, []);
+
   const [newCouponData, setNewCouponData] = useState<{
     code: string;
     title: string;
@@ -139,33 +150,39 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
     notes: ''
   });
 
-  const handleToggleCouponActive = (couponId: string) => {
-    const updated = couponsList.map(c => {
-      if (c.id === couponId) {
-        return { ...c, isActive: !c.isActive };
-      }
-      return c;
-    });
+  const handleToggleCouponActive = async (couponId: string) => {
+    const target = couponsList.find(c => c.id === couponId);
+    if (!target) return;
+    const toggled = { ...target, isActive: !target.isActive };
+
+    const updated = couponsList.map(c => c.id === couponId ? toggled : c);
     setCouponsList(updated);
     saveStoredCoupons(updated);
-    const toggled = updated.find(c => c.id === couponId);
-    setCouponNotice(`Cupón [${toggled?.code}] ${toggled?.isActive ? 'ACTIVADO 🟢' : 'DESACTIVADO 🔴'}`);
+
+    // Sync to Firestore Cloud immediately
+    await saveCoupon(toggled);
+
+    setCouponNotice(`Cupón [${toggled.code}] ${toggled.isActive ? 'ACTIVADO 🟢' : 'DESACTIVADO 🔴'}`);
     setTimeout(() => setCouponNotice(null), 3000);
   };
 
-  const handleDeleteCoupon = (couponId: string) => {
+  const handleDeleteCoupon = async (couponId: string) => {
     const toDelete = couponsList.find(c => c.id === couponId);
     if (!toDelete) return;
     if (confirm(`¿Eliminar definitivamente el cupón [${toDelete.code}]?`)) {
       const updated = couponsList.filter(c => c.id !== couponId);
       setCouponsList(updated);
       saveStoredCoupons(updated);
+
+      // Delete from Firestore Cloud immediately
+      await deleteCoupon(couponId);
+
       setCouponNotice(`Cupón [${toDelete.code}] eliminado del sistema.`);
       setTimeout(() => setCouponNotice(null), 3000);
     }
   };
 
-  const handleCreateCouponSubmit = (e: React.FormEvent) => {
+  const handleCreateCouponSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const cleanCode = newCouponData.code.trim().toUpperCase().replace(/\s+/g, '');
     if (!cleanCode) return;
@@ -205,6 +222,10 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
     const updated = [newCoupon, ...couponsList];
     setCouponsList(updated);
     saveStoredCoupons(updated);
+
+    // Save to Firestore Cloud immediately so all clients and devices see it in real-time
+    await saveCoupon(newCoupon);
+
     setIsNewCouponModalOpen(false);
     setNewCouponData({
       code: '',
@@ -215,7 +236,7 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
       maxUses: '1',
       notes: ''
     });
-    setCouponNotice(`¡Cupón [${cleanCode}] creado y activo inmediatamente en Güakytopia! ✨`);
+    setCouponNotice(`¡Cupón [${cleanCode}] creado y activo inmediatamente en Güakytopia y la nube! ✨`);
     setTimeout(() => setCouponNotice(null), 3500);
   };
 

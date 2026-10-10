@@ -34,7 +34,8 @@ import { Student, ScheduleSlot, ClassModality, GroupSize, AudienceTheme } from '
 import { PlacementQuizModal } from './PlacementQuizModal';
 import { generateEmailTemplate, sendGmailEmail } from '../services/gmailNotifier';
 import { OFFICIAL_PAGO_MOVIL, convertUsdToBs, getBcvExchangeRate, fetchLiveBcvRate } from '../services/currencyService';
-import { findCouponByCode } from '../data/couponsData';
+import { findCouponByCode, normalizeCouponCode } from '../data/couponsData';
+import { findCouponByCodeAsync, incrementCouponUses } from '../services/db';
 
 interface RegistrationFlowProps {
   slots: ScheduleSlot[];
@@ -219,11 +220,19 @@ export const RegistrationFlow: React.FC<RegistrationFlowProps> = ({
     setTimeout(() => setCopiedKey(null), 2500);
   };
 
-  const handleValidateStep4Code = (e: React.FormEvent) => {
+  const handleValidateStep4Code = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!registeredStudent) return;
     const clean = step4Code.trim().toUpperCase();
-    const VALID_CODES = [
+    if (!clean) return;
+
+    // 1. Check active database coupons (local & Firestore cloud)
+    let matchedCoupon = findCouponByCode(clean);
+    if (!matchedCoupon) {
+      matchedCoupon = await findCouponByCodeAsync(clean);
+    }
+
+    const legacyPresets = [
       'CSB-PRE', 
       'CSB2026', 
       'COKITO2026', 
@@ -235,18 +244,36 @@ export const RegistrationFlow: React.FC<RegistrationFlowProps> = ({
       'FRIENDS2026',
       'COKITO-VIP'
     ];
+    const isLegacyPreset = legacyPresets.includes(clean) || clean.includes('CSB') || clean.includes('ALUMNO') || clean.includes('TEACHER');
 
-    if (VALID_CODES.includes(clean)) {
+    if (matchedCoupon || isLegacyPreset) {
+      if (matchedCoupon && !matchedCoupon.isActive) {
+        setStep4Error('Este cupón o beca se encuentra temporalmente inactivo en Güakytopia.');
+        setStep4Success(null);
+        return;
+      }
+
+      if (matchedCoupon && matchedCoupon.maxUses !== null && matchedCoupon.maxUses !== undefined && (matchedCoupon.currentUses || 0) >= matchedCoupon.maxUses) {
+        setStep4Error('Este cupón ya alcanzó el límite máximo de canjes permitidos.');
+        setStep4Success(null);
+        return;
+      }
+
+      if (matchedCoupon) {
+        void incrementCouponUses(matchedCoupon.id);
+      }
+
+      const benefitTitle = matchedCoupon?.title || `Beca Autorizada [${clean}]`;
       const updated: Student = {
         ...registeredStudent,
         status: 'enrolled',
         paymentStatus: 'scholarship',
         xp: registeredStudent.xp + 250,
-        notes: `${registeredStudent.notes || ''} | Validado exitosamente con código post-registro: ${clean}`
+        notes: `${registeredStudent.notes || ''} | Validado exitosamente con cupón: ${clean} (${benefitTitle})`
       };
       setRegisteredStudent(updated);
       onRegisterComplete(updated, selectedSlotIds);
-      setStep4Success(`¡Código ${clean} Validado Exitosamente! Tu acceso a la plataforma está 100% activo.`);
+      setStep4Success(`¡Cupón [${clean}] Validado Exitosamente! (${benefitTitle}). Tu acceso a la plataforma está 100% activo.`);
       setStep4Error(null);
       try { confetti({ particleCount: 130, spread: 80, origin: { y: 0.6 } }); } catch {}
     } else {
@@ -345,10 +372,11 @@ export const RegistrationFlow: React.FC<RegistrationFlowProps> = ({
   const isKid = age < 18;
   const currentPlan = REGISTRATION_PLANS.find(p => p.id === selectedPlanId) || REGISTRATION_PLANS[0];
 
-  const handleApplyCoupon = (e: React.FormEvent) => {
+  const handleApplyCoupon = async (e: React.FormEvent) => {
     e.preventDefault();
     setCouponError(null);
     const clean = couponCode.trim().toUpperCase();
+    if (!clean) return;
 
     if (clean === 'CSB2026') {
       setAppliedCoupon({
@@ -357,6 +385,7 @@ export const RegistrationFlow: React.FC<RegistrationFlowProps> = ({
         discountPercent: 100
       });
       try { confetti({ particleCount: 70, spread: 60, origin: { y: 0.6 } }); } catch {}
+      return;
     } else if (clean.includes('ALUMNO') || clean.includes('STUDENT') || clean.includes('ESTUDIANTE')) {
       setAppliedCoupon({
         code: clean,
@@ -364,6 +393,7 @@ export const RegistrationFlow: React.FC<RegistrationFlowProps> = ({
         discountPercent: 100
       });
       try { confetti({ particleCount: 70, spread: 60, origin: { y: 0.6 } }); } catch {}
+      return;
     } else if (clean.includes('TEACHER') || clean.includes('DOCENTE') || clean === 'PRE-CSB' || clean === 'CSB-PRE') {
       setAppliedCoupon({
         code: clean,
@@ -371,6 +401,7 @@ export const RegistrationFlow: React.FC<RegistrationFlowProps> = ({
         discountPercent: 100
       });
       try { confetti({ particleCount: 70, spread: 60, origin: { y: 0.6 } }); } catch {}
+      return;
     } else if (clean === 'FRIENDS2026') {
       setAppliedCoupon({
         code: clean,
@@ -378,6 +409,7 @@ export const RegistrationFlow: React.FC<RegistrationFlowProps> = ({
         discountPercent: 100
       });
       try { confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 } }); } catch {}
+      return;
     } else if (clean === 'COKITO5') {
       setAppliedCoupon({
         code: clean,
@@ -385,27 +417,49 @@ export const RegistrationFlow: React.FC<RegistrationFlowProps> = ({
         discountPercent: 100
       });
       try { confetti({ particleCount: 60, spread: 50, origin: { y: 0.6 } }); } catch {}
-    } else {
-      const dbCoupon = findCouponByCode(clean);
-      if (dbCoupon) {
-        if (!dbCoupon.isActive) {
-          setCouponError('Este cupón o beca se encuentra temporalmente inactivo en Güakytopia.');
-          return;
-        }
-        const discountPct = dbCoupon.benefitType === 'scholar_100' || dbCoupon.benefitType === 'free_webapp_3m' ? 100
-          : dbCoupon.benefitType === 'scholar_50' ? 50
-          : dbCoupon.benefitType === 'scholar_20' || dbCoupon.benefitType === 'launch_20_off' ? 20
-          : 100;
+      return;
+    }
 
-        setAppliedCoupon({
-          code: clean,
-          label: `${dbCoupon.title} (${discountPct === 100 ? '100% Bonificado' : `${discountPct}% OFF`})`,
-          discountPercent: discountPct
-        });
-        try { confetti({ particleCount: 75, spread: 65, origin: { y: 0.6 } }); } catch {}
-      } else {
-        setCouponError('Código no válido o expirado. Consulta con la Rectoría de Güakytopia.');
+    // Check memory/local cache and cloud Firestore / server
+    let dbCoupon = findCouponByCode(clean);
+    if (!dbCoupon) {
+      dbCoupon = await findCouponByCodeAsync(clean);
+    }
+
+    if (dbCoupon) {
+      if (!dbCoupon.isActive) {
+        setCouponError('Este cupón o beca se encuentra temporalmente inactivo en Güakytopia.');
+        return;
       }
+
+      if (dbCoupon.maxUses !== null && dbCoupon.maxUses !== undefined && (dbCoupon.currentUses || 0) >= dbCoupon.maxUses) {
+        setCouponError('Este cupón ya alcanzó el límite máximo de canjes permitidos.');
+        return;
+      }
+
+      let discountPct = 100;
+      if (dbCoupon.benefitType === 'scholar_50' || dbCoupon.benefitType === 'csb_family_discount') {
+        discountPct = 50;
+      } else if (dbCoupon.benefitType === 'scholar_20' || dbCoupon.benefitType === 'launch_20_off') {
+        discountPct = 20;
+      } else if (dbCoupon.benefitType === 'webapp_5usd_3m') {
+        discountPct = 100;
+      } else if (dbCoupon.benefitType === 'scholar_100' || dbCoupon.benefitType === 'free_webapp_3m' || dbCoupon.benefitType === 'friend_pass' || dbCoupon.benefitType === 'trial_7days' || dbCoupon.benefitType === 'tester_ticket') {
+        discountPct = 100;
+      } else if (dbCoupon.title.includes('50%')) {
+        discountPct = 50;
+      } else if (dbCoupon.title.includes('20%')) {
+        discountPct = 20;
+      }
+
+      setAppliedCoupon({
+        code: dbCoupon.code,
+        label: `${dbCoupon.title} (${discountPct === 100 ? '100% Bonificado' : `${discountPct}% OFF`})`,
+        discountPercent: discountPct
+      });
+      try { confetti({ particleCount: 75, spread: 65, origin: { y: 0.6 } }); } catch {}
+    } else {
+      setCouponError('Código no válido o expirado. Consulta con la Rectoría de Güakytopia.');
     }
   };
 
@@ -591,6 +645,13 @@ export const RegistrationFlow: React.FC<RegistrationFlowProps> = ({
     try {
       confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 } });
     } catch {}
+
+    if (appliedCoupon?.code) {
+      const dbCoupon = findCouponByCode(appliedCoupon.code);
+      if (dbCoupon) {
+        void incrementCouponUses(dbCoupon.id);
+      }
+    }
 
     onRegisterComplete(newStudent, selectedSlotIds);
     setRegisteredStudent(newStudent);

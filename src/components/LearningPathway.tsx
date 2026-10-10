@@ -23,7 +23,8 @@ import {
   Lightbulb,
   Globe2,
   Banknote,
-  Download
+  Download,
+  FolderOpen
 } from 'lucide-react';
 import { Student, AudienceTheme } from '../types';
 import { User } from 'firebase/auth';

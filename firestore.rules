@@ -38,6 +38,12 @@ service cloud.firestore {
       allow read, write: if true;
     }
 
+    // Coupons collection (Becas, descuentos y promociones en tiempo real)
+    match /coupons/{couponId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
     // Default deny for everything else
     match /{document=**} {
       allow read, write: if false;

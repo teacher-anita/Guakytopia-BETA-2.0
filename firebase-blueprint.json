@@ -77,6 +77,27 @@
         "welcomeEmailSentAt": { "type": "string" }
       },
       "required": ["id", "email", "name"]
+    },
+    "Coupon": {
+      "title": "Coupon",
+      "description": "Academy coupons, scholarships, and promotional discount codes",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "code": { "type": "string" },
+        "category": { "type": "string" },
+        "categoryLabel": { "type": "string" },
+        "benefitType": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "maxUses": { "type": ["number", "null"] },
+        "currentUses": { "type": "number" },
+        "isActive": { "type": "boolean" },
+        "notes": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "testerRole": { "type": "string" }
+      },
+      "required": ["id", "code", "isActive"]
     }
   },
   "firestore": {
@@ -91,6 +112,10 @@
     "/teachers/{teacherId}": {
       "schema": "Teacher",
       "description": "Teachers part of Güakytopia's Flock"
+    },
+    "/coupons/{couponId}": {
+      "schema": "Coupon",
+      "description": "Coupons and scholarship codes issued by Principal's Office"
     }
   }
 }
