@@ -37,6 +37,7 @@ export interface EnglishLevel {
 
 export interface Student {
   id: string;
+  uid?: string;
   name: string;
   lastName?: string;
   cedula?: string;
@@ -105,6 +106,32 @@ export interface Student {
   };
   notes: string;
   assignedSlots: string[]; // e.g. ['Lunes-16:00', 'Miercoles-16:00']
+  /** Pilot Telemetry and Real Interaction Tracking */
+  telemetry?: StudentTelemetry;
+}
+
+export interface StudentActivityEvent {
+  id: string;
+  section: 'hub' | 'classroom' | 'library' | 'lab' | 'calendar';
+  action: string;
+  detail?: string;
+  timestamp: string;
+}
+
+export interface StudentTelemetry {
+  hubVisits: number;
+  lastHubVisit?: string;
+  classroomVisits: number;
+  lastClassroomVisit?: string;
+  libraryVisits: number;
+  lastLibraryVisit?: string;
+  labVisits: number;
+  lastLabVisit?: string;
+  calendarVisits: number;
+  lastCalendarVisit?: string;
+  totalInteractions: number;
+  lastActiveAt?: string;
+  recentActivity: StudentActivityEvent[];
 }
 
 export interface TeacherAnnouncement {

@@ -28,6 +28,7 @@ import { ClassroomMaterial, Student } from '../types';
 import { INITIAL_MATERIALS, ENGLISH_LEVELS } from '../data/curriculumData';
 import { fetchClassroomCourses, ClassroomCourse } from '../services/googleClassroom';
 import { downloadUnitAudio } from '../services/materialDownloader';
+import { trackStudentAction } from '../services/telemetryService';
 
 interface AcademicLibraryProps {
   currentStudent: Student | null;
@@ -164,6 +165,9 @@ export const AcademicLibrary: React.FC<AcademicLibraryProps> = ({
       const newAudio = new Audio(track.file);
       audioRef.current = newAudio;
       setPlayingTrackId(track.id);
+      if (currentStudent) {
+        trackStudentAction(currentStudent, 'library', 'Reprodujo audio fonético', track.title);
+      }
       newAudio.play().catch(err => {
         console.warn('Audio playback error', err);
         setPlayingTrackId(null);

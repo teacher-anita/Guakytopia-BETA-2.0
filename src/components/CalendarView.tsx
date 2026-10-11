@@ -25,15 +25,18 @@ import {
 import { ScheduleSlot, Student, AudienceTheme } from '../types';
 import { ENGLISH_LEVELS } from '../data/curriculumData';
 import { generateEmailTemplate, sendGmailEmail } from '../services/gmailNotifier';
+import { StudentScheduleRequestModal } from './StudentScheduleRequestModal';
 
 interface CalendarViewProps {
   slots: ScheduleSlot[];
   students: Student[];
   currentStudent: Student | null;
+  user?: any;
   activeRole: 'student' | 'teacher';
   audienceTheme: AudienceTheme;
   onFreeSlot?: (slotId: string) => void;
   onOpenRegister: () => void;
+  onUpdateStudent?: (student: Student) => void;
 }
 
 export type StudyRhythm = 'mon_wed' | 'tue_thu' | 'intensive_6h' | 'saturday' | 'all';
@@ -42,10 +45,12 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
   slots,
   students,
   currentStudent,
+  user,
   activeRole,
   audienceTheme,
   onFreeSlot,
-  onOpenRegister
+  onOpenRegister,
+  onUpdateStudent
 }) => {
   // Main Study Rhythm Filter (reduces cognitive noise by 70%!)
   const [studyRhythm, setStudyRhythm] = useState<StudyRhythm>('mon_wed');
@@ -61,6 +66,54 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
   
   const [actionMessage, setActionMessage] = useState<string | null>(null);
   const [showFrequencyGuide, setShowFrequencyGuide] = useState<boolean>(true);
+
+  // Authenticated Student Schedule Booking Modal state
+  const [isBookingModalOpen, setIsBookingModalOpen] = useState<boolean>(false);
+  const [selectedBookingSlot, setSelectedBookingSlot] = useState<ScheduleSlot | null>(null);
+
+  // Derive effective student: active student model or authenticated user
+  const effectiveStudent: Student | null = (currentStudent && currentStudent.id && currentStudent.id !== 'guest')
+    ? currentStudent
+    : user
+      ? {
+          id: `student_${user.uid}`,
+          uid: user.uid,
+          name: user.displayName?.split(' ')[0] || user.email?.split('@')[0] || 'Estudiante',
+          lastName: user.displayName?.split(' ').slice(1).join(' ') || '',
+          email: user.email || '',
+          age: 20,
+          isKid: false,
+          schoolOrProfession: 'Estudiante Campus Güakytopia',
+          learningGoal: 'Aprender y dominar el inglés',
+          avatar: user.photoURL || `https://api.dicebear.com/7.x/micah/svg?seed=${user.uid}`,
+          status: 'enrolled',
+          plan: 'basic',
+          modality: 'online',
+          groupSize: 'individual',
+          preferredTimeSlot: '',
+          levelId: 'level_1',
+          currentUnit: 1,
+          completedHours: 0,
+          xp: 150,
+          streak: 1,
+          league: 'Bronce',
+          rating: { fluency: 3, grammar: 3, vocabulary: 3, pronunciation: 3 },
+          assignedSlots: [],
+          registeredAt: new Date().toISOString().split('T')[0],
+          notes: ''
+        }
+      : null;
+
+  const handleInitiateBooking = (slot?: ScheduleSlot) => {
+    if (effectiveStudent) {
+      // Student is already logged in! DO NOT re-ask personal data. Open fast reservation modal!
+      setSelectedBookingSlot(slot || null);
+      setIsBookingModalOpen(true);
+    } else {
+      // Visitor/Guest: Open registration
+      onOpenRegister();
+    }
+  };
 
   const isKids = audienceTheme === 'kids';
 
@@ -245,13 +298,13 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
           </div>
         </div>
 
-        {/* Action Button to Register */}
+        {/* Action Button to Register / Book */}
         <button
-          onClick={onOpenRegister}
+          onClick={() => handleInitiateBooking()}
           className="w-full md:w-auto px-4 py-2.5 bg-[#2EC4B6] hover:bg-[#259C90] text-slate-950 rounded-2xl font-black text-xs shadow-xs transition-all flex items-center justify-center gap-2"
         >
           <Plus className="w-4 h-4" />
-          <span>Solicitar Inscripción en un Turno</span>
+          <span>{effectiveStudent ? 'Solicitar / Agendar Mi Turno' : 'Solicitar Inscripción en un Turno'}</span>
         </button>
       </div>
 
@@ -750,10 +803,10 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                         </div>
 
                         <button
-                          onClick={onOpenRegister}
+                          onClick={() => handleInitiateBooking(slot)}
                           className="shrink-0 text-[11px] font-black text-emerald-900 bg-white border border-emerald-300 hover:bg-emerald-100 px-3 py-1.5 rounded-xl shadow-2xs transition-colors"
                         >
-                          Reservar
+                          {currentStudent && currentStudent.id !== 'guest' ? 'Agendar' : 'Reservar'}
                         </button>
                       </div>
                     );
@@ -764,6 +817,23 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
           );
         })}
       </div>
+
+      {/* Student Fast Booking Modal for Logged-In Student */}
+      {isBookingModalOpen && effectiveStudent && (
+        <StudentScheduleRequestModal
+          isOpen={isBookingModalOpen}
+          onClose={() => {
+            setIsBookingModalOpen(false);
+            setSelectedBookingSlot(null);
+          }}
+          student={effectiveStudent}
+          preselectedSlot={selectedBookingSlot}
+          allSlots={slots}
+          allLevels={ENGLISH_LEVELS}
+          onSuccess={(msg) => setActionMessage(msg)}
+          onUpdateStudent={onUpdateStudent}
+        />
+      )}
     </div>
   );
 };

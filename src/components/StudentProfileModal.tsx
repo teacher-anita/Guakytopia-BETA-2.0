@@ -39,6 +39,7 @@ interface StudentProfileModalProps {
   onOpenCoupon: () => void;
   onOpenPlacementTest: () => void;
   onOpenRegister?: () => void;
+  onOpenScheduleBooking?: () => void;
   onOpenPaymentModal?: () => void;
   audienceTheme?: AudienceTheme;
   onAudienceChange?: (theme: AudienceTheme) => void;
@@ -57,6 +58,7 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({
   onOpenCoupon,
   onOpenPlacementTest,
   onOpenRegister,
+  onOpenScheduleBooking,
   onOpenPaymentModal,
   audienceTheme,
   onAudienceChange
@@ -240,6 +242,21 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({
                       </button>
                     )}
                   </>
+                )}
+
+                {/* Direct Schedule Booking for Authenticated Student */}
+                {onOpenScheduleBooking && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onClose();
+                      onOpenScheduleBooking();
+                    }}
+                    className="w-full py-2.5 px-4 bg-slate-900 hover:bg-slate-800 text-amber-300 font-bold rounded-xl text-xs shadow-xs transition-colors flex items-center justify-center gap-2"
+                  >
+                    <Calendar className="w-4 h-4 text-amber-400" />
+                    <span>{student?.preferredTimeSlot ? `Mi Horario: ${student.preferredTimeSlot}` : '📅 Solicitar / Agendar Horario de Clases'}</span>
+                  </button>
                 )}
 
                 <button

@@ -18,6 +18,7 @@ import { CouponModal } from './components/CouponModal';
 import { PaymentCheckoutModal } from './components/PaymentCheckoutModal';
 import { TeacherGate } from './components/TeacherGate';
 import { StudentProfileModal } from './components/StudentProfileModal';
+import { StudentScheduleRequestModal } from './components/StudentScheduleRequestModal';
 import { LanguageLab } from './components/LanguageLab';
 import { PrincipalDashboard } from './components/PrincipalDashboard';
 import { ThemeSelectorModal, StudyThemeId } from './components/ThemeSelectorModal';
@@ -25,7 +26,7 @@ import { UnitOneMasterClass } from './components/UnitOneMasterClass';
 import { ClassroomHub } from './components/ClassroomHub';
 import { AcademicLibrary } from './components/AcademicLibrary';
 import { Student, ScheduleSlot, AudienceTheme, Teacher, StaffRole } from './types';
-import { INITIAL_STUDENTS, INITIAL_SCHEDULE_SLOTS } from './data/curriculumData';
+import { INITIAL_STUDENTS, INITIAL_SCHEDULE_SLOTS, ENGLISH_LEVELS } from './data/curriculumData';
 import { INITIAL_TEACHERS } from './data/teachersData';
 import { initAuth, googleSignIn, logout } from './services/firebaseAuth';
 import { 
@@ -40,9 +41,10 @@ import {
   getLocalTeachers,
   subscribeToCoupons 
 } from './services/db';
-import { ShieldCheck } from 'lucide-react';
+import { ShieldCheck, Calendar } from 'lucide-react';
 import { CyberOwlChatbot } from './components/CyberOwlChatbot';
 import { fetchLiveBcvRate, initMidnightBcvScheduler } from './services/currencyService';
+import { trackStudentAction } from './services/telemetryService';
 
 export default function App() {
   // Navigation & Theme State
@@ -63,6 +65,7 @@ export default function App() {
   const [isCouponOpen, setIsCouponOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [isDirectScheduleBookingOpen, setIsDirectScheduleBookingOpen] = useState(false);
 
   // Staff Authentication role: 'principal' (The Principal Waky) | 'teacher' (Coquito) | null
   const [staffRole, setStaffRole] = useState<StaffRole | null>(() => {
@@ -154,9 +157,68 @@ export default function App() {
             sessionStorage.setItem('cokito_staff_role', 'principal');
           } else {
             // If registered student matches this Google account email, auto-switch to their profile
-            const matched = students.find(s => s.email.toLowerCase() === currentUser.email?.toLowerCase());
+            const matched = students.find(s => s.email?.toLowerCase() === currentUser.email?.toLowerCase());
             if (matched) {
               setCurrentStudentId(matched.id);
+              setIsStudentAuthenticated(true);
+              sessionStorage.setItem('cokito_student_auth', 'true');
+            } else {
+              // Seamlessly auto-provision student profile for the authenticated Google user!
+              const newGoogleStudent: Student = {
+                id: `student_${currentUser.uid}`,
+                uid: currentUser.uid,
+                name: currentUser.displayName?.split(' ')[0] || 'Estudiante',
+                lastName: currentUser.displayName?.split(' ').slice(1).join(' ') || '',
+                cedula: '',
+                email: currentUser.email || '',
+                phone: '',
+                age: 20,
+                isKid: false,
+                schoolOrProfession: 'Estudiante Campus Güakytopia',
+                learningGoal: 'Aprender y dominar el inglés con Teacher Cokitö',
+                avatar: currentUser.photoURL || `https://api.dicebear.com/7.x/micah/svg?seed=${currentUser.uid}`,
+                plan: 'basic',
+                modality: 'online',
+                groupSize: 'individual',
+                preferredTimeSlot: '',
+                status: 'enrolled',
+                levelId: 'level_1',
+                placementTestScore: 20,
+                placementTestDiagnosis: 'Acceso inicial activado con Google Sign-In',
+                placementTestDate: new Date().toISOString().split('T')[0],
+                registeredAt: new Date().toISOString().split('T')[0],
+                currentUnit: 1,
+                completedHours: 0,
+                xp: 150,
+                streak: 1,
+                league: 'Bronce',
+                rating: { fluency: 3, grammar: 3, vocabulary: 3, pronunciation: 3 },
+                notes: `Inscrito vía Google Sign-In el ${new Date().toLocaleDateString('es-VE')}`,
+                assignedSlots: [],
+                telemetry: {
+                  hubVisits: 0,
+                  classroomVisits: 0,
+                  libraryVisits: 0,
+                  labVisits: 0,
+                  calendarVisits: 0,
+                  totalInteractions: 1,
+                  lastActiveAt: new Date().toISOString(),
+                  recentActivity: [
+                    {
+                      id: `act_${Date.now()}`,
+                      section: 'hub',
+                      action: 'Inicio de sesión en Güakytopia',
+                      detail: 'Cuenta vinculada con Google',
+                      timestamp: new Date().toISOString()
+                    }
+                  ]
+                }
+              };
+              void saveStudent(newGoogleStudent);
+              setStudents(prev => [...prev.filter(s => s.id !== newGoogleStudent.id), newGoogleStudent]);
+              setCurrentStudentId(newGoogleStudent.id);
+              setIsStudentAuthenticated(true);
+              sessionStorage.setItem('cokito_student_auth', 'true');
             }
           }
         }
@@ -218,6 +280,23 @@ export default function App() {
   const currentStudent = currentStudentId === 'guest'
     ? null
     : students.find(s => s.id === currentStudentId) || null;
+
+  // Pilot Program Telemetry: Automatically record student interaction when visiting sections
+  useEffect(() => {
+    if (currentStudent && currentStudent.id && currentStudent.id !== 'guest') {
+      const sectionMap: Record<string, 'hub' | 'classroom' | 'library' | 'lab' | 'calendar' | null> = {
+        pathway: 'hub',
+        classroom: 'classroom',
+        library: 'library',
+        lab: 'lab',
+        calendar: 'calendar'
+      };
+      const sectionKey = sectionMap[activeTab];
+      if (sectionKey) {
+        trackStudentAction(currentStudent, sectionKey, `Ingresó a la sección ${sectionKey.toUpperCase()}`);
+      }
+    }
+  }, [activeTab, currentStudent?.id]);
 
   // Registration Callback (Saves to Cloud Firestore + LocalStorage!)
   const handleRegisterComplete = async (newStudent: Student, bookedSlotIds: string[]) => {
@@ -447,12 +526,72 @@ export default function App() {
 
         {/* TAB 2: REGISTRATION & PLACEMENT TEST FLOW */}
         {activeTab === 'register' && (
-          <RegistrationFlow
-            slots={slots}
-            onRegisterComplete={handleRegisterComplete}
-            onExploreCalendar={() => setActiveTab('calendar')}
-            audienceTheme={audienceTheme}
-          />
+          currentStudent && currentStudent.id !== 'guest' ? (
+            <div className="max-w-2xl mx-auto py-10 px-4 space-y-6 animate-fadeIn">
+              <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-md text-center space-y-4">
+                <div className="w-16 h-16 rounded-full bg-emerald-100 border-2 border-emerald-300 mx-auto flex items-center justify-center text-2xl shadow-inner">
+                  ✅
+                </div>
+                <div className="space-y-1">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-800 bg-emerald-100 px-3 py-1 rounded-full border border-emerald-300">
+                    Perfil Activo en Güakytopia Campus
+                  </span>
+                  <h2 className="text-xl sm:text-2xl font-black text-slate-900 pt-2">
+                    ¡Hola, {currentStudent.name}! Ya estás registrado
+                  </h2>
+                  <p className="text-xs sm:text-sm text-slate-600 max-w-md mx-auto">
+                    Tus datos ya están en el sistema de la academia. No tienes que volver a escribir todo desde cero. Puedes solicitar o consultar tu horario de clases de inmediato:
+                  </p>
+                </div>
+
+                <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200/80 text-left text-xs space-y-2 max-w-md mx-auto">
+                  <div className="flex justify-between items-center">
+                    <span className="text-slate-500">Nivel asignado:</span>
+                    <span className="font-bold text-slate-800">{currentStudent.levelId || 'Super Goal 1'}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-slate-500">Plan:</span>
+                    <span className="font-bold text-slate-800 capitalize">{currentStudent.plan}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-slate-500">Horario / Turno:</span>
+                    <span className="font-bold text-indigo-700">{currentStudent.preferredTimeSlot || 'Sin turno agendado'}</span>
+                  </div>
+                </div>
+
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-3 flex-wrap">
+                  <button
+                    onClick={() => setIsDirectScheduleBookingOpen(true)}
+                    className="w-full sm:w-auto px-6 py-3 bg-slate-900 hover:bg-slate-800 text-amber-300 font-black rounded-2xl text-xs shadow-md transition-all flex items-center justify-center gap-2"
+                  >
+                    <Calendar className="w-4 h-4 text-amber-400" />
+                    <span>📅 Solicitar / Agendar Mi Horario</span>
+                  </button>
+
+                  <button
+                    onClick={() => setActiveTab('pathway')}
+                    className="w-full sm:w-auto px-5 py-3 bg-[#2EC4B6] hover:bg-[#259C90] text-slate-950 font-bold rounded-2xl text-xs shadow-xs transition-colors flex items-center justify-center gap-2"
+                  >
+                    <span>🧭 Ir al Hub de Progreso</span>
+                  </button>
+
+                  <button
+                    onClick={() => setActiveTab('calendar')}
+                    className="w-full sm:w-auto px-5 py-3 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold rounded-2xl text-xs transition-colors flex items-center justify-center gap-2"
+                  >
+                    <span>Ver Agenda Semanal</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <RegistrationFlow
+              slots={slots}
+              onRegisterComplete={handleRegisterComplete}
+              onExploreCalendar={() => setActiveTab('calendar')}
+              audienceTheme={audienceTheme}
+            />
+          )
         )}
 
         {/* TAB 3: CONFIDENTIAL SHARED CALENDAR */}
@@ -461,10 +600,12 @@ export default function App() {
             slots={slots}
             students={students}
             currentStudent={currentStudent}
+            user={user}
             activeRole={isTeacherAuthenticated ? 'teacher' : 'student'}
             audienceTheme={audienceTheme}
             onFreeSlot={handleFreeSlot}
             onOpenRegister={() => setActiveTab('register')}
+            onUpdateStudent={handleUpdateStudent}
           />
         )}
 
@@ -637,6 +778,10 @@ export default function App() {
           setIsCouponOpen(true);
         }}
         onOpenPlacementTest={() => setIsPlacementQuizOpen(true)}
+        onOpenScheduleBooking={() => {
+          setIsProfileOpen(false);
+          setIsDirectScheduleBookingOpen(true);
+        }}
         onOpenRegister={() => {
           setIsProfileOpen(false);
           setActiveTab('register');
@@ -677,6 +822,21 @@ export default function App() {
           setActiveTab('register');
         }}
       />
+
+      {/* Direct Schedule Booking Modal (Instant booking without re-asking any personal data) */}
+      {isDirectScheduleBookingOpen && currentStudent && currentStudent.id !== 'guest' && (
+        <StudentScheduleRequestModal
+          isOpen={isDirectScheduleBookingOpen}
+          onClose={() => setIsDirectScheduleBookingOpen(false)}
+          student={currentStudent}
+          allSlots={slots}
+          allLevels={ENGLISH_LEVELS}
+          onSuccess={(msg) => {
+            console.log(msg);
+          }}
+          onUpdateStudent={handleUpdateStudent}
+        />
+      )}
 
       {/* Theme / Appearance Modal (Sensory & Neurodiversity Control) */}
       <ThemeSelectorModal

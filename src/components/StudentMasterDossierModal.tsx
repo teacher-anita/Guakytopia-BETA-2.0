@@ -24,11 +24,16 @@ import {
   ShieldCheck,
   User,
   Zap,
-  HelpCircle
+  HelpCircle,
+  Activity,
+  Database,
+  BarChart3,
+  RefreshCw
 } from 'lucide-react';
 import { Student, EnglishLevel } from '../types';
 import { CouponItem } from '../data/couponsData';
 import { analyzeStudentWithCoquito, CoquitoCognitiveAnalysis } from '../services/coquitoBrainService';
+import { getLocalStudentTelemetry } from '../services/telemetryService';
 
 interface StudentMasterDossierModalProps {
   student: Student;
@@ -57,7 +62,7 @@ export const StudentMasterDossierModal: React.FC<StudentMasterDossierModalProps>
   onMoveStudent,
   onToggleStatus
 }) => {
-  const [activeTab, setActiveTab] = useState<'brain' | 'membership' | 'schedule' | 'progress'>('brain');
+  const [activeTab, setActiveTab] = useState<'brain' | 'telemetry' | 'membership' | 'schedule' | 'progress'>('brain');
   const [newNoteText, setNewNoteText] = useState('');
   const [isSavingNote, setIsSavingNote] = useState(false);
   const [aiGenerating, setAiGenerating] = useState(false);
@@ -236,6 +241,18 @@ Como "Cokitö", el cerebro pedagógico institucional de Güakytopia, dame una re
             >
               <Brain className="w-4 h-4" />
               <span>Cerebro Cokitö & Diagnóstico</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('telemetry')}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 shrink-0 ${
+                activeTab === 'telemetry'
+                  ? 'bg-amber-400 text-slate-950 shadow-sm'
+                  : 'text-slate-300 hover:text-white hover:bg-white/10'
+              }`}
+            >
+              <Activity className="w-4 h-4" />
+              <span>📡 Telemetría en Vivo (Piloto)</span>
             </button>
 
             <button
@@ -448,6 +465,235 @@ Como "Cokitö", el cerebro pedagógico institucional de Güakytopia, dame una re
               </div>
             </div>
           )}
+
+          {/* TAB: TELEMETRÍA EN VIVO & INTERACCIÓN DEL PILOTO */}
+          {activeTab === 'telemetry' && (() => {
+            const telemetry = student.telemetry || getLocalStudentTelemetry(student.id);
+            const formatTime = (iso?: string) => {
+              if (!iso) return 'Sin registro';
+              try {
+                const d = new Date(iso);
+                return d.toLocaleString('es-VE', { 
+                  day: '2-digit', 
+                  month: 'short', 
+                  hour: '2-digit', 
+                  minute: '2-digit' 
+                });
+              } catch {
+                return iso;
+              }
+            };
+
+            return (
+              <div className="space-y-5 animate-fadeIn">
+                {/* Status Card: Validación de Perfil */}
+                <div className="bg-white p-5 rounded-3xl border border-slate-200 shadow-2xs space-y-4">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-lg">
+                        <Database className="w-5 h-5 text-emerald-700" />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h3 className="text-sm font-black text-slate-900">
+                            Estado del Perfil del Alumno
+                          </h3>
+                          <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-900 border border-emerald-300">
+                            ● Almacenado en Firestore
+                          </span>
+                        </div>
+                        <p className="text-xs text-slate-500 mt-0.5">
+                          ID: <strong className="font-mono text-slate-700">{student.id}</strong> · Registrado el {formattedRegDate}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="text-xs text-slate-500 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200">
+                      Última interacción: <strong className="text-slate-900">{formatTime(telemetry.lastActiveAt)}</strong>
+                    </div>
+                  </div>
+
+                  {/* Checklist: ¿Ya creamos el perfil del alumno? */}
+                  <div className="grid grid-cols-1 sm:grid-cols-4 gap-2.5 pt-2 border-t border-slate-100 text-xs">
+                    <div className="p-3 rounded-2xl bg-emerald-50/70 border border-emerald-200 flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                      <div>
+                        <span className="font-bold text-emerald-950 block">1. Cuenta Creada</span>
+                        <span className="text-[10px] text-emerald-800">{student.username ? `@${student.username}` : 'Activo en base'}</span>
+                      </div>
+                    </div>
+
+                    <div className="p-3 rounded-2xl bg-indigo-50/70 border border-indigo-200 flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-indigo-600 shrink-0" />
+                      <div>
+                        <span className="font-bold text-indigo-950 block">2. Placement Test</span>
+                        <span className="text-[10px] text-indigo-800">{student.placementTestScore ?? 'N/A'}/25 pts ({matchedLevel?.levelName || 'A1'})</span>
+                      </div>
+                    </div>
+
+                    <div className={`p-3 rounded-2xl flex items-center gap-2 border ${
+                      student.couponCodeUsed || student.couponCodeAssigned
+                        ? 'bg-purple-50/70 border-purple-200 text-purple-950'
+                        : 'bg-slate-50 border-slate-200 text-slate-600'
+                    }`}>
+                      <CheckCircle2 className="w-4 h-4 text-purple-600 shrink-0" />
+                      <div>
+                        <span className="font-bold block">3. Cupón / Plan</span>
+                        <span className="text-[10px] truncate max-w-[120px] block">
+                          {student.couponCodeAssigned || student.couponCodeUsed || 'Plan Regular'}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className={`p-3 rounded-2xl flex items-center gap-2 border ${
+                      hasClasses 
+                        ? 'bg-emerald-50/70 border-emerald-200 text-emerald-950' 
+                        : student.isDigitalPass
+                        ? 'bg-violet-50/70 border-violet-200 text-violet-950'
+                        : 'bg-amber-50/70 border-amber-300 text-amber-950'
+                    }`}>
+                      {hasClasses ? (
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                      ) : (
+                        <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
+                      )}
+                      <div>
+                        <span className="font-bold block">4. Horario de Clases</span>
+                        <span className="text-[10px] block">
+                          {hasClasses ? 'Agendado en vivo' : student.isDigitalPass ? 'Pase Digital' : 'Pendiente agendar'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Grid: Métricas por Sección del Campus (HUB, CLASSROOM, LIBRARY, LAB, CALENDAR) */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-slate-600">
+                      Interacciones Medidas por Módulo (HUB, CLASSROOM, LIBRARY, LAB)
+                    </h3>
+                    <span className="text-xs text-slate-500">
+                      Total acumulado: <strong className="text-slate-800">{telemetry.totalInteractions} acciones</strong>
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    {/* HUB */}
+                    <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-2xs space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-bold text-indigo-700 uppercase">🌐 HUB</span>
+                        <span className="text-xs font-black text-indigo-950 bg-indigo-50 px-2 py-0.5 rounded-md">
+                          {telemetry.hubVisits} visitas
+                        </span>
+                      </div>
+                      <div className="text-xs font-bold text-slate-800">
+                        Ruta de Progreso
+                      </div>
+                      <div className="text-[10px] text-slate-400">
+                        Última: {formatTime(telemetry.lastHubVisit)}
+                      </div>
+                    </div>
+
+                    {/* CLASSROOM */}
+                    <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-2xs space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-bold text-emerald-700 uppercase">🎓 CLASSROOM</span>
+                        <span className="text-xs font-black text-emerald-950 bg-emerald-50 px-2 py-0.5 rounded-md">
+                          {telemetry.classroomVisits} visitas
+                        </span>
+                      </div>
+                      <div className="text-xs font-bold text-slate-800">
+                        Aula en Vivo
+                      </div>
+                      <div className="text-[10px] text-slate-400">
+                        Última: {formatTime(telemetry.lastClassroomVisit)}
+                      </div>
+                    </div>
+
+                    {/* LIBRARY */}
+                    <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-2xs space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-bold text-amber-700 uppercase">📚 LIBRARY</span>
+                        <span className="text-xs font-black text-amber-950 bg-amber-50 px-2 py-0.5 rounded-md">
+                          {telemetry.libraryVisits} visitas
+                        </span>
+                      </div>
+                      <div className="text-xs font-bold text-slate-800">
+                        Libros & Audios
+                      </div>
+                      <div className="text-[10px] text-slate-400">
+                        Última: {formatTime(telemetry.lastLibraryVisit)}
+                      </div>
+                    </div>
+
+                    {/* LAB */}
+                    <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-2xs space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-bold text-purple-700 uppercase">🧪 LAB</span>
+                        <span className="text-xs font-black text-purple-950 bg-purple-50 px-2 py-0.5 rounded-md">
+                          {telemetry.labVisits} visitas
+                        </span>
+                      </div>
+                      <div className="text-xs font-bold text-slate-800">
+                        Laboratorio Drills
+                      </div>
+                      <div className="text-[10px] text-slate-400">
+                        Última: {formatTime(telemetry.lastLabVisit)}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Live Activity Timeline */}
+                <div className="bg-white p-5 rounded-3xl border border-slate-200 shadow-2xs space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-slate-600">
+                      Historial de Eventos en Tiempo Real (Programa Piloto)
+                    </h3>
+                    <span className="text-[11px] text-slate-400">
+                      Auditoría directa de interacción
+                    </span>
+                  </div>
+
+                  {telemetry.recentActivity && telemetry.recentActivity.length > 0 ? (
+                    <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
+                      {telemetry.recentActivity.map((act) => (
+                        <div 
+                          key={act.id}
+                          className="p-2.5 rounded-xl bg-slate-50 border border-slate-200/80 flex items-center justify-between text-xs"
+                        >
+                          <div className="flex items-center gap-2">
+                            <span className="px-1.5 py-0.5 rounded-md text-[9px] font-black uppercase bg-slate-200 text-slate-800 font-mono">
+                              {act.section}
+                            </span>
+                            <span className="font-semibold text-slate-800">
+                              {act.action}
+                            </span>
+                            {act.detail && (
+                              <span className="text-slate-500 text-[11px] truncate max-w-[200px]">
+                                · {act.detail}
+                              </span>
+                            )}
+                          </div>
+                          <span className="text-[10px] text-slate-400 shrink-0 font-mono">
+                            {formatTime(act.timestamp)}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="p-6 rounded-2xl bg-slate-50 border border-dashed border-slate-200 text-center text-xs text-slate-500 space-y-1">
+                      <p className="font-medium text-slate-700">Aún no hay eventos registrados en este perfil</p>
+                      <p className="text-[11px] text-slate-400">
+                        En cuanto el alumno inicie sesión y navegue al Hub, Classroom, Library o Lab, cada interacción se almacenará de inmediato en Firestore y aparecerá en este tablero.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })()}
 
           {/* TAB 2: MEMBRESÍA, CUPONES & PAGOS */}
           {activeTab === 'membership' && (

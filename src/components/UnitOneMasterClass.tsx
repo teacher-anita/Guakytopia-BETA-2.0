@@ -31,6 +31,7 @@ import confetti from 'canvas-confetti';
 import { Student } from '../types';
 import { UnitOneLessonsView } from './UnitOneLessonsView';
 import { downloadUnitPdf, downloadUnitAudio } from '../services/materialDownloader';
+import { trackStudentAction } from '../services/telemetryService';
 
 interface UnitOneMasterClassProps {
   currentStudent: Student | null;
@@ -373,6 +374,12 @@ export const UnitOneMasterClass: React.FC<UnitOneMasterClassProps> = ({
 
     if (updated[sessionKey] && currentStudent) {
       onAwardXp(currentStudent.id, 50);
+      trackStudentAction(
+        currentStudent,
+        'classroom',
+        'Sesión completada en Classroom',
+        `Completó la sesión ${sessionKey} de la Unidad 1`
+      );
       try {
         confetti({ particleCount: 60, spread: 60, origin: { y: 0.7 } });
       } catch {}
@@ -393,6 +400,12 @@ export const UnitOneMasterClass: React.FC<UnitOneMasterClassProps> = ({
     setIsReflectionSaved(true);
     if (currentStudent) {
       onAwardXp(currentStudent.id, 100);
+      trackStudentAction(
+        currentStudent,
+        'classroom',
+        'Reflexión y autoevaluación guardada',
+        'Completó la autoevaluación de la Unidad 1'
+      );
     }
     try {
       confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 } });

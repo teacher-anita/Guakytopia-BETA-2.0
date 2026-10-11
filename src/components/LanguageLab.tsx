@@ -33,6 +33,7 @@ import {
   LabExercise 
 } from '../data/labExercisesData';
 import { recordAcademicEvent } from '../services/academicEvents';
+import { trackStudentAction } from '../services/telemetryService';
 
 interface LanguageLabProps {
   currentStudent: Student | null;
@@ -244,6 +245,12 @@ export const LanguageLab: React.FC<LanguageLabProps> = ({
       if (!wasAlreadyCorrect) {
         if (currentStudent) {
           onAwardXp(currentStudent.id, 10);
+          trackStudentAction(
+            currentStudent, 
+            'lab', 
+            'Ejercicio resuelto en Lab', 
+            `Completó ejercicio #${activeExercise.id}: ${activeExercise.instruction}`
+          );
         }
       }
 

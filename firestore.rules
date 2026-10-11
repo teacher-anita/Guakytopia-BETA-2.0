@@ -41,6 +41,16 @@ service cloud.firestore {
       allow write: if true;
     }
 
+    // Class requests from students
+    match /classRequests/{requestId} {
+      allow read, write: if true;
+    }
+
+    // Activity and Telemetry logs
+    match /activityLogs/{logId} {
+      allow read, write: if true;
+    }
+
     // Default deny for everything else
     match /{document=**} {
       allow read, write: if false;

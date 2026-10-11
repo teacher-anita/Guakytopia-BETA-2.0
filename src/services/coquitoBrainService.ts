@@ -1,9 +1,9 @@
-// Coquito Pedagogical Brain & Cognitive Intelligence Engine for Güakytopia
+// Cokitö Pedagogical Brain & Cognitive Intelligence Engine for Güakytopia
 import { Student } from '../types';
 
 export type LearningStyle = 'Visual' | 'Auditivo' | 'Kinestésico' | 'Lógico';
 
-export interface CoquitoCognitiveAnalysis {
+export interface CokitöCognitiveAnalysis {
   learningStyle: LearningStyle;
   styleColor: {
     bg: string;
@@ -15,14 +15,17 @@ export interface CoquitoCognitiveAnalysis {
   cognitivePace: 'Ágil y Dinámico' | 'Reflexivo y Profundo' | 'Constante y Metódico';
   superpower: string;
   growthEdge: string;
-  coquitoDiagnosis: string;
+  cokitöDiagnosis: string;
+  coquitoDiagnosis: string; // compatibility
   pedagogicalTips: string[];
   engagementScore: number; // 0 - 100
   recommendedModality: string;
   weeklyEffortStatus: 'Excelente' | 'En ritmo óptimo' | 'Requiere impulso' | 'Comenzando';
 }
 
-export function analyzeStudentWithCoquito(student: Student): CoquitoCognitiveAnalysis {
+export type CoquitoCognitiveAnalysis = CokitöCognitiveAnalysis;
+
+export function analyzeStudentWithCokitö(student: Student): CokitöCognitiveAnalysis {
   const ratings = student.rating || { fluency: 3, grammar: 3, vocabulary: 3, pronunciation: 3 };
   const avgRating = (ratings.fluency + ratings.grammar + ratings.vocabulary + ratings.pronunciation) / 4;
   
@@ -49,7 +52,7 @@ export function analyzeStudentWithCoquito(student: Student): CoquitoCognitiveAna
     style = 'Kinestésico';
   }
 
-  const styleColors: Record<LearningStyle, CoquitoCognitiveAnalysis['styleColor']> = {
+  const styleColors: Record<LearningStyle, CokitöCognitiveAnalysis['styleColor']> = {
     Visual: {
       bg: 'bg-blue-50/70',
       border: 'border-blue-200',
@@ -99,7 +102,7 @@ export function analyzeStudentWithCoquito(student: Student): CoquitoCognitiveAna
   }
 
   // Cognitive Pace
-  let cognitivePace: CoquitoCognitiveAnalysis['cognitivePace'] = 'Constante y Metódico';
+  let cognitivePace: CokitöCognitiveAnalysis['cognitivePace'] = 'Constante y Metódico';
   if ((student.xp || 0) > 300 || (student.streak || 0) >= 4) {
     cognitivePace = 'Ágil y Dinámico';
   } else if (ratings.grammar >= 4 && ratings.fluency < 3.5) {
@@ -118,7 +121,7 @@ export function analyzeStudentWithCoquito(student: Student): CoquitoCognitiveAna
     engagementScore >= 45 ? 'Requiere impulso' : 'Comenzando';
 
   // Pedagogical Diagnosis Text
-  const coquitoDiagnosis = `${student.name} demuestra un perfil predominantemente ${style.toLowerCase()}. ` +
+  const cokitöDiagnosis = `${student.name} demuestra un perfil predominantemente ${style.toLowerCase()}. ` +
     `Procesa conceptos en inglés con un ritmo ${cognitivePace.toLowerCase()}, ` +
     `destacando por su ${superpower.toLowerCase()}. ` +
     `Para acelerar su paso hacia la fluidez nativa en Güakytopia, la clave es ${growthEdge.toLowerCase()}.`;
@@ -143,10 +146,13 @@ export function analyzeStudentWithCoquito(student: Student): CoquitoCognitiveAna
     cognitivePace,
     superpower,
     growthEdge,
-    coquitoDiagnosis,
+    cokitöDiagnosis,
+    coquitoDiagnosis: cokitöDiagnosis,
     pedagogicalTips,
     engagementScore,
     recommendedModality: student.modality === 'online' ? 'Online Dinámico' : 'Presencial Inmersivo',
     weeklyEffortStatus
   };
 }
+
+export const analyzeStudentWithCoquito = analyzeStudentWithCokitö;
