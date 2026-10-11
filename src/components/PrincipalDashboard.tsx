@@ -2324,7 +2324,7 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
               )}
             </div>
 
-            {/* Box 2: Official Account Provincial */}
+            {/* Box 2: Official Account Banco de Venezuela */}
             <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-2xs space-y-1.5 text-xs md:col-span-2">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
@@ -2412,7 +2412,7 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
                   Bandeja de Conciliación Bancaria y Activación de Cupos
                 </h3>
                 <p className="text-xs text-slate-500">
-                  Verifica el comprobante con tu aplicación de Banco Provincial y aprueba con un solo clic para abrir el acceso del alumno.
+                  Verifica el comprobante con tu aplicación de Banco de Venezuela y aprueba con un solo clic para abrir el acceso del alumno.
                 </p>
               </div>
             </div>
@@ -2566,7 +2566,7 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
                     <h3 className="font-black text-slate-900 text-base">
                       Aprobar Matrícula: {approvingStudent.name} {approvingStudent.lastName || ''}
                     </h3>
-                    <p className="text-xs text-slate-400">Conciliación bancaria de Banco Provincial</p>
+                    <p className="text-xs text-slate-400">Conciliación bancaria de Banco de Venezuela</p>
                   </div>
                   <button onClick={() => setApprovingStudent(null)} className="text-slate-400 hover:text-slate-600">✕</button>
                 </div>

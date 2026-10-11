@@ -542,7 +542,7 @@ export const TeachersLounge: React.FC<TeachersLoungeProps> = ({
                 </span>
               </div>
               <p className="text-xs text-slate-600">
-                Alumnos que reportaron su referencia de Banco Provincial o depósito de $5. Requieren confirmación bancaria.
+                Alumnos que reportaron su referencia de Banco de Venezuela o depósito de $5. Requieren confirmación bancaria.
               </p>
 
               <div className="space-y-2 max-h-56 overflow-y-auto pr-1">

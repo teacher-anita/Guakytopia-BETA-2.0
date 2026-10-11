@@ -11,11 +11,11 @@ export interface PaymentCredentials {
 }
 
 export const OFFICIAL_PAGO_MOVIL: PaymentCredentials = {
-  bankName: 'Banco Provincial',
-  bankCode: '0108',
+  bankName: 'Banco de Venezuela',
+  bankCode: '0102',
   cedula: 'V-18.313.077',
-  phone: '0412 923 2527',
-  phoneRaw: '04129232527',
+  phone: '0412 978 3540',
+  phoneRaw: '04129783540',
   whatsappWelcomeLoungeUrl: 'https://chat.whatsapp.com/IgwV4BKKgOEAomBpfMOcjK'
 };
 

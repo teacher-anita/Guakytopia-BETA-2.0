@@ -1584,7 +1584,7 @@ export const RegistrationFlow: React.FC<RegistrationFlowProps> = ({
                       ¡Comprobante Recibido por la Dirección!
                     </h4>
                     <p className="text-blue-800 leading-relaxed">
-                      La <strong>Directora Waky</strong> está validando tu referencia bancaria en Banco Provincial. En cuanto sea conciliada, se desbloqueará tu acceso completo.
+                      La <strong>Directora Waky</strong> está validando tu referencia bancaria en Banco de Venezuela. En cuanto sea conciliada, se desbloqueará tu acceso completo.
                     </p>
                     <div className="bg-white/80 p-2.5 rounded-xl border border-blue-200 font-semibold text-[11px] text-blue-900">
                       Referencia reportada: <strong>{registeredStudent.pagoMovilRef || pagoMovilRef}</strong>
@@ -1675,7 +1675,7 @@ export const RegistrationFlow: React.FC<RegistrationFlowProps> = ({
                         </div>
                         <div>
                           <h4 className="text-sm font-black text-slate-900">
-                            Opción 2: Pago Móvil Oficial (Banco Provincial)
+                            Opción 2: Pago Móvil Oficial (Banco de Venezuela)
                           </h4>
                           <p className="text-[11px] text-slate-500">
                             {isDigital ? 'Pase Digital Autónomo ($5/mes)' :
@@ -1850,6 +1850,31 @@ export const RegistrationFlow: React.FC<RegistrationFlowProps> = ({
                         <span>Enviar Comprobante a Dirección ({step4Conversion.formattedBs})</span>
                       </button>
                     </form>
+
+                    {/* International / USD PayPal Option */}
+                    <div className="pt-3 border-t border-slate-200">
+                      <div className="p-3.5 bg-blue-50/80 border border-blue-200 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+                        <div className="space-y-0.5 text-center sm:text-left">
+                          <span className="font-bold text-blue-950 flex items-center justify-center sm:justify-start gap-1">
+                            <Lock className="w-3.5 h-3.5 text-blue-700" />
+                            <span>¿Estás en el exterior o prefieres pagar en USD?</span>
+                          </span>
+                          <p className="text-[11px] text-blue-800/80">
+                            Paga con tu cuenta PayPal o tarjeta internacional vía PayPal Checkout.
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={handlePaypalStep4}
+                          className="w-full sm:w-auto py-2.5 px-4 bg-[#FFC439] hover:bg-[#F4B41A] text-slate-950 font-black rounded-xl text-xs shadow-xs transition-all flex items-center justify-center gap-1.5 whitespace-nowrap shrink-0 hover:scale-101"
+                        >
+                          <svg className="w-4 h-4 text-[#003087] fill-current" viewBox="0 0 24 24">
+                            <path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944 3.72a.786.786 0 0 1 .775-.652h6.812c3.275 0 5.617 1.343 6.074 4.364.28 1.85-.246 3.447-1.565 4.747-1.34 1.32-3.23 2.012-5.618 2.012H8.818l-.946 5.99-.044.254a.64.64 0 0 1-.633.535l-.119.367zm2.493-9.068h1.853c2.25 0 3.79-.824 4.34-2.316.368-.997.23-1.927-.41-2.766-.63-.824-1.748-1.238-3.323-1.238H9.06l-1.49 8.32h2zm.12 7.068h2.008l1.09-6.9h-1.853l-1.245 6.9z" />
+                          </svg>
+                          <span>Pagar con PayPal (${calculatedDueUsd} USD)</span>
+                        </button>
+                      </div>
+                    </div>
                   </div>
 
                   {/* OPTION 3: RETENTION HERO BUTTON - 24 HOURS COURTESY TRIAL (NO STUDENTS LOST!) */}
