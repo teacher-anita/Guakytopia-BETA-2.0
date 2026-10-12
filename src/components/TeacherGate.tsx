@@ -1,10 +1,6 @@
-import React from 'react';
-import { ShieldCheck, CheckCircle2, Crown, ArrowLeft, AlertCircle } from 'lucide-react';
+import React, { useState } from 'react';
+import { Lock, KeyRound, AlertCircle, ArrowLeft, ShieldCheck, CheckCircle2, Crown, Briefcase, Eye, EyeOff } from 'lucide-react';
 import { User } from 'firebase/auth';
-
-// Correos autorizados para entrar al portal del personal.
-// Para dar acceso a otra persona, agrega su correo exacto en esta lista.
-const STAFF_EMAILS = ['anateresa.csb@gmail.com'];
 
 interface TeacherGateProps {
   user: User | null;
@@ -21,8 +17,34 @@ export const TeacherGate: React.FC<TeacherGateProps> = ({
   onAuthenticated,
   onBackToStudent
 }) => {
-  const email = user?.email?.trim().toLowerCase() || '';
-  const isStaff = Boolean(user) && user!.emailVerified && STAFF_EMAILS.includes(email);
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+
+  const handleCredentialsSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMessage('');
+
+    const cleanUser = username.trim().toLowerCase();
+    const cleanPass = password.trim();
+
+    // 1. Directora General / Institutional Principal
+    if (cleanPass === '0112' || (cleanUser === 'waky' && cleanPass === '0112')) {
+      onAuthenticated('principal');
+      return;
+    }
+
+    // 2. Teacher
+    if (cleanPass === '3223' || ((cleanUser === 'coquito' || cleanUser === 'cokito') && cleanPass === '3223')) {
+      onAuthenticated('teacher');
+      return;
+    }
+
+    setErrorMessage('Credenciales institucionales inválidas. Verifica tu usuario y clave o contacta a la administración.');
+  };
+
+  const isTeacherGoogle = user && (user.email === 'anateresa.csb@gmail.com' || user.email?.includes('anateresa'));
 
   return (
     <div className="max-w-md mx-auto my-8 p-6 sm:p-8 bg-white rounded-3xl border border-slate-200/80 shadow-xl text-center">
@@ -39,14 +61,14 @@ export const TeacherGate: React.FC<TeacherGateProps> = ({
         Portal Administrativo & Teachers
       </h2>
       <p className="text-xs sm:text-sm text-slate-500 mt-2 mb-6">
-        Ingreso seguro para personal autorizado de Güakytopia. Usa tu cuenta oficial de Google.
+        Ingreso seguro para personal directivo, administrativo y Teachers autorizados de Güakytopia.
       </p>
 
-      {isStaff ? (
+      {isTeacherGoogle ? (
         <div className="mb-6 p-4 bg-emerald-50 border border-emerald-200 rounded-2xl text-left space-y-2">
           <div className="flex items-center gap-2 text-emerald-800 font-bold text-xs sm:text-sm">
             <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-            <span>Cuenta verificada: {user?.email}</span>
+            <span>Cuenta verificada: {user.email}</span>
           </div>
           <div className="grid grid-cols-2 gap-2 pt-1">
             <button
@@ -67,12 +89,72 @@ export const TeacherGate: React.FC<TeacherGateProps> = ({
         </div>
       ) : (
         <div className="space-y-4 text-left">
-          {user && (
-            <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-xs font-medium">
-              <AlertCircle className="w-4 h-4 shrink-0 text-red-500" />
-              <span>La cuenta {user.email} no tiene acceso al portal del personal.</span>
+          <form onSubmit={handleCredentialsSubmit} className="space-y-3.5">
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">
+                Usuario Institucional
+              </label>
+              <input
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="Ingresa tu usuario institucional"
+                autoComplete="username"
+                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs sm:text-sm text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-amber-500"
+                required
+              />
             </div>
-          )}
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">
+                Clave de Seguridad Institucional
+              </label>
+              <div className="relative">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  autoComplete="current-password"
+                  className="w-full px-4 py-2.5 pr-10 bg-slate-50 border border-slate-300 rounded-xl text-xs sm:text-sm text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-amber-500 tracking-wider"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-700 transition-colors"
+                  title={showPassword ? 'Ocultar contraseña' : 'Ver contraseña'}
+                >
+                  {showPassword ? (
+                    <EyeOff className="w-4 h-4" />
+                  ) : (
+                    <Eye className="w-4 h-4" />
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {errorMessage && (
+              <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-xs font-medium">
+                <AlertCircle className="w-4 h-4 shrink-0 text-red-500" />
+                <span>{errorMessage}</span>
+              </div>
+            )}
+
+            <button
+              type="submit"
+              className="w-full py-3 rounded-xl font-black text-xs sm:text-sm shadow-md transition-all flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-amber-300"
+            >
+              <KeyRound className="w-4 h-4 text-amber-400" />
+              <span>Ingresar al Portal Institucional</span>
+            </button>
+          </form>
+
+          <div className="relative py-2 text-center">
+            <span className="bg-white px-2 text-[11px] text-slate-400 font-bold uppercase tracking-wider">
+              o con tu cuenta oficial
+            </span>
+          </div>
 
           <button
             type="button"
@@ -98,7 +180,7 @@ export const TeacherGate: React.FC<TeacherGateProps> = ({
                 d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
               />
             </svg>
-            <span>{user ? 'Cambiar de cuenta de Google' : 'Continuar con Google'}</span>
+            <span>Continuar con Google</span>
           </button>
         </div>
       )}
