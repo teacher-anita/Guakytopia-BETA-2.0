@@ -29,6 +29,7 @@ interface LandingHeroProps {
   onExploreGamification: () => void;
   onOpenOptimizer: () => void;
   onOpenPaymentModal?: () => void;
+  onOpenPricingModal?: () => void;
 }
 
 export const LandingHero: React.FC<LandingHeroProps> = ({
@@ -37,7 +38,8 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
   onExploreCalendar,
   onExploreGamification,
   onOpenOptimizer,
-  onOpenPaymentModal
+  onOpenPaymentModal,
+  onOpenPricingModal
 }) => {
   const isKids = audienceTheme === 'kids';
 
@@ -53,7 +55,8 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
         {/* Subtle decorative glow */}
         <div className="absolute top-0 right-0 -mr-20 -mt-20 w-80 h-80 rounded-full bg-[#2EC4B6]/15 blur-3xl pointer-events-none" />
 
-        <div className="relative z-10 max-w-3xl space-y-6">
+        <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-8">
+          <div className="max-w-2xl space-y-6 flex-1">
           
           <div className="flex flex-wrap items-center gap-2">
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider bg-white/10 backdrop-blur-md border border-white/20 text-[#FFD166]">
@@ -95,7 +98,7 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
           </div>
 
           {/* Action CTAs */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-4">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-4 flex-wrap">
             <button
               onClick={onStartRegistration}
               className="px-8 py-4 bg-[#2EC4B6] hover:bg-[#259C90] text-[#18232F] rounded-2xl font-black text-sm shadow-lg transition-transform hover:scale-102 flex items-center justify-center gap-2"
@@ -103,6 +106,14 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
               <span>Hacer Prueba Diagnóstica (25 Preguntas)</span>
               <ArrowRight className="w-4 h-4" />
             </button>
+            {onOpenPricingModal && (
+              <button
+                onClick={onOpenPricingModal}
+                className="px-6 py-4 bg-emerald-500 hover:bg-emerald-600 text-slate-950 rounded-2xl font-black text-sm shadow-lg transition-transform hover:scale-102 flex items-center justify-center gap-2"
+              >
+                <span>💳 Ver Tarifas & Calculadora ($4.99 Promo)</span>
+              </button>
+            )}
             <button
               onClick={onExploreCalendar}
               className="px-6 py-4 bg-white/15 hover:bg-white/20 text-white rounded-2xl font-bold text-sm backdrop-blur-md border border-white/20 transition-colors flex items-center justify-center gap-2"
@@ -112,6 +123,26 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
             </button>
           </div>
 
+          </div>
+
+          {/* Mascot Feature Spotlight Card */}
+          <div className="shrink-0 flex flex-col items-center justify-center relative p-5 bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl shadow-xl max-w-xs text-center">
+            <div className="w-48 h-56 sm:w-56 sm:h-64 flex items-center justify-center relative drop-shadow-2xl hover:scale-105 transition-transform duration-300">
+              <img 
+                src="/guaky-full.svg" 
+                alt="Güaky the Macaw" 
+                className="w-full h-full object-contain filter drop-shadow-md" 
+              />
+            </div>
+            <div className="mt-2 space-y-0.5">
+              <span className="text-xs font-black text-[#FFD166] uppercase tracking-wider block">
+                ¡Hola, soy Güaky! 🦜
+              </span>
+              <p className="text-[11px] text-teal-100 font-medium">
+                Tu compañero con morral listo para explorar el inglés sin miedo.
+              </p>
+            </div>
+          </div>
         </div>
       </section>
 

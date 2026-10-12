@@ -10,7 +10,8 @@ import {
   GraduationCap, 
   Sparkles, 
   User as UserIcon,
-  Palette
+  Palette,
+  CreditCard
 } from 'lucide-react';
 import { User } from 'firebase/auth';
 import { AudienceTheme, Student, StaffRole } from '../types';
@@ -29,6 +30,7 @@ interface HeaderProps {
   onOpenOptimizer: () => void;
   onOpenCouponModal: () => void;
   onOpenThemeModal?: () => void;
+  onOpenPricingModal?: () => void;
   onOpenProfile: () => void;
   currentStudentXp: number;
   currentStudentStreak: number;
@@ -52,6 +54,7 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenOptimizer,
   onOpenCouponModal,
   onOpenThemeModal,
+  onOpenPricingModal,
   onOpenProfile,
   currentStudentXp,
   currentStudentStreak,
@@ -96,6 +99,19 @@ export const Header: React.FC<HeaderProps> = ({
                 >
                   <Palette className="w-3.5 h-3.5 text-[#2EC4B6]" />
                   <span className="hidden sm:inline">Ambiente</span>
+                </button>
+              )}
+
+              {/* TARIFAS & CALCULADORA DE PRECIOS BUTTON */}
+              {onOpenPricingModal && (
+                <button
+                  onClick={onOpenPricingModal}
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-950 border border-emerald-300 rounded-xl text-xs font-black transition-all shadow-2xs"
+                  title="Ver Tarifas, Planes y Calculadora de Precios"
+                >
+                  <CreditCard className="w-3.5 h-3.5 text-emerald-600" />
+                  <span className="hidden sm:inline">Tarifas & Pagos</span>
+                  <span className="sm:hidden">Precios</span>
                 </button>
               )}
 

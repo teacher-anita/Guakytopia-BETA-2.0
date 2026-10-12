@@ -1,0 +1,63 @@
+<svg viewBox="0 0 260 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Soft Glow / Base -->
+  <ellipse cx="140" cy="275" rx="65" ry="12" fill="#E2E8F0" opacity="0.6"/>
+
+  <!-- Left Wing (Spread Out to the Left) -->
+  <path d="M 100 135 C 60 115 15 130 18 170 C 35 185 70 185 95 160 Z" fill="#2EC4B6" stroke="#243447" stroke-width="5" stroke-linejoin="round"/>
+  <!-- Wing Feathers Details (Yellow & Coral layers) -->
+  <path d="M 28 145 C 45 140 70 152 75 168 C 55 172 38 165 28 145 Z" fill="#FFD166" stroke="#243447" stroke-width="4"/>
+  <path d="M 38 160 C 50 158 65 165 70 174 C 55 176 45 172 38 160 Z" fill="#FF6B4A" stroke="#243447" stroke-width="4"/>
+
+  <!-- Feet (Dark Claw Feet Standing Firm) -->
+  <path d="M 108 260 L 108 274 M 100 274 L 118 274 M 94 272 L 102 274" stroke="#243447" stroke-width="5" stroke-linecap="round"/>
+  <path d="M 148 260 L 148 274 M 140 274 L 158 274 M 134 272 L 142 274" stroke="#243447" stroke-width="5" stroke-linecap="round"/>
+
+  <!-- Body / Torso (Teal Plump Body) -->
+  <ellipse cx="135" cy="185" rx="55" ry="65" fill="#2EC4B6" stroke="#243447" stroke-width="5.5"/>
+
+  <!-- Tail Feathers pointing down/right (Yellow, Coral, Teal) -->
+  <path d="M 175 190 C 220 180 245 195 240 230 C 220 235 185 220 170 205 Z" fill="#FFD166" stroke="#243447" stroke-width="4.5"/>
+  <path d="M 180 205 C 225 210 240 225 225 245 C 205 245 180 228 175 215 Z" fill="#FF6B4A" stroke="#243447" stroke-width="4.5"/>
+  <path d="M 170 215 C 205 230 215 245 200 258 C 185 252 170 235 168 222 Z" fill="#2EC4B6" stroke="#243447" stroke-width="4"/>
+
+  <!-- Satchel / Morralito Bag (Crossbody Strap & Coral Bag) -->
+  <!-- Strap -->
+  <path d="M 95 130 Q 128 170 145 208" stroke="#D95328" stroke-width="7" stroke-linecap="round"/>
+  <!-- Bag Body -->
+  <rect x="130" y="196" width="48" height="42" rx="10" fill="#FF6B4A" stroke="#243447" stroke-width="4.5"/>
+  <path d="M 130 206 C 145 214 165 214 178 206" stroke="#243447" stroke-width="4" fill="none"/>
+  <!-- Bag Gold Buckle -->
+  <rect x="150" y="210" width="8" height="10" rx="2" fill="#FFD166" stroke="#243447" stroke-width="2.5"/>
+
+  <!-- Head Crest Feathers (Yellow & Coral) -->
+  <path d="M 115 48 C 105 32 140 26 165 42 C 150 50 130 50 115 48 Z" fill="#FFD166" stroke="#243447" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M 98 56 C 85 45 92 72 108 80 C 114 68 110 56 98 56 Z" fill="#FF6B4A" stroke="#243447" stroke-width="4.5" stroke-linejoin="round"/>
+  <path d="M 108 38 C 96 26 120 30 136 40 C 124 45 116 44 108 38 Z" fill="#2EC4B6" stroke="#243447" stroke-width="4" stroke-linejoin="round"/>
+
+  <!-- Head Base Oval -->
+  <ellipse cx="145" cy="100" rx="50" ry="56" fill="#2EC4B6" stroke="#243447" stroke-width="5.5"/>
+
+  <!-- Globe Net Lines on Top of Head -->
+  <path d="M 130 55 Q 148 50 166 58" stroke="#1D9E92" stroke-width="2.5" fill="none"/>
+  <path d="M 125 66 Q 148 60 172 70" stroke="#1D9E92" stroke-width="2.5" fill="none"/>
+  <path d="M 148 48 L 148 72" stroke="#1D9E92" stroke-width="2.5" fill="none"/>
+
+  <!-- White Cheek Patch Around Eye -->
+  <path d="M 112 85 C 106 98 108 116 120 126 C 132 122 138 110 138 95 C 138 84 125 80 112 85 Z" fill="#FFFDF8" stroke="#243447" stroke-width="4.5"/>
+  <path d="M 116 114 C 120 120 128 120 132 116 C 128 112 122 110 116 114 Z" fill="#FF6B4A"/>
+
+  <!-- Eye (Curious & Big) -->
+  <ellipse cx="125" cy="98" rx="8.5" ry="12" fill="#243447"/>
+  <circle cx="127" cy="93" r="3.5" fill="#FFFFFF"/>
+  <circle cx="123" cy="101" r="1.8" fill="#FFFFFF"/>
+
+  <!-- Macaw Beak (Coral & Gold) -->
+  <path d="M 136 78 C 165 80 182 100 178 126 C 170 136 158 132 154 118 C 152 105 146 98 134 94 Z" fill="#FF6B4A" stroke="#243447" stroke-width="5.5" stroke-linejoin="round"/>
+  <path d="M 142 84 C 162 86 174 100 170 118 C 165 112 156 104 146 98 Z" fill="#FF9248"/>
+  <circle cx="146" cy="90" r="2" fill="#243447"/>
+  <!-- Lower Beak -->
+  <path d="M 144 115 C 154 118 160 124 158 130 C 150 130 144 124 140 120 Z" fill="#243447"/>
+
+  <!-- Right Wing Folded / Resting by the Side -->
+  <path d="M 145 130 C 180 130 195 170 180 205 C 160 195 150 160 145 130 Z" fill="#259C90" stroke="#243447" stroke-width="4"/>
+</svg>

@@ -205,13 +205,13 @@ export const PrepaidSessionBookingModal: React.FC<PrepaidSessionBookingModalProp
           <div className="flex items-start justify-between">
             <div className="space-y-1">
               <span className="text-[10px] font-black uppercase tracking-wider bg-amber-400 text-slate-950 px-2.5 py-0.5 rounded-full inline-block">
-                ⭐ Bolsa de Horas Prepagadas
+                ⭐ PrePaid Classes
               </span>
               <h3 className="text-xl sm:text-2xl font-black tracking-tight">
                 Agendar Hora Individual con Teacher
               </h3>
               <p className="text-xs text-blue-200">
-                Usa tus horas disponibles para repasar, preparar exámenes o avanzar a tu ritmo.
+                Usa tus horas PrePaid Classes para repasar, preparar exámenes o avanzar a tu ritmo.
               </p>
             </div>
             <button
@@ -226,7 +226,7 @@ export const PrepaidSessionBookingModal: React.FC<PrepaidSessionBookingModalProp
           <div className="mt-4 p-3 bg-white/10 rounded-2xl border border-white/15 flex flex-wrap items-center justify-between gap-3 text-xs">
             <div className="flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-amber-300" />
-              <span>Horas disponibles en tu bolsa:</span>
+              <span>Horas PrePaid Classes disponibles:</span>
               <strong className="text-sm font-black text-amber-300 bg-white/10 px-2 py-0.5 rounded-lg">
                 {currentBalance} hrs
               </strong>

@@ -33,7 +33,14 @@ import confetti from 'canvas-confetti';
 import { Student, ScheduleSlot, ClassModality, GroupSize, AudienceTheme } from '../types';
 import { PlacementQuizModal } from './PlacementQuizModal';
 import { generateEmailTemplate, sendGmailEmail } from '../services/gmailNotifier';
-import { OFFICIAL_PAGO_MOVIL, convertUsdToBs, getBcvExchangeRate, fetchLiveBcvRate } from '../services/currencyService';
+import { 
+  OFFICIAL_PAGO_MOVIL, 
+  convertUsdToBs, 
+  getBcvExchangeRate, 
+  fetchLiveBcvRate,
+  VENEZUELAN_BANKS,
+  getFullPagoMovilCopyText 
+} from '../services/currencyService';
 import { findCouponByCode, normalizeCouponCode } from '../data/couponsData';
 import { findCouponByCodeAsync, incrementCouponUses } from '../services/db';
 
@@ -42,6 +49,9 @@ interface RegistrationFlowProps {
   onRegisterComplete: (newStudent: Student, bookedSlotIds: string[]) => void;
   onExploreCalendar: () => void;
   audienceTheme: AudienceTheme;
+  existingStudents?: Student[];
+  onOpenLogin?: () => void;
+  onOpenPricingModal?: () => void;
 }
 
 export type RegistrationPlanType = 'digital_5' | 'basic_2' | 'regular_3' | 'intensive_4' | 'express_6';
@@ -62,13 +72,13 @@ interface CustomPlanInfo {
 const REGISTRATION_PLANS: CustomPlanInfo[] = [
   {
     id: 'digital_5',
-    title: 'Pase Digital Autónomo Cokitö',
-    badge: 'Opción Esencial • Autoaprendizaje',
-    priceDisplay: '$5',
-    priceNumber: 5,
+    title: 'Pase Digital Autónomo Güakytopia',
+    badge: '🚀 Promo de Lanzamiento: $4.99/mes (Reg. $7.00)',
+    priceDisplay: '$4.99',
+    priceNumber: 4.99,
     period: '/ mes',
     hoursNote: 'A tu propio ritmo (Sin horario fijo)',
-    description: 'Acceso completo e ilimitado a los 12 niveles de la plataforma, audios nativos, quizzes del Cyber Owl y retos diarios.',
+    description: 'Acceso completo e ilimitado a los 12 niveles de la plataforma, audios nativos, quizzes del Cyber Owl y mini-juegos de la Arena. Precio regular $7/mes ("el 7 es el número de Dios"), promo especial por lanzamiento.',
     isSelfPaced: true,
     features: [
       'Acceso a todos los niveles (SuperGoal y MegaGoal)',
@@ -90,7 +100,7 @@ const REGISTRATION_PLANS: CustomPlanInfo[] = [
     features: [
       '3 sesiones semanales de 120 min (Lun/Mié/Vie)',
       'Atención VIP exclusiva de Teacher Cokitö',
-      'Opción mensual con descuento: $215 (Bolsa de 24h)',
+      'Opción mensual con descuento: $215 (Paquete de 24h)',
       'Soporte y dudas continuo vía WhatsApp'
     ]
   },
@@ -107,7 +117,7 @@ const REGISTRATION_PLANS: CustomPlanInfo[] = [
     features: [
       '4 horas semanales de clases en vivo',
       'Terminas cada nivel en 12 semanas (3 meses)',
-      'Opción mensual con descuento: $180 (Bolsa de 16h)',
+      'Opción mensual con descuento: $180 (Paquete de 16h)',
       'Acceso total al Classroom y libros oficiales'
     ]
   },
@@ -124,7 +134,7 @@ const REGISTRATION_PLANS: CustomPlanInfo[] = [
     features: [
       '2 sesiones semanales de 90 min (ej. Lun/Mié)',
       'Terminas cada nivel en 16 semanas (4 meses)',
-      'Opción mensual con descuento: $145 (Bolsa de 12h)',
+      'Opción mensual con descuento: $145 (Paquete de 12h)',
       'Feedback detallado de pronunciación en cada clase'
     ]
   },
@@ -141,7 +151,7 @@ const REGISTRATION_PLANS: CustomPlanInfo[] = [
     features: [
       '2 sesiones semanales de 60 min (ej. Mar/Jue o Lun/Mié)',
       'Terminas cada nivel en 24 semanas (6 meses)',
-      'Opción mensual con descuento: $110 (Bolsa de 8h)',
+      'Opción mensual con descuento: $110 (Paquete de 8h)',
       'Materiales digitales y audios incluidos'
     ]
   }
@@ -151,7 +161,10 @@ export const RegistrationFlow: React.FC<RegistrationFlowProps> = ({
   slots,
   onRegisterComplete,
   onExploreCalendar,
-  audienceTheme
+  audienceTheme,
+  existingStudents = [],
+  onOpenLogin,
+  onOpenPricingModal
 }) => {
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
 
@@ -159,12 +172,20 @@ export const RegistrationFlow: React.FC<RegistrationFlowProps> = ({
   const [name, setName] = useState('');
   const [lastName, setLastName] = useState('');
   const [cedula, setCedula] = useState('');
+  const [hasNoCedula, setHasNoCedula] = useState(false);
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
-  const [age, setAge] = useState<number>(25);
+  const [age, setAge] = useState<number>(16);
   const [schoolOrProfession, setSchoolOrProfession] = useState('');
   const [learningGoal, setLearningGoal] = useState('Oportunidades laborales y superación personal');
+
+  // Duplicate Account Verification State
+  const [duplicateWarning, setDuplicateWarning] = useState<{
+    type: 'cedula' | 'family_account';
+    matchedStudent: Student;
+  } | null>(null);
+  const [isFamilyConfirmed, setIsFamilyConfirmed] = useState(false);
 
   // Package & Preferences
   const [selectedPlanId, setSelectedPlanId] = useState<RegistrationPlanType>('digital_5');
@@ -629,6 +650,9 @@ export const RegistrationFlow: React.FC<RegistrationFlowProps> = ({
       email: email.trim().toLowerCase(),
       phone: phone.trim(),
       password: password.trim() || undefined,
+      parentEmail: isFamilyConfirmed ? email.trim().toLowerCase() : undefined,
+      parentPhone: isFamilyConfirmed ? phone.trim() : undefined,
+      familyAccountId: isFamilyConfirmed ? (duplicateWarning?.matchedStudent.familyAccountId || duplicateWarning?.matchedStudent.id) : undefined,
       age: Number(age),
       isKid,
       schoolOrProfession,
@@ -770,14 +794,34 @@ export const RegistrationFlow: React.FC<RegistrationFlowProps> = ({
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Cédula / Identificación</label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-xs font-semibold text-slate-700">Cédula / Identificación *</label>
+                <label className="flex items-center gap-1 text-[10px] text-slate-500 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={hasNoCedula}
+                    onChange={e => {
+                      setHasNoCedula(e.target.checked);
+                      if (e.target.checked) setCedula('No posee cédula');
+                      else setCedula('');
+                    }}
+                    className="rounded text-blue-600 focus:ring-blue-500"
+                  />
+                  <span>Sin cédula</span>
+                </label>
+              </div>
               <input
                 type="text"
                 value={cedula}
+                disabled={hasNoCedula}
                 onChange={e => setCedula(e.target.value)}
-                placeholder="Ej. V-25.123.456"
-                className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-hidden font-medium"
+                placeholder={hasNoCedula ? 'En trámite / No posee' : 'Ej. V-25.123.456'}
+                className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-hidden font-medium disabled:opacity-60"
+                required={!hasNoCedula}
               />
+              <span className="text-[10px] text-slate-400 mt-1 block">
+                {hasNoCedula ? 'Identificación temporal asignada' : 'Obligatoria para mayores de 12 años'}
+              </span>
             </div>
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-1">Correo Electrónico *</label>
@@ -789,6 +833,9 @@ export const RegistrationFlow: React.FC<RegistrationFlowProps> = ({
                 className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-hidden font-medium"
                 required
               />
+              <span className="text-[10px] text-slate-400 mt-1 block">
+                Para representantes: sirve para múltiples representados
+              </span>
             </div>
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-1">Teléfono / WhatsApp *</label>
@@ -800,22 +847,31 @@ export const RegistrationFlow: React.FC<RegistrationFlowProps> = ({
                 className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-hidden font-medium"
                 required
               />
+              <span className="text-[10px] text-slate-400 mt-1 block">
+                Contacto oficial para coordinar tus clases
+              </span>
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2 border-t border-slate-100">
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Edad del Alumno</label>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">
+                Edad del Alumno (Mínimo 12 años) *
+              </label>
               <input
                 type="number"
-                min={5}
+                min={12}
                 max={99}
                 value={age}
                 onChange={e => setAge(Number(e.target.value))}
                 className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-hidden font-bold"
               />
               <span className="text-[10px] text-slate-400 mt-1 block">
-                {isKid ? '🎈 Perfil Infantil / Juvenil' : '🎓 Perfil Adulto / Profesional'}
+                {age < 12 
+                  ? '⚠️ Exclusivo para mayores de 12 años' 
+                  : isKid 
+                  ? '🎈 Perfil Junior 12+ (Super Goal)' 
+                  : '🎓 Perfil Adulto / Profesional (Mega Goal)'}
               </span>
             </div>
 
@@ -843,7 +899,7 @@ export const RegistrationFlow: React.FC<RegistrationFlowProps> = ({
                 type="text"
                 value={schoolOrProfession}
                 onChange={e => setSchoolOrProfession(e.target.value)}
-                placeholder={isKid ? 'Ej. Simón Bolívar II' : 'Ej. Diseñador / Estudiante'}
+                placeholder={isKid ? 'Ej. Colegio Humboldt / 2do Año' : 'Ej. Diseñador / Estudiante'}
                 className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-hidden font-medium"
               />
             </div>
@@ -876,7 +932,84 @@ export const RegistrationFlow: React.FC<RegistrationFlowProps> = ({
             </div>
           </div>
 
-          <div className="flex justify-end pt-2">
+          {/* DUPLICATE / FAMILY ACCOUNT DETECTION BANNER (CONFIDENTIAL & NEUTRAL REPRESENTATIVE) */}
+          {duplicateWarning && (
+            <div className={`p-4 rounded-2xl border text-xs space-y-3 animate-fadeIn ${
+              duplicateWarning.type === 'cedula'
+                ? 'bg-rose-50 border-rose-200 text-rose-900'
+                : 'bg-amber-50 border-amber-300 text-amber-950'
+            }`}>
+              <div className="flex items-start gap-2.5">
+                <AlertCircle className={`w-5 h-5 shrink-0 mt-0.5 ${
+                  duplicateWarning.type === 'cedula' ? 'text-rose-600' : 'text-amber-600'
+                }`} />
+                <div className="space-y-1">
+                  <h4 className="font-bold text-sm">
+                    {duplicateWarning.type === 'cedula'
+                      ? '⛔ Cédula ya registrada en el Campus'
+                      : 'ℹ️ Correo o teléfono ya asociado a un alumno'}
+                  </h4>
+                  <p className="leading-relaxed">
+                    {duplicateWarning.type === 'cedula' ? (
+                      <>
+                        Esta cédula de identidad ya se encuentra registrada en el Campus. Por estrictas políticas de confidencialidad y unicidad de perfiles, no es posible duplicar registros con el mismo documento. Si eres el titular de este documento, por favor inicia sesión o recupera tu acceso.
+                      </>
+                    ) : (
+                      <>
+                        Detectamos que este correo electrónico o teléfono ya está asociado a un perfil en Güakytopia. Por confidencialidad de nuestros alumnos, no mostramos información de cuentas existentes. Si eres representante e inscribes a <strong>otro representado</strong> bajo tu mismo correo o teléfono de contacto, puedes continuar sin problemas.
+                      </>
+                    )}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row items-center gap-2 pt-1">
+                {duplicateWarning.type === 'family_account' && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsFamilyConfirmed(true);
+                      setDuplicateWarning(null);
+                      setStep(2);
+                    }}
+                    className="w-full sm:w-auto px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-black rounded-xl text-xs transition-colors shadow-xs"
+                  >
+                    ✓ Continuar: Inscribir a este nuevo representado bajo mi correo
+                  </button>
+                )}
+
+                {onOpenLogin && (
+                  <button
+                    type="button"
+                    onClick={onOpenLogin}
+                    className="w-full sm:w-auto px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl text-xs transition-colors"
+                  >
+                    Iniciar sesión con mi cuenta existente
+                  </button>
+                )}
+
+                <button
+                  type="button"
+                  onClick={() => setDuplicateWarning(null)}
+                  className="w-full sm:w-auto px-3 py-2 text-slate-600 hover:text-slate-900 font-semibold text-xs"
+                >
+                  Corregir datos ingresados
+                </button>
+              </div>
+            </div>
+          )}
+
+          <div className="flex justify-between items-center pt-2">
+            {onOpenPricingModal ? (
+              <button
+                type="button"
+                onClick={onOpenPricingModal}
+                className="text-xs font-bold text-emerald-700 hover:text-emerald-800 flex items-center gap-1"
+              >
+                <span>💳 Ver Tarifas & Calculadora de Precios</span>
+              </button>
+            ) : <div />}
+
             <button
               type="button"
               onClick={() => {
@@ -884,6 +1017,49 @@ export const RegistrationFlow: React.FC<RegistrationFlowProps> = ({
                   alert('Por favor ingresa al menos tu nombre y correo electrónico.');
                   return;
                 }
+
+                if (age < 12) {
+                  alert('Güakytopia está diseñado exclusivamente para jóvenes y estudiantes de 12 años en adelante.');
+                  return;
+                }
+
+                const cleanCedula = cedula.trim().toUpperCase().replace(/\s+/g, '');
+                if (!hasNoCedula && (!cleanCedula || cleanCedula === 'NOPOSÉECÉDULA')) {
+                  alert('Para estudiantes mayores de 12 años se requiere número de cédula o marcar la casilla "Sin cédula".');
+                  return;
+                }
+
+                // Check for duplicates
+                if (existingStudents && existingStudents.length > 0) {
+                  // 1. Cedula check
+                  if (!hasNoCedula && cleanCedula) {
+                    const matchCed = existingStudents.find(s => 
+                      s.cedula && s.cedula.trim().toUpperCase().replace(/\s+/g, '') === cleanCedula
+                    );
+                    if (matchCed) {
+                      setDuplicateWarning({ type: 'cedula', matchedStudent: matchCed });
+                      return;
+                    }
+                  }
+
+                  // 2. Email or Phone check (Household / Family account detection)
+                  if (!isFamilyConfirmed) {
+                    const cleanEmail = email.trim().toLowerCase();
+                    const cleanPhone = phone.trim().replace(/\D/g, '');
+                    const matchContact = existingStudents.find(s => {
+                      const sEmail = s.email?.trim().toLowerCase();
+                      const sPhone = s.phone?.trim().replace(/\D/g, '');
+                      return (sEmail && sEmail === cleanEmail) || 
+                             (cleanPhone.length >= 7 && sPhone && sPhone.includes(cleanPhone));
+                    });
+
+                    if (matchContact) {
+                      setDuplicateWarning({ type: 'family_account', matchedStudent: matchContact });
+                      return;
+                    }
+                  }
+                }
+
                 setStep(2);
               }}
               className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-bold text-xs sm:text-sm shadow-md transition-colors"
@@ -1550,8 +1726,17 @@ export const RegistrationFlow: React.FC<RegistrationFlowProps> = ({
                     <p className="leading-relaxed">
                       {registeredStudent.paymentStatus === 'trial_24h'
                         ? 'Explora el campus, haz tus primeros quizzes y audios. Recuerda completar tu pago antes de que expiren las 24 horas para asegurar tu cupo definitivo.'
-                        : 'Tienes acceso a tus libros oficiales, quizzes del Cyber Owl y tu agenda de clases.'}
+                        : 'Tienes acceso a tus libros oficiales, quizzes con Güaky y tu agenda de clases.'}
                     </p>
+                  </div>
+
+                  {/* Güaky Celebration Mascot */}
+                  <div className="w-32 h-36 mx-auto flex items-center justify-center">
+                    <img 
+                      src="/guaky-full.svg" 
+                      alt="Güaky te da la bienvenida" 
+                      className="w-full h-full object-contain drop-shadow-md animate-bounce [animation-duration:3s]" 
+                    />
                   </div>
 
                   {/* Welcome Lounge WhatsApp button */}
@@ -1738,7 +1923,17 @@ export const RegistrationFlow: React.FC<RegistrationFlowProps> = ({
                     )}
 
                     {/* Bank Details Card */}
-                    <div className="p-4 bg-white border border-emerald-200 rounded-xl space-y-2 text-xs">
+                    <div className="p-4 bg-white border border-emerald-200 rounded-xl space-y-2.5 text-xs">
+                      {/* BOTÓN COPIAR TODOS LOS DATOS JUNTOS (1 SOLO CLIC) */}
+                      <button
+                        type="button"
+                        onClick={() => handleCopy(getFullPagoMovilCopyText(step4Conversion.formattedBs, 'Inscripción Güakytopia'), 'todos_datos')}
+                        className="w-full py-2.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white font-black rounded-xl text-xs transition-all shadow-xs flex items-center justify-center gap-2 hover:scale-[1.01]"
+                      >
+                        <Copy className="w-4 h-4" />
+                        <span>Copiar todos los datos juntos (1 clic)</span>
+                      </button>
+
                       <div className="flex justify-between items-center">
                         <span className="text-slate-500">Banco Receptor:</span>
                         <div className="flex items-center gap-1">
@@ -1801,7 +1996,9 @@ export const RegistrationFlow: React.FC<RegistrationFlowProps> = ({
                         </div>
                       </div>
                       {copiedKey && (
-                        <p className="text-[10px] text-emerald-700 font-bold text-center pt-0.5">¡Dato copiado al portapapeles!</p>
+                        <p className="text-[10px] text-emerald-700 font-bold text-center pt-0.5">
+                          {copiedKey === 'todos_datos' ? '¡Todos los datos copiados juntos al portapapeles!' : '¡Dato copiado al portapapeles!'}
+                        </p>
                       )}
                     </div>
 
@@ -1814,19 +2011,16 @@ export const RegistrationFlow: React.FC<RegistrationFlowProps> = ({
                       
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
                         <div>
-                          <label className="block text-[11px] font-semibold text-slate-700 mb-1">Banco desde el que pagaste:</label>
+                          <label className="block text-[11px] font-semibold text-slate-700 mb-1">Banco desde el que pagaste (BCV):</label>
                           <select
                             value={pagoMovilBank}
                             onChange={e => setPagoMovilBank(e.target.value)}
-                            className="w-full p-2.5 bg-white border border-slate-200 rounded-xl font-medium"
+                            className="w-full p-2.5 bg-white border border-slate-200 rounded-xl font-medium focus:ring-2 focus:ring-emerald-500 focus:outline-hidden"
                           >
-                            <option value="Banco de Venezuela">Banco de Venezuela</option>
-                            <option value="Banesco">Banesco</option>
-                            <option value="Mercantil">Mercantil</option>
-                            <option value="Bancamiga">Bancamiga</option>
-                            <option value="Banco Provincial">Banco Provincial</option>
-                            <option value="BNC">BNC</option>
-                            <option value="Otro">Otro Banco</option>
+                            {VENEZUELAN_BANKS.map((b) => (
+                              <option key={b.code} value={b.fullName}>{b.fullName}</option>
+                            ))}
+                            <option value="Otro">Otro Banco Nacional</option>
                           </select>
                         </div>
 

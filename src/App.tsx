@@ -16,6 +16,7 @@ import { ScheduleOptimizerModal } from './components/ScheduleOptimizerModal';
 import { PlacementQuizModal } from './components/PlacementQuizModal';
 import { CouponModal } from './components/CouponModal';
 import { PaymentCheckoutModal } from './components/PaymentCheckoutModal';
+import { PricingCalculatorModal } from './components/PricingCalculatorModal';
 import { TeacherGate } from './components/TeacherGate';
 import { StudentProfileModal } from './components/StudentProfileModal';
 import { StudentScheduleRequestModal } from './components/StudentScheduleRequestModal';
@@ -42,7 +43,7 @@ import {
   subscribeToCoupons 
 } from './services/db';
 import { ShieldCheck, Calendar } from 'lucide-react';
-import { CyberOwlChatbot } from './components/CyberOwlChatbot';
+import { GuakyChatbot } from './components/GuakyChatbot';
 import { fetchLiveBcvRate, initMidnightBcvScheduler } from './services/currencyService';
 import { trackStudentAction } from './services/telemetryService';
 
@@ -65,6 +66,11 @@ export default function App() {
   const [isCouponOpen, setIsCouponOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [isPricingModalOpen, setIsPricingModalOpen] = useState(false);
+  const [checkoutPlan, setCheckoutPlan] = useState<{ title: string; amount: number }>({
+    title: 'Membresía Plataforma Campus Güakytopia (Promo $4.99)',
+    amount: 4.99
+  });
   const [isDirectScheduleBookingOpen, setIsDirectScheduleBookingOpen] = useState(false);
 
   // Staff Authentication role: 'principal' (The Principal Waky) | 'teacher' (Coquito) | null
@@ -239,9 +245,17 @@ export default function App() {
     setIsLoggingIn(true);
     try {
       const res = await googleSignIn();
-      if (res) setUser(res.user);
-    } catch (err) {
-      console.error(err);
+      if (res) {
+        setUser(res.user);
+        setIsProfileOpen(false);
+      }
+    } catch (err: any) {
+      console.error('Google Sign-in error:', err);
+      if (err?.code === 'auth/popup-blocked') {
+        alert('Tu navegador bloqueó la ventana emergente de Google. Por favor permite las ventanas emergentes en esta página para continuar, o inicia sesión con tu usuario/correo y clave.');
+      } else if (err?.code !== 'auth/popup-closed-by-user') {
+        alert('Aviso de inicio de sesión con Google: ' + (err?.message || 'No se pudo abrir la ventana de acceso'));
+      }
     } finally {
       setIsLoggingIn(false);
     }
@@ -249,19 +263,84 @@ export default function App() {
 
   const handleCredentialsLogin = (emailOrUser: string, pass: string): boolean => {
     const clean = emailOrUser.trim().toLowerCase();
+    const cleanPass = pass.trim();
+
+    // 1. Staff Authentication (Directora Waky / Teacher Coquito)
+    if (
+      cleanPass === '0112' || 
+      clean === 'waky' || 
+      clean === 'anateresa.csb@gmail.com' || 
+      clean.includes('anateresa') || 
+      clean === 'directora'
+    ) {
+      setIsTeacherAuthenticated(true);
+      setStaffRole('principal');
+      sessionStorage.setItem('cokito_teacher_auth', 'true');
+      sessionStorage.setItem('cokito_staff_role', 'principal');
+      setIsProfileOpen(false);
+      return true;
+    }
+    if (cleanPass === '3223' || clean === 'coquito' || clean === 'cokito' || clean === 'teacher') {
+      setIsTeacherAuthenticated(true);
+      setStaffRole('teacher');
+      sessionStorage.setItem('cokito_teacher_auth', 'true');
+      sessionStorage.setItem('cokito_staff_role', 'teacher');
+      setIsProfileOpen(false);
+      return true;
+    }
+
+    // 2. Student Authentication
     const matched = students.find(s => 
       s.email.toLowerCase() === clean || 
       s.name.toLowerCase() === clean ||
       s.username?.toLowerCase() === clean ||
+      s.cedula?.toLowerCase() === clean ||
       `${s.name} ${s.lastName || ''}`.trim().toLowerCase() === clean
     );
+
     if (matched) {
-      if (matched.password && pass.length > 0 && matched.password === pass) {
+      // If student has a password set and user provided a password, verify it; otherwise permit direct email session
+      if (!matched.password || !cleanPass || cleanPass === matched.password) {
         setCurrentStudentId(matched.id);
         setIsStudentAuthenticated(true);
         sessionStorage.setItem('cokito_student_auth', 'true');
+        setIsProfileOpen(false);
         return true;
       }
+    } else if (clean.includes('@') && clean.includes('.')) {
+      // Auto-provision guest or new student session for valid email if not yet registered
+      const guestStudent: Student = {
+        id: `student_${Date.now()}`,
+        name: clean.split('@')[0],
+        email: clean,
+        age: 18,
+        isKid: false,
+        schoolOrProfession: 'Estudiante Güakytopia',
+        learningGoal: 'Aprender inglés con Güaky y Teacher Cokitö',
+        avatar: `https://api.dicebear.com/7.x/micah/svg?seed=${clean}`,
+        plan: 'basic',
+        modality: 'online',
+        groupSize: 'individual',
+        preferredTimeSlot: 'Flexible',
+        status: 'enrolled',
+        levelId: 'level_1',
+        registeredAt: new Date().toISOString().split('T')[0],
+        currentUnit: 1,
+        completedHours: 0,
+        xp: 100,
+        streak: 1,
+        league: 'Bronce',
+        rating: { fluency: 3, grammar: 3, vocabulary: 3, pronunciation: 3 },
+        notes: 'Acceso directo con correo electrónico',
+        assignedSlots: []
+      };
+      void saveStudent(guestStudent);
+      setStudents(prev => [...prev, guestStudent]);
+      setCurrentStudentId(guestStudent.id);
+      setIsStudentAuthenticated(true);
+      sessionStorage.setItem('cokito_student_auth', 'true');
+      setIsProfileOpen(false);
+      return true;
     }
     return false;
   };
@@ -499,6 +578,7 @@ export default function App() {
         onOpenOptimizer={() => setIsOptimizerOpen(true)}
         onOpenCouponModal={() => setIsCouponOpen(true)}
         onOpenThemeModal={() => setIsThemeModalOpen(true)}
+        onOpenPricingModal={() => setIsPricingModalOpen(true)}
         onOpenProfile={() => setIsProfileOpen(true)}
         currentStudentXp={currentStudent?.xp || 0}
         currentStudentStreak={currentStudent?.streak || 0}
@@ -521,6 +601,7 @@ export default function App() {
             onExploreGamification={() => setActiveTab('duolingo')}
             onOpenOptimizer={() => setIsOptimizerOpen(true)}
             onOpenPaymentModal={() => setIsPaymentModalOpen(true)}
+            onOpenPricingModal={() => setIsPricingModalOpen(true)}
           />
         )}
 
@@ -590,6 +671,9 @@ export default function App() {
               onRegisterComplete={handleRegisterComplete}
               onExploreCalendar={() => setActiveTab('calendar')}
               audienceTheme={audienceTheme}
+              existingStudents={students}
+              onOpenLogin={() => setIsProfileOpen(true)}
+              onOpenPricingModal={() => setIsPricingModalOpen(true)}
             />
           )
         )}
@@ -606,6 +690,8 @@ export default function App() {
             onFreeSlot={handleFreeSlot}
             onOpenRegister={() => setActiveTab('register')}
             onUpdateStudent={handleUpdateStudent}
+            onOpenPricingModal={() => setIsPricingModalOpen(true)}
+            onOpenPaymentModal={() => setIsPaymentModalOpen(true)}
           />
         )}
 
@@ -790,15 +876,32 @@ export default function App() {
           setIsProfileOpen(false);
           setIsPaymentModalOpen(true);
         }}
+        onOpenPricingModal={() => {
+          setIsProfileOpen(false);
+          setIsPricingModalOpen(true);
+        }}
         audienceTheme={audienceTheme}
         onAudienceChange={setAudienceTheme}
       />
 
-      {/* Payment / Checkout Modal for $5 Pase Digital */}
+      {/* Pricing & Calculator Modal */}
+      <PricingCalculatorModal
+        isOpen={isPricingModalOpen}
+        onClose={() => setIsPricingModalOpen(false)}
+        onSelectPayment={(planName, amountUsd) => {
+          setCheckoutPlan({ title: planName, amount: amountUsd });
+          setIsPricingModalOpen(false);
+          setIsPaymentModalOpen(true);
+        }}
+      />
+
+      {/* Official Payment & Checkout Modal */}
       <PaymentCheckoutModal
         isOpen={isPaymentModalOpen}
         onClose={() => setIsPaymentModalOpen(false)}
         onPaymentSuccess={handlePaymentSuccess}
+        initialPlanName={checkoutPlan.title}
+        initialAmountUsd={checkoutPlan.amount}
       />
 
       {/* Coupon / Beca Modal */}
@@ -879,8 +982,8 @@ export default function App() {
         </div>
       </footer>
 
-      {/* Cyber Owl Gemini AI Chatbot with WhatsApp Bridge */}
-      <CyberOwlChatbot 
+      {/* Güaky Macaw AI Chatbot with WhatsApp Welcome Lounge Bridge */}
+      <GuakyChatbot 
         studentName={currentStudent?.name}
         teacherWhatsAppUsername="CokitoVZLA"
       />

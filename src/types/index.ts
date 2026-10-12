@@ -90,8 +90,12 @@ export interface Student {
   name: string;
   lastName?: string;
   cedula?: string;
+  hasNoCedula?: boolean;
   email: string;
   phone?: string;
+  parentEmail?: string;
+  parentPhone?: string;
+  familyAccountId?: string;
   username?: string;
   password?: string;
   age: number;

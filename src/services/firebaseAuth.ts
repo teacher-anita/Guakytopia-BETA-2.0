@@ -16,7 +16,14 @@ export const SCOPES = [
   'https://www.googleapis.com/auth/gmail.send'
 ];
 
-SCOPES.forEach(scope => googleProvider.addScope(scope));
+// Clean provider for rapid, frictionless user/student login (never blocked by third-party scope warnings)
+export const standardGoogleProvider = new GoogleAuthProvider();
+standardGoogleProvider.setCustomParameters({ prompt: 'select_account' });
+
+// Advanced provider for Google Workspace features (Gmail, Classroom, Calendar) when explicitly requested
+export const workspaceGoogleProvider = new GoogleAuthProvider();
+SCOPES.forEach(scope => workspaceGoogleProvider.addScope(scope));
+workspaceGoogleProvider.setCustomParameters({ prompt: 'consent' });
 
 let cachedAccessToken: string | null = null;
 
@@ -26,9 +33,6 @@ export const initAuth = (
 ) => {
   return onAuthStateChanged(auth, (user: User | null) => {
     if (user) {
-      // Firebase authentication state is independent from Google API OAuth scopes.
-      // A missing cached Google access token must not make a valid Firebase user
-      // appear signed out; callers can decide separately whether an API token is needed.
       if (onAuthSuccess) onAuthSuccess(user, cachedAccessToken || '');
     } else {
       cachedAccessToken = null;
@@ -39,12 +43,25 @@ export const initAuth = (
 
 export const googleSignIn = async (): Promise<{ user: User; accessToken: string } | null> => {
   try {
-    const result = await signInWithPopup(auth, googleProvider);
+    const result = await signInWithPopup(auth, standardGoogleProvider);
     const credential = GoogleAuthProvider.credentialFromResult(result);
     cachedAccessToken = credential?.accessToken || null;
     return { user: result.user, accessToken: cachedAccessToken || '' };
   } catch (error: any) {
     console.error('Error al iniciar sesión con Google:', error);
+    // Return friendly error code/message so caller can display notice
+    throw error;
+  }
+};
+
+export const googleWorkspaceSignIn = async (): Promise<{ user: User; accessToken: string } | null> => {
+  try {
+    const result = await signInWithPopup(auth, workspaceGoogleProvider);
+    const credential = GoogleAuthProvider.credentialFromResult(result);
+    cachedAccessToken = credential?.accessToken || null;
+    return { user: result.user, accessToken: cachedAccessToken || '' };
+  } catch (error: any) {
+    console.error('Error al solicitar permisos Google Workspace:', error);
     throw error;
   }
 };

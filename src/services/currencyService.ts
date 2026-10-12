@@ -230,3 +230,51 @@ export const convertUsdToBs = (usd: number, customRate?: number) => {
     formattedUsd
   };
 };
+
+export interface VenezuelanBank {
+  code: string;
+  name: string;
+  fullName: string;
+}
+
+// Lista oficial de instituciones bancarias activas del BCV en orden numérico de código
+// Sin 'C.A.' ni 'S.A.' y en formato Título / Capitalizado
+export const VENEZUELAN_BANKS: VenezuelanBank[] = [
+  { code: '0102', name: 'Banco de Venezuela', fullName: '0102 - Banco de Venezuela Banco Universal' },
+  { code: '0104', name: 'Banco Venezolano de Crédito', fullName: '0104 - Banco Venezolano de Crédito Banco Universal' },
+  { code: '0105', name: 'Banco Mercantil', fullName: '0105 - Banco Mercantil Banco Universal' },
+  { code: '0108', name: 'Banco Provincial', fullName: '0108 - Banco Provincial Banco Universal' },
+  { code: '0114', name: 'Banco del Caribe', fullName: '0114 - Banco del Caribe Banco Universal' },
+  { code: '0115', name: 'Banco Exterior', fullName: '0115 - Banco Exterior Banco Universal' },
+  { code: '0128', name: 'Banco Caroní', fullName: '0128 - Banco Caroní Banco Universal' },
+  { code: '0134', name: 'Banesco', fullName: '0134 - Banesco Banco Universal' },
+  { code: '0137', name: 'Banco Sofitasa', fullName: '0137 - Banco Sofitasa Banco Universal' },
+  { code: '0138', name: 'Banco Plaza', fullName: '0138 - Banco Plaza Banco Universal' },
+  { code: '0146', name: 'Banco de la Gente Emprendedora', fullName: '0146 - Banco de la Gente Emprendedora' },
+  { code: '0151', name: 'Banco Fondo Común', fullName: '0151 - Banco Fondo Común Banco Universal' },
+  { code: '0156', name: '100% Banco', fullName: '0156 - 100% Banco Banco Comercial' },
+  { code: '0157', name: 'DelSur', fullName: '0157 - DelSur Banco Universal' },
+  { code: '0163', name: 'Banco del Tesoro', fullName: '0163 - Banco del Tesoro Banco Universal' },
+  { code: '0166', name: 'Banco Agrícola de Venezuela', fullName: '0166 - Banco Agrícola de Venezuela Banco Universal' },
+  { code: '0168', name: 'Bancrecer', fullName: '0168 - Bancrecer Banco Microfinanciero' },
+  { code: '0169', name: 'R4', fullName: '0169 - R4 Banco Microfinanciero' },
+  { code: '0171', name: 'Banco Activo', fullName: '0171 - Banco Activo Banco Universal' },
+  { code: '0172', name: 'Bancamiga', fullName: '0172 - Bancamiga Banco Universal' },
+  { code: '0173', name: 'Banco Internacional de Desarrollo', fullName: '0173 - Banco Internacional de Desarrollo Banco Universal' },
+  { code: '0174', name: 'Banplus', fullName: '0174 - Banplus Banco Universal' },
+  { code: '0175', name: 'Banco Digital de los Trabajadores', fullName: '0175 - Banco Digital de los Trabajadores Banco Universal' },
+  { code: '0177', name: 'Banco de la Fuerza Armada Nacional Bolivariana', fullName: '0177 - Banco de la Fuerza Armada Nacional Bolivariana Banco Universal' },
+  { code: '0178', name: 'N58 Banco Digital', fullName: '0178 - N58 Banco Digital Banco Microfinanciero' },
+  { code: '0191', name: 'Banco Nacional de Crédito', fullName: '0191 - Banco Nacional de Crédito Banco Universal' }
+];
+
+// Helper para generar el bloque completo de datos de Pago Móvil para copiar en 1 clic
+export const getFullPagoMovilCopyText = (formattedBs: string, concept: string = 'Güakytopia'): string => {
+  return [
+    `Banco: ${OFFICIAL_PAGO_MOVIL.bankCode} - ${OFFICIAL_PAGO_MOVIL.bankName}`,
+    `Teléfono: ${OFFICIAL_PAGO_MOVIL.phoneRaw}`,
+    `Cédula: ${OFFICIAL_PAGO_MOVIL.cedula.replace(/\D/g, '')}`,
+    `Monto: ${formattedBs}`,
+    `Concepto: ${concept}`
+  ].join('\n');
+};

@@ -39,6 +39,8 @@ interface CalendarViewProps {
   onFreeSlot?: (slotId: string) => void;
   onOpenRegister: () => void;
   onUpdateStudent?: (student: Student) => void;
+  onOpenPaymentModal?: () => void;
+  onOpenPricingModal?: () => void;
 }
 
 export type StudyRhythm = 'mon_wed' | 'tue_thu' | 'intensive_6h' | 'saturday' | 'all';
@@ -53,7 +55,9 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
   audienceTheme,
   onFreeSlot,
   onOpenRegister,
-  onUpdateStudent
+  onUpdateStudent,
+  onOpenPaymentModal,
+  onOpenPricingModal
 }) => {
   // Main Calendar View Tab: Weekly vs Current Month (Octubre) vs Next Month (Noviembre)
   const [calendarTab, setCalendarTab] = useState<CalendarViewTab>('weekly');
@@ -350,17 +354,29 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
               </p>
             </div>
 
-            {/* Quick Action Button to Book Prepaid Hour */}
-            <button
-              onClick={() => {
-                setPreselectedPrepaidDate(null);
-                setIsPrepaidBookingModalOpen(true);
-              }}
-              className="w-full lg:w-auto px-5 py-3 bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-black rounded-2xl text-xs sm:text-sm shadow-lg transition-all flex items-center justify-center gap-2 transform hover:scale-102"
-            >
-              <Sparkles className="w-4 h-4 text-slate-950" />
-              <span>➕ Agendar Hora con Mi Bolsa Prepagada</span>
-            </button>
+            {/* Action Buttons: Book & Prepay/Tarifas */}
+            <div className="flex flex-col sm:flex-row items-center gap-2 w-full lg:w-auto">
+              {onOpenPricingModal && (
+                <button
+                  type="button"
+                  onClick={onOpenPricingModal}
+                  className="w-full sm:w-auto px-4 py-3 bg-white/15 hover:bg-white/25 text-white border border-white/20 font-bold rounded-2xl text-xs sm:text-sm shadow-md transition-all flex items-center justify-center gap-1.5"
+                >
+                  <span>💳 Recargar Horas / Ver Tarifas</span>
+                </button>
+              )}
+
+              <button
+                onClick={() => {
+                  setPreselectedPrepaidDate(null);
+                  setIsPrepaidBookingModalOpen(true);
+                }}
+                className="w-full sm:w-auto px-5 py-3 bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-black rounded-2xl text-xs sm:text-sm shadow-lg transition-all flex items-center justify-center gap-2 transform hover:scale-102"
+              >
+                <Sparkles className="w-4 h-4 text-slate-950" />
+                <span>➕ Agendar Hora con Mi Bolsa Prepagada</span>
+              </button>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
