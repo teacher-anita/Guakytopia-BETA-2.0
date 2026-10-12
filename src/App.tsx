@@ -958,7 +958,17 @@ export default function App() {
       {/* Footer */}
       <footer className="bg-white border-t border-slate-200 py-6 text-xs text-slate-500 text-center">
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p>© 2026 Güakytopia • Open the World. Start where you are. Keep going.</p>
+          <div className="flex items-center gap-3">
+            <img 
+              src="/guakytopia-nombre.png" 
+              alt="Güakytopia" 
+              className="h-5 w-auto object-contain" 
+              onError={(e) => {
+                e.currentTarget.style.visibility = 'hidden';
+              }}
+            />
+            <p>© 2026 Güakytopia • Open the World. Start where you are. Keep going.</p>
+          </div>
           <div className="flex items-center gap-4">
             <span className="flex items-center gap-1 text-[#2EC4B6] font-semibold">
               <ShieldCheck className="w-4 h-4" />

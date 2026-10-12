@@ -1733,9 +1733,12 @@ export const RegistrationFlow: React.FC<RegistrationFlowProps> = ({
                   {/* Güaky Celebration Mascot */}
                   <div className="w-32 h-36 mx-auto flex items-center justify-center">
                     <img 
-                      src="/guaky-full.svg" 
+                      src="/guaky-mascota.png" 
                       alt="Güaky te da la bienvenida" 
                       className="w-full h-full object-contain drop-shadow-md animate-bounce [animation-duration:3s]" 
+                      onError={(e) => {
+                        e.currentTarget.style.visibility = 'hidden';
+                      }}
                     />
                   </div>
 

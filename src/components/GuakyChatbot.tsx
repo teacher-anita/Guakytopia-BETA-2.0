@@ -153,7 +153,14 @@ export const GuakyChatbot: React.FC<GuakyChatbotProps> = ({
           title="Pregúntale a Güaky 🦜"
         >
           <div className="w-8 h-8 rounded-full bg-white p-0.5 flex items-center justify-center shadow-inner overflow-hidden">
-            <img src="/guaky-face.svg" alt="Güaky" className="w-full h-full object-contain" />
+            <img 
+              src="/guaky-chat.png" 
+              alt="Güaky" 
+              className="w-full h-full object-contain" 
+              onError={(e) => {
+                e.currentTarget.style.visibility = 'hidden';
+              }}
+            />
           </div>
           <div className="text-left hidden sm:block">
             <p className="text-xs font-black leading-none text-white">Güaky Asistente</p>
@@ -175,7 +182,14 @@ export const GuakyChatbot: React.FC<GuakyChatbotProps> = ({
           <div className="p-3.5 bg-gradient-to-r from-[#243447] via-[#1F4959] to-[#2EC4B6] text-white flex items-center justify-between shadow-xs">
             <div className="flex items-center gap-2.5 min-w-0">
               <div className="w-9 h-9 rounded-2xl bg-white p-1 border border-white/40 shadow-xs shrink-0 overflow-hidden flex items-center justify-center">
-                <img src="/guaky-face.svg" alt="Güaky" className="w-full h-full object-contain" />
+                <img 
+                  src="/guaky-chat.png" 
+                  alt="Güaky" 
+                  className="w-full h-full object-contain" 
+                  onError={(e) => {
+                    e.currentTarget.style.visibility = 'hidden';
+                  }}
+                />
               </div>
               <div className="min-w-0">
                 <div className="flex items-center gap-1.5">
@@ -231,7 +245,14 @@ export const GuakyChatbot: React.FC<GuakyChatbotProps> = ({
                       <div className="flex items-end gap-1.5 max-w-[88%]">
                         {!isUser && (
                           <div className="w-6 h-6 rounded-full bg-white border border-teal-200 p-0.5 flex items-center justify-center shrink-0 shadow-2xs overflow-hidden">
-                            <img src="/guaky-face.svg" alt="Güaky" className="w-full h-full object-contain" />
+                            <img 
+                              src="/guaky-chat.png" 
+                              alt="Güaky" 
+                              className="w-full h-full object-contain" 
+                              onError={(e) => {
+                                e.currentTarget.style.visibility = 'hidden';
+                              }}
+                            />
                           </div>
                         )}
                         <div
@@ -276,7 +297,14 @@ export const GuakyChatbot: React.FC<GuakyChatbotProps> = ({
                 {isLoading && (
                   <div className="flex items-center gap-2 text-slate-500 text-xs p-2">
                     <div className="w-5 h-5 rounded-full bg-white border border-teal-200 p-0.5 flex items-center justify-center overflow-hidden">
-                      <img src="/guaky-face.svg" alt="Güaky" className="w-full h-full object-contain" />
+                      <img 
+                        src="/guaky-chat.png" 
+                        alt="Güaky" 
+                        className="w-full h-full object-contain" 
+                        onError={(e) => {
+                          e.currentTarget.style.visibility = 'hidden';
+                        }}
+                      />
                     </div>
                     <div className="flex items-center gap-1 bg-white border border-slate-200 px-3 py-1.5 rounded-full shadow-2xs">
                       <span className="w-1.5 h-1.5 rounded-full bg-[#2EC4B6] animate-bounce" />

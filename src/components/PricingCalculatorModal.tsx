@@ -91,6 +91,16 @@ export const PricingCalculatorModal: React.FC<PricingCalculatorModalProps> = ({
         {/* Header */}
         <div className="p-5 sm:p-6 bg-gradient-to-r from-slate-900 via-blue-950 to-indigo-950 text-white flex items-start justify-between relative shrink-0">
           <div>
+            <div className="flex items-center gap-2.5 mb-2">
+              <img 
+                src="/guakytopia-nombre.png" 
+                alt="Güakytopia" 
+                className="h-6 w-auto object-contain" 
+                onError={(e) => {
+                  e.currentTarget.style.visibility = 'hidden';
+                }}
+              />
+            </div>
             <div className="flex items-center gap-2 flex-wrap">
               <span className="text-[10px] font-black uppercase tracking-wider bg-amber-400 text-slate-950 px-2.5 py-0.5 rounded-full flex items-center gap-1">
                 <Sparkles className="w-3 h-3" />

@@ -20,7 +20,6 @@ import {
 } from 'lucide-react';
 import { AudienceTheme } from '../types';
 import { MODULES_INFO } from '../data/curriculumData';
-import { GuakyLogo } from './GuakyLogo';
 
 interface LandingHeroProps {
   audienceTheme: AudienceTheme;
@@ -129,9 +128,12 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
           <div className="shrink-0 flex flex-col items-center justify-center relative p-5 bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl shadow-xl max-w-xs text-center">
             <div className="w-48 h-56 sm:w-56 sm:h-64 flex items-center justify-center relative drop-shadow-2xl hover:scale-105 transition-transform duration-300">
               <img 
-                src="/guaky-full.svg" 
-                alt="Güaky the Macaw" 
+                src="/guaky-mascota.png" 
+                alt="Güaky" 
                 className="w-full h-full object-contain filter drop-shadow-md" 
+                onError={(e) => {
+                  e.currentTarget.style.visibility = 'hidden';
+                }}
               />
             </div>
             <div className="mt-2 space-y-0.5">
