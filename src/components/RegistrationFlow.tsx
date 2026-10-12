@@ -79,18 +79,18 @@ const REGISTRATION_PLANS: CustomPlanInfo[] = [
   },
   {
     id: 'express_6',
-    title: '⚡ Nivel Express / Súper Intensivo (6 h/sem)',
+    title: '⚡ Súper Intensivo Express (6 h/sem)',
     badge: '¡Máxima Velocidad! • 4 Semanas/Nivel',
-    priceDisplay: '$105',
-    priceNumber: 105,
+    priceDisplay: '$60',
+    priceNumber: 60,
     period: '/ semana',
-    hoursNote: '6 horas semanales (3 sesiones de 120 min)',
-    description: 'Inmersión récord: completa 1 nivel oficial en solo 4 semanas. Ideal para viajes inminentes o entrevistas urgentes.',
+    hoursNote: '6 horas semanales (3 sesiones de 120 min) • $10/h',
+    description: 'Inmersión récord: completa 1 nivel oficial en 8 semanas (o 4 semanas full immersion). Tarifa mensual con descuento: $215/mes.',
     isSelfPaced: false,
     features: [
       '3 sesiones semanales de 120 min (Lun/Mié/Vie)',
-      '¡Terminas cada nivel en solo 4 semanas (1 mes)!',
       'Atención VIP exclusiva de Teacher Cokitö',
+      'Opción mensual con descuento: $215 (Bolsa de 24h)',
       'Soporte y dudas continuo vía WhatsApp'
     ]
   },
@@ -98,16 +98,16 @@ const REGISTRATION_PLANS: CustomPlanInfo[] = [
     id: 'intensive_4',
     title: 'Plan Intensivo (4 h/sem)',
     badge: 'Progreso Acelerado • 6 Semanas/Nivel',
-    priceDisplay: '$80',
-    priceNumber: 80,
+    priceDisplay: '$50',
+    priceNumber: 50,
     period: '/ semana',
-    hoursNote: '4 horas semanales (2 de 120 min o 4 de 60 min)',
-    description: 'Avance rápido y enfocado para metas a corto plazo, ascensos laborales o preparación de certificaciones.',
+    hoursNote: '4 horas semanales (2 de 120 min o 4 de 60 min) • $12.50/h',
+    description: 'Avance rápido y enfocado para metas a corto plazo o certificaciones. Tarifa mensual con descuento: $180/mes.',
     isSelfPaced: false,
     features: [
       '4 horas semanales de clases en vivo',
-      'Terminas cada nivel en 6 semanas (1.5 meses)',
-      'Simulación de entrevistas y fluidez laboral',
+      'Terminas cada nivel en 12 semanas (3 meses)',
+      'Opción mensual con descuento: $180 (Bolsa de 16h)',
       'Acceso total al Classroom y libros oficiales'
     ]
   },
@@ -115,16 +115,16 @@ const REGISTRATION_PLANS: CustomPlanInfo[] = [
     id: 'regular_3',
     title: 'Plan Regular (3 h/sem)',
     badge: '⭐ Más Recomendado • 8 Semanas/Nivel',
-    priceDisplay: '$67.5',
-    priceNumber: 67.5,
+    priceDisplay: '$40',
+    priceNumber: 40,
     period: '/ semana',
-    hoursNote: '3 horas semanales (2 sesiones de 90 min)',
-    description: 'La fórmula pedagógica dorada: máximo equilibrio entre velocidad, retención cognitiva y comodidad de horario.',
+    hoursNote: '3 horas semanales (2 sesiones de 90 min) • $13.33/h',
+    description: 'La fórmula pedagógica dorada: equilibrio entre velocidad, retención y comodidad. Tarifa mensual con descuento: $145/mes.',
     isSelfPaced: false,
     features: [
       '2 sesiones semanales de 90 min (ej. Lun/Mié)',
-      'Terminas cada nivel en 8 semanas (2 meses)',
-      'Práctica conversacional inmersiva y natural',
+      'Terminas cada nivel en 16 semanas (4 meses)',
+      'Opción mensual con descuento: $145 (Bolsa de 12h)',
       'Feedback detallado de pronunciación en cada clase'
     ]
   },
@@ -132,16 +132,16 @@ const REGISTRATION_PLANS: CustomPlanInfo[] = [
     id: 'basic_2',
     title: 'Plan Súper Básico (2 h/sem)',
     badge: 'Constante y Relajado • 12 Semanas/Nivel',
-    priceDisplay: '$50',
-    priceNumber: 50,
+    priceDisplay: '$30',
+    priceNumber: 30,
     period: '/ semana',
-    hoursNote: '2 horas semanales (2 sesiones de 60 min)',
-    description: 'Para personas con agendas apretadas que desean avanzar firme y sin sobrecarga mental.',
+    hoursNote: '2 horas semanales (2 sesiones de 60 min) • $15/h',
+    description: 'Para personas con agendas apretadas que desean avanzar firme y sin sobrecarga mental. Tarifa mensual con descuento: $110/mes.',
     isSelfPaced: false,
     features: [
-      '2 sesiones semanales de 60 min (ej. Mar/Jue)',
-      'Terminas cada nivel en 12 semanas (3 meses)',
-      'Aprende sin miedo, sin estrés y a tu ritmo',
+      '2 sesiones semanales de 60 min (ej. Mar/Jue o Lun/Mié)',
+      'Terminas cada nivel en 24 semanas (6 meses)',
+      'Opción mensual con descuento: $110 (Bolsa de 8h)',
       'Materiales digitales y audios incluidos'
     ]
   }
@@ -170,6 +170,7 @@ export const RegistrationFlow: React.FC<RegistrationFlowProps> = ({
   const [selectedPlanId, setSelectedPlanId] = useState<RegistrationPlanType>('digital_5');
   const [selectedModality, setSelectedModality] = useState<ClassModality>('online');
   const [selectedGroupSize, setSelectedGroupSize] = useState<GroupSize>('individual');
+  const [billingFrequency, setBillingFrequency] = useState<'weekly' | 'monthly'>('monthly');
   const [selectedSlotIds, setSelectedSlotIds] = useState<string[]>([]);
   const [preferredTimeSlot, setPreferredTimeSlot] = useState('Tardes (4:00 - 7:00 pm)');
 

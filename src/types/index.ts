@@ -2,6 +2,26 @@ export type PlanIntensity = 'basic' | 'regular' | 'intensive' | 'super_intensive
 export type AudienceTheme = 'adults' | 'kids';
 export type ClassModality = 'online' | 'presencial';
 export type GroupSize = 'individual' | 'duo' | 'squad3' | 'crew4';
+export type BillingFrequency = 'weekly' | 'monthly';
+export type BookedSessionPurpose = 'lesson' | 'review' | 'exam_prep' | 'conversation' | 'group_flock';
+
+export interface BookedSession {
+  id: string;
+  date: string; // YYYY-MM-DD
+  day: string;  // 'Lunes', 'Martes', etc.
+  startTime: string; // "18:00"
+  endTime: string;   // "19:00"
+  hours: number;     // 1, 1.5, 2
+  teacherName: string;
+  teacherId?: string;
+  title: string;
+  purpose: BookedSessionPurpose;
+  purposeLabel: string; // e.g. "🎯 Preparación de Examen", "🗣️ Conversación Fluida", "🔄 Repaso"
+  isPrepaid: boolean;
+  status: 'confirmed' | 'completed' | 'cancelled';
+  meetLink?: string;
+  notes?: string;
+}
 
 export interface PlanConfig {
   id: PlanIntensity;
@@ -11,11 +31,40 @@ export interface PlanConfig {
   badge: string;
   recommendedFor: string;
   recommendedFormat: string;
+  // Hourly rates per person for this intensity
+  hourlyRates?: {
+    individual: number;
+    duo: number;
+    squad3: number;
+    crew4: number;
+  };
+  // Weekly total prices
   prices: {
     individual: number; // 1 pax $/week
     duo: number;        // 2 pax total $/week
     squad3: number;     // 3 pax total $/week
     crew4: number;      // 4 pax total $/week
+  };
+  // Per pax weekly prices
+  perPaxWeekly?: {
+    individual: number;
+    duo: number;
+    squad3: number;
+    crew4: number;
+  };
+  // Monthly package prices (discount applied, 30 days validity)
+  monthlyPrices?: {
+    individual: number; // monthly total (e.g. $110 for 8 hrs)
+    duo: number;        // monthly total
+    squad3: number;     // monthly total
+    crew4: number;      // monthly total
+  };
+  // Per pax monthly prices
+  perPaxMonthly?: {
+    individual: number;
+    duo: number;
+    squad3: number;
+    crew4: number;
   };
 }
 
@@ -106,6 +155,19 @@ export interface Student {
   };
   notes: string;
   assignedSlots: string[]; // e.g. ['Lunes-16:00', 'Miercoles-16:00']
+  /** Billing scheme: weekly or monthly upfront */
+  paymentBillingCycle?: BillingFrequency;
+  /** Bolsa de Horas Prepagadas (Exclusivo Individual One-to-One) */
+  prepaidHoursBalance?: number; // Hours remaining to schedule
+  prepaidHoursTotal?: number;   // Total hours acquired in current cycle (e.g. 8, 12, 16, 24)
+  prepaidHoursExpiresAt?: string; // 30 calendar days validity
+  isPrepaidActive?: boolean;
+  /** My Own Flock (Grupos privados formados por el alumno) */
+  myOwnFlockName?: string;
+  myOwnFlockRole?: 'creator' | 'member';
+  myOwnFlockMembersCount?: number;
+  /** Lista de clases agendadas y prepagadas del alumno */
+  bookedSessions?: BookedSession[];
   /** Pilot Telemetry and Real Interaction Tracking */
   telemetry?: StudentTelemetry;
 }

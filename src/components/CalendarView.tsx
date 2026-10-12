@@ -22,10 +22,12 @@ import {
   Zap, 
   Users 
 } from 'lucide-react';
-import { ScheduleSlot, Student, AudienceTheme } from '../types';
+import { ScheduleSlot, Student, AudienceTheme, BookedSession } from '../types';
 import { ENGLISH_LEVELS } from '../data/curriculumData';
 import { generateEmailTemplate, sendGmailEmail } from '../services/gmailNotifier';
 import { StudentScheduleRequestModal } from './StudentScheduleRequestModal';
+import { MonthScheduleView } from './MonthScheduleView';
+import { PrepaidSessionBookingModal } from './PrepaidSessionBookingModal';
 
 interface CalendarViewProps {
   slots: ScheduleSlot[];
@@ -40,6 +42,7 @@ interface CalendarViewProps {
 }
 
 export type StudyRhythm = 'mon_wed' | 'tue_thu' | 'intensive_6h' | 'saturday' | 'all';
+export type CalendarViewTab = 'weekly' | 'current_month' | 'next_month';
 
 export const CalendarView: React.FC<CalendarViewProps> = ({
   slots,
@@ -52,6 +55,13 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
   onOpenRegister,
   onUpdateStudent
 }) => {
+  // Main Calendar View Tab: Weekly vs Current Month (Octubre) vs Next Month (Noviembre)
+  const [calendarTab, setCalendarTab] = useState<CalendarViewTab>('weekly');
+
+  // Prepaid Hours Booking Modal state
+  const [isPrepaidBookingModalOpen, setIsPrepaidBookingModalOpen] = useState<boolean>(false);
+  const [preselectedPrepaidDate, setPreselectedPrepaidDate] = useState<string | null>(null);
+
   // Main Study Rhythm Filter (reduces cognitive noise by 70%!)
   const [studyRhythm, setStudyRhythm] = useState<StudyRhythm>('mon_wed');
   const [intensiveVariant, setIntensiveVariant] = useState<'mon_wed_fri' | 'tue_thu_fri'>('mon_wed_fri');
@@ -316,8 +326,208 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
         </div>
       )}
 
-      {/* 3. SMART STUDY RHYTHM SELECTOR (The core optimization requested by Ana!) */}
-      <div className="bg-gradient-to-r from-slate-900 via-[#243447] to-slate-900 rounded-3xl p-5 sm:p-6 text-white border border-slate-800 shadow-lg space-y-4">
+      {/* 2.5 STUDENT'S BOLSA DE HORAS PREPAGADAS & CLASES CONFIRMADAS BANNER */}
+      {effectiveStudent && (
+        <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-3xl p-5 sm:p-6 text-white border border-slate-800 shadow-xl space-y-5">
+          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 pb-4 border-b border-white/10">
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-[10px] font-black uppercase tracking-wider text-amber-300 bg-amber-400/20 px-2.5 py-0.5 rounded-full border border-amber-300/30">
+                  🎒 Mi Portal de Agenda & Horas Prepagadas
+                </span>
+                <span className="text-xs text-blue-200 font-bold">
+                  {effectiveStudent.name} {effectiveStudent.lastName || ''}
+                </span>
+                <span className="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 px-2 py-0.2 rounded-full font-bold">
+                  🟢 Ciclo Mensual Activo
+                </span>
+              </div>
+              <h3 className="text-lg sm:text-xl font-black text-white mt-1">
+                Bolsa de Horas Privadas & Turnos Confirmados
+              </h3>
+              <p className="text-xs text-slate-300">
+                Tus horas individuales prepagadas tienen 30 días de vigencia calendario y las puedes utilizar libremente para repaso, examen o conversación.
+              </p>
+            </div>
+
+            {/* Quick Action Button to Book Prepaid Hour */}
+            <button
+              onClick={() => {
+                setPreselectedPrepaidDate(null);
+                setIsPrepaidBookingModalOpen(true);
+              }}
+              className="w-full lg:w-auto px-5 py-3 bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-black rounded-2xl text-xs sm:text-sm shadow-lg transition-all flex items-center justify-center gap-2 transform hover:scale-102"
+            >
+              <Sparkles className="w-4 h-4 text-slate-950" />
+              <span>➕ Agendar Hora con Mi Bolsa Prepagada</span>
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+            {/* Box 1: Saldo de Horas */}
+            <div className="bg-white/10 rounded-2xl p-4 border border-white/15 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-slate-300 font-bold text-[11px] uppercase tracking-wider">
+                  Horas Disponibles
+                </span>
+                <Clock className="w-4 h-4 text-amber-300" />
+              </div>
+              <div className="flex items-baseline gap-2">
+                <span className="text-2xl sm:text-3xl font-black text-amber-300">
+                  {effectiveStudent.prepaidHoursBalance ?? 6.0}h
+                </span>
+                <span className="text-slate-300 text-xs">
+                  / {effectiveStudent.prepaidHoursTotal ?? 8.0}h adquiridas
+                </span>
+              </div>
+              {/* Progress bar */}
+              <div className="w-full bg-white/15 h-2 rounded-full overflow-hidden">
+                <div 
+                  className="bg-gradient-to-r from-amber-400 to-emerald-400 h-full rounded-full transition-all duration-500"
+                  style={{
+                    width: `${Math.min(100, Math.max(10, ((effectiveStudent.prepaidHoursBalance ?? 6.0) / (effectiveStudent.prepaidHoursTotal ?? 8.0)) * 100))}%`
+                  }}
+                />
+              </div>
+              <div className="text-[11px] text-slate-300 pt-1">
+                📅 Válido hasta: <strong className="text-white">{effectiveStudent.prepaidHoursExpiresAt || '11 de Noviembre de 2026'}</strong> (30 días)
+              </div>
+            </div>
+
+            {/* Box 2: Esquema de Facturación */}
+            <div className="bg-white/10 rounded-2xl p-4 border border-white/15 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-slate-300 font-bold text-[11px] uppercase tracking-wider">
+                  Modalidad de Pago
+                </span>
+                <Shield className="w-4 h-4 text-emerald-300" />
+              </div>
+              <div className="text-sm font-black text-white">
+                {effectiveStudent.paymentBillingCycle === 'weekly' ? 'Semana a Semana' : 'Pago Mensual Prepagado (Ahorro)'}
+              </div>
+              <p className="text-[11px] text-slate-300 leading-relaxed">
+                {effectiveStudent.paymentBillingCycle === 'weekly' 
+                  ? 'Pago semanal continuo. Recomendado para ritmo semana a semana.' 
+                  : 'Mes completo prepagado por adelantado con descuento. Incluye bolsa de horas para todo el mes.'}
+              </p>
+              <div className="pt-1 flex items-center gap-1.5 text-emerald-300 text-[11px] font-bold">
+                <CheckCircle2 className="w-3.5 h-3.5" />
+                <span>Turno habitual: {effectiveStudent.preferredTimeSlot || 'Lunes y Miércoles 6:00 pm'}</span>
+              </div>
+            </div>
+
+            {/* Box 3: Próximas Clases Confirmadas */}
+            <div className="bg-white/10 rounded-2xl p-4 border border-white/15 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-slate-300 font-bold text-[11px] uppercase tracking-wider">
+                  Próxima Clase Confirmada
+                </span>
+                <Video className="w-4 h-4 text-blue-300" />
+              </div>
+
+              {effectiveStudent.bookedSessions && effectiveStudent.bookedSessions.length > 0 ? (
+                (() => {
+                  const nextSess = effectiveStudent.bookedSessions[0];
+                  return (
+                    <div className="space-y-1.5">
+                      <div className="font-black text-sm text-amber-200">
+                        {nextSess.day} {nextSess.date} • {nextSess.startTime} - {nextSess.endTime}
+                      </div>
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="text-[10px] font-bold bg-emerald-400 text-slate-950 px-2 py-0.2 rounded-md">
+                          ✅ PREPAGADA
+                        </span>
+                        <span className="text-[10px] font-medium text-slate-200">
+                          {nextSess.purposeLabel}
+                        </span>
+                      </div>
+                      {nextSess.meetLink && (
+                        <a
+                          href={nextSess.meetLink}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="mt-1 inline-flex items-center gap-1.5 text-[11px] font-black text-white bg-blue-600 hover:bg-blue-500 px-2.5 py-1 rounded-lg transition-colors"
+                        >
+                          <Video className="w-3 h-3" />
+                          <span>Entrar a Google Meet</span>
+                        </a>
+                      )}
+                    </div>
+                  );
+                })()
+              ) : (
+                <div className="text-slate-300 text-xs py-1">
+                  <span>Sin clases programadas esta semana. ¡Agenda con tu bolsa prepagada!</span>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 2.8 MAIN VIEW SELECTOR (SEMANAL vs MES ACTUAL OCTUBRE vs MES SIGUIENTE NOVIEMBRE) */}
+      <div className="bg-white rounded-3xl p-2 sm:p-2.5 border border-slate-200 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-2">
+        <div className="grid grid-cols-3 gap-1.5 w-full text-xs font-bold">
+          
+          {/* Tab 1: Vista Semanal */}
+          <button
+            onClick={() => setCalendarTab('weekly')}
+            className={`py-3 px-3 rounded-2xl flex items-center justify-center gap-2 transition-all ${
+              calendarTab === 'weekly'
+                ? 'bg-slate-900 text-amber-300 shadow-md font-black scale-101'
+                : 'bg-slate-50 hover:bg-slate-100 text-slate-700'
+            }`}
+          >
+            <Clock className="w-4 h-4 text-amber-400 shrink-0" />
+            <span className="truncate">⚡ Agenda Semanal Interactiva</span>
+          </button>
+
+          {/* Tab 2: Esquema Mes Actual */}
+          <button
+            onClick={() => setCalendarTab('current_month')}
+            className={`py-3 px-3 rounded-2xl flex items-center justify-center gap-2 transition-all ${
+              calendarTab === 'current_month'
+                ? 'bg-blue-600 text-white shadow-md font-black scale-101'
+                : 'bg-slate-50 hover:bg-slate-100 text-slate-700'
+            }`}
+          >
+            <CalendarIcon className="w-4 h-4 text-blue-200 shrink-0" />
+            <span className="truncate">🗓️ Esquema Mes Actual (Octubre)</span>
+          </button>
+
+          {/* Tab 3: Esquema Mes Siguiente */}
+          <button
+            onClick={() => setCalendarTab('next_month')}
+            className={`py-3 px-3 rounded-2xl flex items-center justify-center gap-2 transition-all ${
+              calendarTab === 'next_month'
+                ? 'bg-indigo-600 text-white shadow-md font-black scale-101'
+                : 'bg-slate-50 hover:bg-slate-100 text-slate-700'
+            }`}
+          >
+            <CalendarIcon className="w-4 h-4 text-indigo-200 shrink-0" />
+            <span className="truncate">📆 Esquema Mes Siguiente (Noviembre)</span>
+          </button>
+
+        </div>
+      </div>
+
+      {/* CONDITIONAL RENDER: MONTH SCHEME VIEWS */}
+      {calendarTab !== 'weekly' && (
+        <MonthScheduleView
+          student={effectiveStudent}
+          targetMonth={calendarTab === 'current_month' ? 'current' : 'next'}
+          onOpenPrepaidBooking={(preselectedDate) => {
+            setPreselectedPrepaidDate(preselectedDate || null);
+            setIsPrepaidBookingModalOpen(true);
+          }}
+        />
+      )}
+
+      {/* CONDITIONAL RENDER: WEEKLY VIEW (ONLY WHEN TAB === 'weekly') */}
+      {calendarTab === 'weekly' && (
+        <>
+          {/* 3. SMART STUDY RHYTHM SELECTOR (The core optimization requested by Ana!) */}
+          <div className="bg-gradient-to-r from-slate-900 via-[#243447] to-slate-900 rounded-3xl p-5 sm:p-6 text-white border border-slate-800 shadow-lg space-y-4">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div>
             <span className="text-[10px] font-black uppercase tracking-wider text-[#FFD166] bg-[#FFD166]/15 px-2.5 py-0.5 rounded-full border border-[#FFD166]/30">
@@ -684,38 +894,52 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
 
                     // CASE 2: My Booked Class
                     if (isMyClass && activeRole === 'student') {
+                      const matchingSession = (effectiveStudent?.bookedSessions || []).find(
+                        s => s.startTime === slot.startTime && s.day === slot.day
+                      );
+
                       return (
                         <div
                           key={slot.id}
-                          className="p-3.5 rounded-2xl border border-[#2EC4B6]/50 bg-gradient-to-r from-teal-50/70 to-emerald-50/60 shadow-xs space-y-2"
+                          className="p-3.5 rounded-2xl border-2 border-emerald-400 bg-gradient-to-r from-teal-50 to-emerald-50 shadow-md space-y-2.5"
                         >
-                          <div className="flex items-center justify-between">
+                          <div className="flex items-center justify-between flex-wrap gap-1">
                             <span className="font-black text-xs text-slate-900 flex items-center gap-1.5">
-                              <Clock className="w-3.5 h-3.5 text-[#2EC4B6]" />
+                              <Clock className="w-3.5 h-3.5 text-emerald-600" />
                               {slot.startTime} - {slot.endTime}
                             </span>
-                            <span className="text-[10px] font-black bg-[#2EC4B6] text-slate-950 px-2.5 py-0.5 rounded-full shadow-2xs">
-                              ⭐ Tu Clase
-                            </span>
+                            <div className="flex items-center gap-1">
+                              <span className="text-[10px] font-black bg-[#2EC4B6] text-slate-950 px-2 py-0.2 rounded-full shadow-2xs">
+                                ⭐ Tu Clase
+                              </span>
+                              <span className="text-[10px] font-black bg-emerald-600 text-white px-2 py-0.2 rounded-full shadow-2xs">
+                                ✅ PREPAGADA
+                              </span>
+                            </div>
                           </div>
 
-                          <div className="text-xs">
-                            <p className="font-bold text-slate-900">
-                              {levelData?.levelName || 'Nivel Asignado'} • {levelData?.book || 'Super Goal'}
+                          <div className="text-xs space-y-0.5">
+                            <p className="font-black text-slate-900">
+                              {matchingSession?.title || `${levelData?.levelName || 'Super Goal 1'} • Tutoría Privada`}
                             </p>
-                            <p className="text-[11px] text-slate-500">Teacher: Directora Waky & Staff</p>
+                            <p className="text-[11px] font-bold text-emerald-800">
+                              Objetivo: {matchingSession?.purposeLabel || '📚 Lección Curricular & Repaso'}
+                            </p>
+                            <p className="text-[11px] text-slate-500">Teacher: Teacher Cokitö & Directora Waky</p>
                           </div>
 
                           {slot.meetLink && (
-                            <a
-                              href={slot.meetLink}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="inline-flex items-center gap-1.5 text-[11px] font-bold text-blue-700 hover:text-blue-900 bg-white border border-blue-200 px-3 py-1 rounded-xl shadow-2xs transition-colors"
-                            >
-                              <Video className="w-3.5 h-3.5 text-blue-600" />
-                              <span>Entrar a Google Meet</span>
-                            </a>
+                            <div className="pt-1 border-t border-emerald-200/80">
+                              <a
+                                href={slot.meetLink}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="w-full inline-flex items-center justify-center gap-1.5 text-xs font-black text-white bg-emerald-600 hover:bg-emerald-700 px-3 py-2 rounded-xl shadow-xs transition-colors"
+                              >
+                                <Video className="w-3.5 h-3.5" />
+                                <span>Entrar a Google Meet en Vivo</span>
+                              </a>
+                            </div>
                           )}
                         </div>
                       );
@@ -817,6 +1041,8 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
           );
         })}
       </div>
+    </>
+  )}
 
       {/* Student Fast Booking Modal for Logged-In Student */}
       {isBookingModalOpen && effectiveStudent && (
@@ -832,6 +1058,25 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
           allLevels={ENGLISH_LEVELS}
           onSuccess={(msg) => setActionMessage(msg)}
           onUpdateStudent={onUpdateStudent}
+        />
+      )}
+
+      {/* Student Prepaid Hours Dedicated Booking Modal */}
+      {isPrepaidBookingModalOpen && effectiveStudent && (
+        <PrepaidSessionBookingModal
+          isOpen={isPrepaidBookingModalOpen}
+          onClose={() => {
+            setIsPrepaidBookingModalOpen(false);
+            setPreselectedPrepaidDate(null);
+          }}
+          student={effectiveStudent}
+          preselectedDate={preselectedPrepaidDate}
+          onBookingSuccess={(newSession, updatedStudent) => {
+            if (onUpdateStudent) {
+              onUpdateStudent(updatedStudent);
+            }
+            setActionMessage(`✅ ¡Clase individual prepagada agendada con éxito para el ${newSession.date} (${newSession.startTime})! Horas descontadas de tu bolsa.`);
+          }}
         />
       )}
     </div>

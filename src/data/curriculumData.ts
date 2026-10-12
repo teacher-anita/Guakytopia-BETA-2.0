@@ -8,12 +8,36 @@ export const INTENSITY_PLANS: Record<PlanIntensity, PlanConfig> = {
     badge: 'Constante y Relajado',
     description: 'Un avance constante y relajado sin sobrecarga. Terminas cada nivel en 24 semanas (6 meses).',
     recommendedFor: 'Profesionales, estudiantes o personas con agenda apretada.',
-    recommendedFormat: '2 sesiones de 60 minutos (ej. Martes y Jueves).',
+    recommendedFormat: '2 sesiones de 60 minutos (ej. Martes y Jueves o Lunes y Miércoles).',
+    hourlyRates: {
+      individual: 15.00,
+      duo: 13.75,
+      squad3: 11.67,
+      crew4: 10.62
+    },
     prices: {
-      individual: 50,
-      duo: 90,
-      squad3: 120,
-      crew4: 140
+      individual: 30, // $15/h * 2h
+      duo: 55,        // $13.75/h * 4h total
+      squad3: 70,     // $11.67/h * 6h total
+      crew4: 85       // $10.62/h * 8h total
+    },
+    perPaxWeekly: {
+      individual: 30.00,
+      duo: 27.50,
+      squad3: 23.33,
+      crew4: 21.25
+    },
+    monthlyPrices: {
+      individual: 110, // Ahorro vs $120 (Bolsa de 8 horas prepagadas - 30 días)
+      duo: 200,        // Ahorro vs $220 ($100 x alumno)
+      squad3: 250,     // Ahorro vs $280 ($83.33 x alumno)
+      crew4: 300       // Ahorro vs $340 ($75 x alumno)
+    },
+    perPaxMonthly: {
+      individual: 110.00,
+      duo: 100.00,
+      squad3: 83.33,
+      crew4: 75.00
     }
   },
   regular: {
@@ -23,12 +47,36 @@ export const INTENSITY_PLANS: Record<PlanIntensity, PlanConfig> = {
     badge: 'Equilibrio Perfecto',
     description: 'El equilibrio óptimo entre velocidad y asimilación. Terminas cada nivel en 16 semanas (4 meses).',
     recommendedFor: 'Metas a mediano plazo y preparación de certificaciones intermedias.',
-    recommendedFormat: '2 sesiones de 90 min (ej. Lun/Mié) o 3 sesiones de 60 min (Lun/Mié/Vie).',
+    recommendedFormat: '2 sesiones de 90 min (ej. Lun/Mié o Mar/Jue).',
+    hourlyRates: {
+      individual: 13.33,
+      duo: 12.00,
+      squad3: 10.56,
+      crew4: 9.17
+    },
     prices: {
-      individual: 67.5,
-      duo: 120,
-      squad3: 157.5,
-      crew4: 180
+      individual: 40, // $13.33/h * 3h
+      duo: 72,        // $12.00/h * 6h total
+      squad3: 95,     // $10.56/h * 9h total
+      crew4: 110      // $9.17/h * 12h total
+    },
+    perPaxWeekly: {
+      individual: 40.00,
+      duo: 36.00,
+      squad3: 31.67,
+      crew4: 27.50
+    },
+    monthlyPrices: {
+      individual: 145, // Ahorro vs $160 (Bolsa de 12 horas prepagadas - 30 días)
+      duo: 260,        // $130 x alumno
+      squad3: 340,     // $113.33 x alumno
+      crew4: 390       // $97.50 x alumno
+    },
+    perPaxMonthly: {
+      individual: 145.00,
+      duo: 130.00,
+      squad3: 113.33,
+      crew4: 97.50
     }
   },
   intensive: {
@@ -38,12 +86,36 @@ export const INTENSITY_PLANS: Record<PlanIntensity, PlanConfig> = {
     badge: 'Para los que llevan prisa',
     description: 'Progreso acelerado con práctica conversacional inmersiva. Terminas cada nivel en 12 semanas (3 meses).',
     recommendedFor: 'Viajes próximos, entrevistas laborales en inglés o exámenes.',
-    recommendedFormat: '2 sesiones de 120 min (con receso de 5 min) o 4 sesiones de 60 min.',
+    recommendedFormat: '2 sesiones de 120 min (con receso anti-fatiga) o 4 sesiones de 60 min.',
+    hourlyRates: {
+      individual: 12.50,
+      duo: 10.62,
+      squad3: 9.17,
+      crew4: 7.50
+    },
     prices: {
-      individual: 80,
-      duo: 140,
-      squad3: 180,
-      crew4: 200
+      individual: 50, // $12.50/h * 4h
+      duo: 85,        // $10.62/h * 8h total
+      squad3: 110,    // $9.17/h * 12h total
+      crew4: 120      // $7.50/h * 16h total
+    },
+    perPaxWeekly: {
+      individual: 50.00,
+      duo: 42.50,
+      squad3: 36.67,
+      crew4: 30.00
+    },
+    monthlyPrices: {
+      individual: 180, // Ahorro vs $200 (Bolsa de 16 horas prepagadas - 30 días)
+      duo: 305,        // $152.50 x alumno
+      squad3: 395,     // $131.67 x alumno
+      crew4: 430       // $107.50 x alumno
+    },
+    perPaxMonthly: {
+      individual: 180.00,
+      duo: 152.50,
+      squad3: 131.67,
+      crew4: 107.50
     }
   },
   super_intensive: {
@@ -54,11 +126,35 @@ export const INTENSITY_PLANS: Record<PlanIntensity, PlanConfig> = {
     description: 'Inmersión total. Terminas cada nivel en 8 semanas (2 meses) con sesiones estructuradas de 120 min.',
     recommendedFor: 'Reubicación internacional o metas profesionales urgentes.',
     recommendedFormat: 'Lunes (2h) + Miércoles (2h) + Viernes (2h) en bloques anti-fatiga.',
+    hourlyRates: {
+      individual: 10.00,
+      duo: 8.33,
+      squad3: 6.94,
+      crew4: 5.83
+    },
     prices: {
-      individual: 105,
-      duo: 180,
-      squad3: 225,
-      crew4: 240
+      individual: 60, // $10.00/h * 6h
+      duo: 100,       // $8.33/h * 12h total
+      squad3: 125,    // $6.94/h * 18h total
+      crew4: 140      // $5.83/h * 24h total
+    },
+    perPaxWeekly: {
+      individual: 60.00,
+      duo: 50.00,
+      squad3: 41.67,
+      crew4: 35.00
+    },
+    monthlyPrices: {
+      individual: 215, // Ahorro vs $240 (Bolsa de 24 horas prepagadas - 30 días)
+      duo: 360,        // $180 x alumno
+      squad3: 450,     // $150 x alumno
+      crew4: 500       // $125 x alumno
+    },
+    perPaxMonthly: {
+      individual: 215.00,
+      duo: 180.00,
+      squad3: 150.00,
+      crew4: 125.00
     }
   }
 };
@@ -403,7 +499,7 @@ export const INITIAL_STUDENTS: Student[] = [
     plan: 'basic',
     modality: 'online',
     groupSize: 'individual',
-    preferredTimeSlot: 'Autónomo Asincrónico',
+    preferredTimeSlot: 'Lunes y Miércoles 6:00 pm - 7:00 pm',
     levelId: 'level_1',
     status: 'enrolled',
     placementTestScore: 25,
@@ -416,8 +512,165 @@ export const INITIAL_STUDENTS: Student[] = [
     streak: 3,
     league: 'Bronce',
     rating: { fluency: 3, grammar: 3, vocabulary: 4, pronunciation: 3 },
-    notes: 'Alumna oficial registrada en Super Goal 1 con pase digital activo.',
-    assignedSlots: []
+    notes: 'Alumna oficial registrada en Super Goal 1 con Bolsa Mensual Prepagada activa.',
+    assignedSlots: ['lun_18', 'mie_18'],
+    paymentBillingCycle: 'monthly',
+    prepaidHoursBalance: 6,
+    prepaidHoursTotal: 8,
+    prepaidHoursExpiresAt: '2026-11-11',
+    isPrepaidActive: true,
+    bookedSessions: [
+      {
+        id: 'sess_oct_12',
+        date: '2026-10-12',
+        day: 'Lunes',
+        startTime: '18:00',
+        endTime: '19:00',
+        hours: 1,
+        teacherName: 'Teacher Cokitö',
+        title: 'Super Goal 1: Unit 1 Check & Fluency',
+        purpose: 'lesson',
+        purposeLabel: '📚 Lección Curricular',
+        isPrepaid: true,
+        status: 'confirmed',
+        meetLink: 'https://meet.google.com/cok-waky-edu'
+      },
+      {
+        id: 'sess_oct_14',
+        date: '2026-10-14',
+        day: 'Miércoles',
+        startTime: '18:00',
+        endTime: '19:00',
+        hours: 1,
+        teacherName: 'Teacher Cokitö',
+        title: 'Tutoría Individual: Repaso de Pasado Simple',
+        purpose: 'review',
+        purposeLabel: '🔄 Repaso & Refuerzo',
+        isPrepaid: true,
+        status: 'confirmed',
+        meetLink: 'https://meet.google.com/cok-waky-edu'
+      },
+      {
+        id: 'sess_oct_19',
+        date: '2026-10-19',
+        day: 'Lunes',
+        startTime: '18:00',
+        endTime: '19:00',
+        hours: 1,
+        teacherName: 'Teacher Cokitö',
+        title: 'Tutoría Privada: Preparación para Examen',
+        purpose: 'exam_prep',
+        purposeLabel: '🎯 Preparación de Examen',
+        isPrepaid: true,
+        status: 'confirmed',
+        meetLink: 'https://meet.google.com/cok-waky-edu'
+      },
+      {
+        id: 'sess_oct_21',
+        date: '2026-10-21',
+        day: 'Miércoles',
+        startTime: '18:00',
+        endTime: '19:00',
+        hours: 1,
+        teacherName: 'Teacher Cokitö',
+        title: 'Sesión Conversacional: Speaking & Daily Routine',
+        purpose: 'conversation',
+        purposeLabel: '🗣️ Conversación Fluida',
+        isPrepaid: true,
+        status: 'confirmed',
+        meetLink: 'https://meet.google.com/cok-waky-edu'
+      },
+      {
+        id: 'sess_oct_26',
+        date: '2026-10-26',
+        day: 'Lunes',
+        startTime: '18:00',
+        endTime: '19:00',
+        hours: 1,
+        teacherName: 'Teacher Cokitö',
+        title: 'Super Goal 1: Unit 2 Introduction',
+        purpose: 'lesson',
+        purposeLabel: '📚 Lección Curricular',
+        isPrepaid: true,
+        status: 'confirmed',
+        meetLink: 'https://meet.google.com/cok-waky-edu'
+      },
+      {
+        id: 'sess_oct_28',
+        date: '2026-10-28',
+        day: 'Miércoles',
+        startTime: '18:00',
+        endTime: '19:00',
+        hours: 1,
+        teacherName: 'Teacher Cokitö',
+        title: 'Práctica de Pronunciación Anti-Fatiga',
+        purpose: 'review',
+        purposeLabel: '🔄 Repaso & Refuerzo',
+        isPrepaid: true,
+        status: 'confirmed',
+        meetLink: 'https://meet.google.com/cok-waky-edu'
+      },
+      {
+        id: 'sess_nov_02',
+        date: '2026-11-02',
+        day: 'Lunes',
+        startTime: '18:00',
+        endTime: '19:00',
+        hours: 1,
+        teacherName: 'Teacher Cokitö',
+        title: 'Noviembre: Conversación & Entrevista Laboral',
+        purpose: 'conversation',
+        purposeLabel: '🗣️ Conversación Fluida',
+        isPrepaid: true,
+        status: 'confirmed',
+        meetLink: 'https://meet.google.com/cok-waky-edu'
+      },
+      {
+        id: 'sess_nov_04',
+        date: '2026-11-04',
+        day: 'Miércoles',
+        startTime: '18:00',
+        endTime: '19:00',
+        hours: 1,
+        teacherName: 'Teacher Cokitö',
+        title: 'Noviembre: Gramática Aplicada y Redacción',
+        purpose: 'lesson',
+        purposeLabel: '📚 Lección Curricular',
+        isPrepaid: true,
+        status: 'confirmed',
+        meetLink: 'https://meet.google.com/cok-waky-edu'
+      },
+      {
+        id: 'sess_nov_09',
+        date: '2026-11-09',
+        day: 'Lunes',
+        startTime: '18:00',
+        endTime: '19:00',
+        hours: 1,
+        teacherName: 'Teacher Cokitö',
+        title: 'Noviembre: Examen Diagnóstico Mensual',
+        purpose: 'exam_prep',
+        purposeLabel: '🎯 Preparación de Examen',
+        isPrepaid: true,
+        status: 'confirmed',
+        meetLink: 'https://meet.google.com/cok-waky-edu'
+      },
+      {
+        id: 'sess_nov_11',
+        date: '2026-11-11',
+        day: 'Miércoles',
+        startTime: '18:00',
+        endTime: '19:00',
+        hours: 1,
+        teacherName: 'Teacher Cokitö',
+        title: 'Cierre de Ciclo Mensual Prepagado (Vence hoy)',
+        purpose: 'review',
+        purposeLabel: '🔄 Repaso & Cierre',
+        isPrepaid: true,
+        status: 'confirmed',
+        meetLink: 'https://meet.google.com/cok-waky-edu'
+      }
+    ]
   },
   {
     id: 'student_maria_guadalupe',
@@ -448,7 +701,164 @@ export const INITIAL_STUDENTS: Student[] = [
     league: 'Bronce',
     rating: { fluency: 2, grammar: 2, vocabulary: 3, pronunciation: 3 },
     notes: 'Alumna confirmada en Super Goal 1 (Principiante). Horario: Lunes y Miércoles de 6:00 pm a 7:00 pm. Institución: PRE CSB (Auxiliar). Correos: malupena26.mo@gmail.com / malupena.26mo@gmail.com. Tel: 04241830082.',
-    assignedSlots: ['lun_18', 'mie_18']
+    assignedSlots: ['lun_18', 'mie_18'],
+    paymentBillingCycle: 'monthly',
+    prepaidHoursBalance: 6,
+    prepaidHoursTotal: 8,
+    prepaidHoursExpiresAt: '2026-11-11',
+    isPrepaidActive: true,
+    bookedSessions: [
+      {
+        id: 'sess_mg_oct_12',
+        date: '2026-10-12',
+        day: 'Lunes',
+        startTime: '18:00',
+        endTime: '19:00',
+        hours: 1,
+        teacherName: 'Teacher Cokitö',
+        title: 'Preschool Teacher English Basics',
+        purpose: 'lesson',
+        purposeLabel: '📚 Lección Curricular',
+        isPrepaid: true,
+        status: 'confirmed',
+        meetLink: 'https://meet.google.com/cok-waky-edu'
+      },
+      {
+        id: 'sess_mg_oct_14',
+        date: '2026-10-14',
+        day: 'Miércoles',
+        startTime: '18:00',
+        endTime: '19:00',
+        hours: 1,
+        teacherName: 'Teacher Cokitö',
+        title: 'Tutoría: Vocabulario de Aula y Canciones Infantiles',
+        purpose: 'review',
+        purposeLabel: '🔄 Repaso & Refuerzo',
+        isPrepaid: true,
+        status: 'confirmed',
+        meetLink: 'https://meet.google.com/cok-waky-edu'
+      },
+      {
+        id: 'sess_mg_oct_19',
+        date: '2026-10-19',
+        day: 'Lunes',
+        startTime: '18:00',
+        endTime: '19:00',
+        hours: 1,
+        teacherName: 'Teacher Cokitö',
+        title: 'Instrucciones en Inglés para el Aula',
+        purpose: 'lesson',
+        purposeLabel: '📚 Lección Curricular',
+        isPrepaid: true,
+        status: 'confirmed',
+        meetLink: 'https://meet.google.com/cok-waky-edu'
+      },
+      {
+        id: 'sess_mg_oct_21',
+        date: '2026-10-21',
+        day: 'Miércoles',
+        startTime: '18:00',
+        endTime: '19:00',
+        hours: 1,
+        teacherName: 'Teacher Cokitö',
+        title: 'Conversación de Situaciones Escolares',
+        purpose: 'conversation',
+        purposeLabel: '🗣️ Conversación Fluida',
+        isPrepaid: true,
+        status: 'confirmed',
+        meetLink: 'https://meet.google.com/cok-waky-edu'
+      },
+      {
+        id: 'sess_mg_oct_26',
+        date: '2026-10-26',
+        day: 'Lunes',
+        startTime: '18:00',
+        endTime: '19:00',
+        hours: 1,
+        teacherName: 'Teacher Cokitö',
+        title: 'Super Goal 1: Estructuras Simples',
+        purpose: 'lesson',
+        purposeLabel: '📚 Lección Curricular',
+        isPrepaid: true,
+        status: 'confirmed',
+        meetLink: 'https://meet.google.com/cok-waky-edu'
+      },
+      {
+        id: 'sess_mg_oct_28',
+        date: '2026-10-28',
+        day: 'Miércoles',
+        startTime: '18:00',
+        endTime: '19:00',
+        hours: 1,
+        teacherName: 'Teacher Cokitö',
+        title: 'Repaso y Fonética de Sonidos del Inglés',
+        purpose: 'review',
+        purposeLabel: '🔄 Repaso & Refuerzo',
+        isPrepaid: true,
+        status: 'confirmed',
+        meetLink: 'https://meet.google.com/cok-waky-edu'
+      },
+      {
+        id: 'sess_mg_nov_02',
+        date: '2026-11-02',
+        day: 'Lunes',
+        startTime: '18:00',
+        endTime: '19:00',
+        hours: 1,
+        teacherName: 'Teacher Cokitö',
+        title: 'Noviembre: Comandos en Inglés para Niños',
+        purpose: 'lesson',
+        purposeLabel: '📚 Lección Curricular',
+        isPrepaid: true,
+        status: 'confirmed',
+        meetLink: 'https://meet.google.com/cok-waky-edu'
+      },
+      {
+        id: 'sess_mg_nov_04',
+        date: '2026-11-04',
+        day: 'Miércoles',
+        startTime: '18:00',
+        endTime: '19:00',
+        hours: 1,
+        teacherName: 'Teacher Cokitö',
+        title: 'Noviembre: Conversación Práctica',
+        purpose: 'conversation',
+        purposeLabel: '🗣️ Conversación Fluida',
+        isPrepaid: true,
+        status: 'confirmed',
+        meetLink: 'https://meet.google.com/cok-waky-edu'
+      },
+      {
+        id: 'sess_mg_nov_09',
+        date: '2026-11-09',
+        day: 'Lunes',
+        startTime: '18:00',
+        endTime: '19:00',
+        hours: 1,
+        teacherName: 'Teacher Cokitö',
+        title: 'Noviembre: Evaluación de Progreso',
+        purpose: 'exam_prep',
+        purposeLabel: '🎯 Preparación de Examen',
+        isPrepaid: true,
+        status: 'confirmed',
+        meetLink: 'https://meet.google.com/cok-waky-edu'
+      },
+      {
+        id: 'sess_mg_nov_11',
+        date: '2026-11-11',
+        day: 'Miércoles',
+        startTime: '18:00',
+        endTime: '19:00',
+        hours: 1,
+        teacherName: 'Teacher Cokitö',
+        title: 'Noviembre: Cierre de Ciclo Mensual',
+        purpose: 'review',
+        purposeLabel: '🔄 Repaso & Cierre',
+        isPrepaid: true,
+        status: 'confirmed',
+        meetLink: 'https://meet.google.com/cok-waky-edu'
+      }
+    ]
   },
   {
     id: 'student_mariana',
