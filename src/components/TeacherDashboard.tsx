@@ -155,7 +155,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
     // Default to suggested level if available
     setAssignedLevelId(student.levelId || 'level_1');
     setAssignedSlotsInput(student.assignedSlots.join(', '));
-    setTeacherEvaluationNotes(`Evaluado por Teacher Waky. Desempeño destacado en prueba de nivel.`);
+    setTeacherEvaluationNotes(`Evaluado por Teacher Cokitö. Desempeño destacado en prueba de nivel.`);
   };
 
   const handleConfirmAssignment = async () => {
@@ -406,7 +406,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                           </p>
                           <div className="mt-1 flex items-center gap-2 text-xs">
                             <span className="font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-md">
-                              Prueba de Nivel: {st.placementTestScore ?? 0} / 25 pts
+                              Prueba de Nivel: {st.placementTestScore ?? 0} / 50 pts
                             </span>
                             <span className="text-slate-500 text-[11px] truncate max-w-xs">{st.placementTestDiagnosis}</span>
                           </div>
@@ -553,7 +553,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                 Asignar Nivel a {evaluatingStudent.name} {evaluatingStudent.lastName}
               </h3>
               <p className="text-xs text-slate-500">
-                Puntaje en prueba: <strong>{evaluatingStudent.placementTestScore ?? 0} / 25 puntos</strong>
+                Puntaje en prueba: <strong>{evaluatingStudent.placementTestScore ?? 0} / 50 puntos</strong>
               </p>
             </div>
 

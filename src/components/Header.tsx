@@ -153,6 +153,31 @@ export const Header: React.FC<HeaderProps> = ({
                 </button>
               </div>
 
+              {/* INICIO DE SESIÓN DE TEACHER / PORTAL DOCENTE (Movido arriba junto a ambiente, tarifas, beca, adulto/junior) */}
+              <button
+                onClick={() => onTabChange('teacher')}
+                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-black transition-all shadow-2xs border ${
+                  activeTab === 'teacher'
+                    ? staffRole === 'principal'
+                      ? 'bg-amber-400 text-slate-950 border-amber-500 shadow-xs ring-2 ring-amber-400/50'
+                      : 'bg-indigo-900 text-amber-300 border-indigo-700 shadow-xs ring-2 ring-indigo-400/50'
+                    : isTeacherAuthenticated
+                      ? 'bg-indigo-50 hover:bg-indigo-100 text-indigo-900 border-indigo-300'
+                      : 'bg-slate-900 hover:bg-slate-800 text-amber-300 border-slate-800'
+                }`}
+                title={isTeacherAuthenticated ? (staffRole === 'principal' ? "Rectoría General" : "Panel de Teacher Cokitö") : "Inicio de sesión de Teacher / Portal Docente"}
+              >
+                <Lock className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                <span className="hidden sm:inline">
+                  {isTeacherAuthenticated 
+                    ? (staffRole === 'principal' ? 'Rectoría' : 'Teacher Cokitö') 
+                    : 'Teacher'}
+                </span>
+                <span className="sm:hidden">
+                  Teacher
+                </span>
+              </button>
+
               {/* Gamification badge: Racha + XP */}
               <div className="flex items-center gap-1 sm:gap-1.5 bg-slate-50 border border-slate-200/80 px-2 sm:px-2.5 py-1 rounded-xl text-xs">
                 <div className="flex items-center gap-0.5 text-orange-600 font-bold" title="Racha activa de días">
@@ -340,26 +365,6 @@ export const Header: React.FC<HeaderProps> = ({
                   </span>
                 )}
               </button>
-
-              {/* 8. Teacher / Principal's Office Portal (hidden for signed-in students) */}
-              {!isStudentLoggedIn && (
-                <button
-                  onClick={() => onTabChange('teacher')}
-                  className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 ${
-                    activeTab === 'teacher'
-                      ? staffRole === 'principal'
-                        ? 'bg-amber-400 text-slate-950 shadow-md font-black ring-1 ring-amber-500'
-                        : 'bg-[#243447] text-white shadow-xs font-bold'
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
-                  }`}
-                  title={staffRole === 'principal' ? "Principal's Office portal" : 'Teacher portal'}
-                >
-                  <span className="text-sm">{staffRole === 'principal' ? '👑' : '👩‍🏫'}</span>
-                  <span>{staffRole === 'principal' ? "Principal's Office" : 'Teacher'}</span>
-                  <Lock className={`w-3.5 h-3.5 shrink-0 ml-0.5 ${isTeacherAuthenticated ? 'text-emerald-400' : 'text-amber-500'}`} />
-                </button>
-              )}
-
             </nav>
           </div>
 
@@ -507,33 +512,6 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
             <span className="text-[9px] leading-tight truncate w-full text-center mt-0.5">Lab</span>
           </button>
-
-          {/* 8. Teacher / Principal's Office (hidden for signed-in students) */}
-          {!isStudentLoggedIn && (
-            <button
-              onClick={() => onTabChange('teacher')}
-              className={`flex flex-col items-center justify-center py-1 px-1 rounded-xl transition-all flex-1 min-w-0 max-w-[54px] relative ${
-                activeTab === 'teacher'
-                  ? staffRole === 'principal'
-                    ? 'text-amber-950 font-black bg-amber-200/80 scale-102'
-                    : 'text-[#243447] font-bold bg-slate-200 scale-102'
-                  : 'text-slate-500 hover:text-slate-800'
-              }`}
-            >
-              <div className="relative">
-                <span className="text-base">{staffRole === 'principal' ? '👑' : '👩‍🏫'}</span>
-                <span className={`absolute -top-1 -right-2 w-3.5 h-3.5 rounded-full border border-white flex items-center justify-center ${
-                  isTeacherAuthenticated ? 'bg-emerald-500' : 'bg-amber-500'
-                }`}>
-                  <Lock className="w-2 h-2 text-white" />
-                </span>
-              </div>
-              <span className="text-[9px] leading-tight truncate w-full text-center mt-0.5 font-bold">
-                {staffRole === 'principal' ? "Principal's Office" : 'Teacher'}
-              </span>
-            </button>
-          )}
-
         </div>
       </nav>
     </>

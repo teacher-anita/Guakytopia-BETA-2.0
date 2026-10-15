@@ -17,6 +17,7 @@ import {
   Coffee, 
   ChevronDown, 
   ChevronUp, 
+  ChevronRight,
   GraduationCap, 
   BookOpen, 
   Zap, 
@@ -77,6 +78,11 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
   const [targetAudienceFilter, setTargetAudienceFilter] = useState<'all' | 'adults' | 'kids'>(
     audienceTheme === 'kids' ? 'kids' : 'all'
   );
+
+  // Director / Teacher Advanced Filters (Optimized Management)
+  const [availabilityFilter, setAvailabilityFilter] = useState<'all' | 'booked_only' | 'available_only'>('all');
+  const [selectedStudentFilter, setSelectedStudentFilter] = useState<string>('all');
+  const [selectedTeacherFilter, setSelectedTeacherFilter] = useState<string>('all');
   
   const [actionMessage, setActionMessage] = useState<string | null>(null);
   const [showFrequencyGuide, setShowFrequencyGuide] = useState<boolean>(true);
@@ -131,8 +137,12 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
 
   const isKids = audienceTheme === 'kids';
 
-  // Determine active days based on selected rhythm
+  // Determine active days based on selected rhythm or availability filter
   const getActiveDays = (): string[] => {
+    // If Director wants to view only occupied slots or a specific student, show all relevant days
+    if (availabilityFilter === 'booked_only' || selectedStudentFilter !== 'all') {
+      return ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+    }
     switch (studyRhythm) {
       case 'mon_wed':
         return ['Lunes', 'Miércoles'];
@@ -152,7 +162,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
 
   const activeDays = getActiveDays();
 
-  // Filter slots according to class format (individual/grupal) and target audience (adults/kids)
+  // Filter slots according to availability, student, teacher, class format, and target audience
   const filterDaySlots = (rawDaySlots: ScheduleSlot[]) => {
     return rawDaySlots.filter(slot => {
       const startH = parseInt(slot.startTime.split(':')[0], 10);
@@ -160,7 +170,30 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
       const isNightGroup = startH >= 20 && startH < 22; // 20:00 - 22:00
       const isSchoolAfternoon = startH >= 15 && startH < 17; // 15:00 - 17:00
 
-      // 1. Format Filter: Individual vs Group
+      // 1. Availability Filter (Todos vs Solo Ocupados vs Solo Libres)
+      if (availabilityFilter === 'booked_only' && slot.status !== 'booked') {
+        return false;
+      }
+      if (availabilityFilter === 'available_only' && slot.status === 'booked') {
+        return false;
+      }
+
+      // 2. Student Filter (Highlight/isolate specific student)
+      if (selectedStudentFilter !== 'all') {
+        if (slot.status !== 'booked') return false;
+        const matchesId = slot.studentId === selectedStudentFilter;
+        const matchesName = slot.studentName?.toLowerCase().includes(selectedStudentFilter.toLowerCase());
+        if (!matchesId && !matchesName) return false;
+      }
+
+      // 3. Teacher Filter
+      if (selectedTeacherFilter !== 'all') {
+        if (!slot.teacherName?.toLowerCase().includes(selectedTeacherFilter.toLowerCase())) {
+          return false;
+        }
+      }
+
+      // 4. Format Filter: Individual vs Group
       if (classFormatFilter === 'individual') {
         if (isMorningEarly || isNightGroup || slot.slotType === 'group') {
           return false;
@@ -171,7 +204,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
         }
       }
 
-      // 2. Audience Filter: Adults vs Kids
+      // 5. Audience Filter: Adults vs Kids
       if (targetAudienceFilter === 'adults') {
         if (isSchoolAfternoon) {
           return false;
@@ -329,6 +362,218 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
           <button onClick={() => setActionMessage(null)} className="text-slate-400 hover:text-white">✕</button>
         </div>
       )}
+
+      {/* 2.1 DIRECTOR / HEAD TEACHER OPTIMIZATION BAR */}
+      {activeRole === 'teacher' && (
+        <div className="bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 rounded-3xl p-5 text-white border border-slate-800 shadow-xl space-y-4">
+          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 pb-3 border-b border-white/10">
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-[10px] font-black uppercase tracking-wider bg-amber-400 text-slate-950 px-2.5 py-0.5 rounded-full font-bold">
+                  👑 Control Maestro de Rectoría
+                </span>
+                <span className="text-xs font-bold text-amber-300">Directora Waky (Head Teacher)</span>
+                <span className="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 px-2 py-0.2 rounded-full font-bold">
+                  Docente Activa Exclusiva
+                </span>
+              </div>
+              <h3 className="text-base sm:text-lg font-black text-white mt-1">
+                Optimización de Horarios & Alumnas
+              </h3>
+              <p className="text-xs text-slate-300">
+                Selecciona si deseas ver solo los horarios ocupados de tus alumnas, solo los turnos libres para inscripción, o la vista completa.
+              </p>
+            </div>
+
+            {/* Quick Metrics */}
+            <div className="flex items-center gap-2 text-xs flex-wrap">
+              <span className="bg-white/10 px-3 py-1.5 rounded-xl border border-white/15">
+                <strong className="text-rose-400 font-black">{slots.filter(s => s.status === 'booked').length}</strong> bloques ocupados
+              </span>
+              <span className="bg-white/10 px-3 py-1.5 rounded-xl border border-white/15">
+                <strong className="text-emerald-400 font-black">{slots.filter(s => s.status === 'available').length}</strong> bloques libres
+              </span>
+            </div>
+          </div>
+
+          {/* Filter Row */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+            {/* Filter 1: Ocupados vs Libres vs Ambos */}
+            <div className="bg-white/10 p-3 rounded-2xl border border-white/15 space-y-2">
+              <span className="text-slate-300 font-bold block">Vista de Disponibilidad:</span>
+              <div className="grid grid-cols-3 gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => setAvailabilityFilter('all')}
+                  className={`py-2 px-1 rounded-xl text-center font-bold transition-all text-[11px] ${
+                    availabilityFilter === 'all'
+                      ? 'bg-white text-slate-950 font-black shadow-md'
+                      : 'bg-white/10 text-slate-300 hover:text-white'
+                  }`}
+                >
+                  👁️ Ambos
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAvailabilityFilter('booked_only');
+                    setStudyRhythm('all');
+                  }}
+                  className={`py-2 px-1 rounded-xl text-center font-bold transition-all text-[11px] ${
+                    availabilityFilter === 'booked_only'
+                      ? 'bg-rose-500 text-white font-black shadow-md'
+                      : 'bg-white/10 text-slate-300 hover:text-white'
+                  }`}
+                  title="Muestra únicamente los bloques que tienen alumnas asignadas"
+                >
+                  🔴 Solo Ocupados
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAvailabilityFilter('available_only')}
+                  className={`py-2 px-1 rounded-xl text-center font-bold transition-all text-[11px] ${
+                    availabilityFilter === 'available_only'
+                      ? 'bg-emerald-500 text-slate-950 font-black shadow-md'
+                      : 'bg-white/10 text-slate-300 hover:text-white'
+                  }`}
+                  title="Muestra solo los bloques libres para matricular"
+                >
+                  🟢 Solo Libres
+                </button>
+              </div>
+            </div>
+
+            {/* Filter 2: Filtrar por Alumna Específica */}
+            <div className="bg-white/10 p-3 rounded-2xl border border-white/15 space-y-2">
+              <span className="text-slate-300 font-bold block">Filtrar por Alumna:</span>
+              <select
+                value={selectedStudentFilter}
+                onChange={(e) => {
+                  setSelectedStudentFilter(e.target.value);
+                  if (e.target.value !== 'all') {
+                    setStudyRhythm('all');
+                  }
+                }}
+                className="w-full bg-slate-800 text-white border border-slate-700 rounded-xl px-3 py-2 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-amber-400"
+              >
+                <option value="all">Todas las Alumnas ({slots.filter(s => s.status === 'booked').length} turnos ocupados)</option>
+                {Array.from(new Set(slots.filter(s => s.status === 'booked' && s.studentName).map(s => s.studentName))).map(name => (
+                  <option key={name} value={name!}>{name}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Filter 3: Profesor */}
+            <div className="bg-white/10 p-3 rounded-2xl border border-white/15 space-y-2">
+              <span className="text-slate-300 font-bold block">Profesor Asignado:</span>
+              <div className="bg-slate-800 text-amber-300 border border-slate-700 rounded-xl px-3 py-2 text-xs font-bold flex items-center justify-between">
+                <span>Teacher Cokitö / Head Teacher</span>
+                <span className="text-[10px] bg-amber-400/20 px-2 py-0.5 rounded-full text-amber-300 font-bold">Docente Única</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Quick Access Student Chips */}
+          <div className="pt-2 border-t border-white/10 flex items-center gap-1.5 flex-wrap text-xs">
+            <span className="text-slate-400 text-[11px] font-bold mr-1">Tus Alumnas Directas:</span>
+            {[
+              { name: 'Carla Andreina Lira', tag: 'Lun/Mié 5-6 pm' },
+              { name: 'Xiomara Muñoz', tag: 'Mar/Jue 4-5 pm' },
+              { name: 'Vaneska Lopez', tag: 'Lun/Mié 9-10 pm' },
+              { name: 'Ian Gabriel Mendoza', tag: 'Lun/Mié 10-12 m' },
+              { name: 'Génesis Puello', tag: 'Lun/Mié 8-9 pm' },
+              { name: 'María Guadalupe Peña Montilla', tag: 'Mar/Jue 6-7 pm' }
+            ].map(alumna => {
+              const isSelected = selectedStudentFilter.toLowerCase() === alumna.name.toLowerCase() || selectedStudentFilter.toLowerCase().includes(alumna.name.split(' ')[0].toLowerCase());
+              return (
+                <button
+                  key={alumna.name}
+                  type="button"
+                  onClick={() => {
+                    if (isSelected) {
+                      setSelectedStudentFilter('all');
+                    } else {
+                      setSelectedStudentFilter(alumna.name);
+                      setStudyRhythm('all');
+                    }
+                  }}
+                  className={`px-2.5 py-1 rounded-xl text-[11px] font-bold transition-all flex items-center gap-1 border ${
+                    isSelected
+                      ? 'bg-amber-400 text-slate-950 border-amber-300 shadow-md font-black scale-105'
+                      : 'bg-white/10 hover:bg-white/20 text-slate-200 border-white/10'
+                  }`}
+                >
+                  <span>{alumna.name.split(' ')[0]} {alumna.name.split(' ')[1] || ''}</span>
+                  <span className={`text-[9px] px-1.5 py-0.2 rounded-md ${isSelected ? 'bg-slate-950/20 text-slate-950' : 'bg-black/30 text-amber-300'}`}>
+                    {alumna.tag}
+                  </span>
+                </button>
+              );
+            })}
+            {selectedStudentFilter !== 'all' && (
+              <button
+                type="button"
+                onClick={() => setSelectedStudentFilter('all')}
+                className="text-[11px] text-rose-300 hover:text-white underline ml-2 font-bold"
+              >
+                Limpiar filtro
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* 2.2 STUDENT OFFICIAL ASSIGNED SCHEDULE CARD */}
+      {effectiveStudent && activeRole === 'student' && (() => {
+        const studentSlots = slots.filter(s => s.status === 'booked' && (s.studentId === effectiveStudent.id || (s.studentName && s.studentName.toLowerCase().includes(effectiveStudent.name.toLowerCase()))));
+        if (studentSlots.length === 0 && (!effectiveStudent.assignedSlots || effectiveStudent.assignedSlots.length === 0)) return null;
+
+        return (
+          <div className="bg-gradient-to-r from-teal-900 via-emerald-950 to-slate-900 rounded-3xl p-5 text-white border-2 border-emerald-400/40 shadow-xl space-y-3">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-[11px] font-black uppercase tracking-wider bg-emerald-400 text-slate-950 px-3 py-0.5 rounded-full shadow-xs">
+                  ⭐ Tu Horario Asignado Oficial
+                </span>
+                <span className="text-xs text-emerald-200 font-bold">
+                  {effectiveStudent.name} {effectiveStudent.lastName || ''}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => handleInitiateBooking()}
+                className="text-[11px] font-bold text-amber-300 hover:text-white underline flex items-center gap-1"
+              >
+                <span>Solicitar cambio de horario</span>
+                <ChevronRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 pt-1">
+              {studentSlots.map(slot => (
+                <div key={slot.id} className="bg-white/10 rounded-2xl p-3 border border-white/15 flex items-center justify-between gap-2">
+                  <div>
+                    <strong className="text-sm font-black text-amber-300 block">{slot.day}</strong>
+                    <span className="text-xs text-slate-200">{slot.startTime} a {slot.endTime}</span>
+                    <span className="text-[10px] text-emerald-300 block font-medium">Teacher Cokitö (Head Teacher)</span>
+                  </div>
+                  {slot.meetLink && (
+                    <a
+                      href={slot.meetLink}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black rounded-xl text-[11px] shadow-sm flex items-center gap-1 shrink-0"
+                    >
+                      <Video className="w-3.5 h-3.5" />
+                      <span>Meet</span>
+                    </a>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
 
       {/* 2.5 STUDENT'S BOLSA DE HORAS PREPAGADAS & CLASES CONFIRMADAS BANNER */}
       {effectiveStudent && (

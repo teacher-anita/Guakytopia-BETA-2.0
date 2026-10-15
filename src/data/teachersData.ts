@@ -3,8 +3,8 @@ import { Teacher } from '../types';
 export const INITIAL_TEACHERS: Teacher[] = [
   {
     id: 'teacher_cokito',
-    name: 'Waky',
-    lastName: 'Sandoval (Teacher Waky / Head Teacher)',
+    name: 'Teacher Cokitö',
+    lastName: 'Sandoval (Head Teacher)',
     email: 'anateresa.csb@gmail.com',
     phone: '+58 414 1234567',
     avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&auto=format&fit=crop&q=80',

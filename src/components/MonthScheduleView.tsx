@@ -39,16 +39,39 @@ export const MonthScheduleView: React.FC<MonthScheduleViewProps> = ({
 }) => {
   const [selectedDay, setSelectedDay] = useState<CalendarDay | null>(null);
 
-  const isOctober = targetMonth === 'current';
-  const monthTitle = isOctober ? 'Octubre 2026' : 'Noviembre 2026';
-  const year = 2026;
-  const monthNum = isOctober ? 10 : 11;
-  const daysInMonth = isOctober ? 31 : 30;
+  const MONTH_NAMES = [
+    'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+    'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+  ];
 
-  // Day of week of the 1st of the month:
-  // 2026-10-01 is Thursday (4th day of week in Mon-based: 1=Mon, 2=Tue, 3=Wed, 4=Thu, 5=Fri, 6=Sat, 7=Sun)
-  // 2026-11-01 is Sunday (7th day of week in Mon-based)
-  const firstDayOfWeek = isOctober ? 4 : 7; // 1 = Monday ... 7 = Sunday
+  const [activeMonthIndex, setActiveMonthIndex] = useState<number>(targetMonth === 'next' ? 10 : 9);
+  const [activeYear, setActiveYear] = useState<number>(2026);
+
+  const monthTitle = `${MONTH_NAMES[activeMonthIndex]} ${activeYear}`;
+  const isOctober = activeMonthIndex === 9 && activeYear === 2026;
+  const daysInMonth = new Date(activeYear, activeMonthIndex + 1, 0).getDate();
+  const firstDayDate = new Date(activeYear, activeMonthIndex, 1, 12, 0, 0);
+  const firstDayOfWeek = (firstDayDate.getDay() + 6) % 7 + 1; // 1 = Lunes ... 7 = Domingo
+
+  const handlePrevMonth = () => {
+    if (activeMonthIndex === 0) {
+      setActiveMonthIndex(11);
+      setActiveYear(y => y - 1);
+    } else {
+      setActiveMonthIndex(m => m - 1);
+    }
+    setSelectedDay(null);
+  };
+
+  const handleNextMonth = () => {
+    if (activeMonthIndex === 11) {
+      setActiveMonthIndex(0);
+      setActiveYear(y => y + 1);
+    } else {
+      setActiveMonthIndex(m => m + 1);
+    }
+    setSelectedDay(null);
+  };
 
   const studentSessions: BookedSession[] = student?.bookedSessions || [];
   const studentSlots = student?.assignedSlots || [];
@@ -66,11 +89,14 @@ export const MonthScheduleView: React.FC<MonthScheduleViewProps> = ({
 
   // 1. Leading blank days
   const leadingBlanks = firstDayOfWeek - 1;
+  const prevMonthDate = new Date(activeYear, activeMonthIndex, 0);
+  const prevMonthTotalDays = prevMonthDate.getDate();
+  const prevMonthNum = activeMonthIndex === 0 ? 12 : activeMonthIndex;
+  const prevMonthYear = activeMonthIndex === 0 ? activeYear - 1 : activeYear;
+
   for (let i = 0; i < leadingBlanks; i++) {
-    const prevMonthDays = isOctober ? 30 : 31;
-    const prevDayNum = prevMonthDays - leadingBlanks + i + 1;
-    const prevMonthNum = isOctober ? 9 : 10;
-    const dateStr = `${year}-${String(prevMonthNum).padStart(2, '0')}-${String(prevDayNum).padStart(2, '0')}`;
+    const prevDayNum = prevMonthTotalDays - leadingBlanks + i + 1;
+    const dateStr = `${prevMonthYear}-${String(prevMonthNum).padStart(2, '0')}-${String(prevDayNum).padStart(2, '0')}`;
     calendarDays.push({
       dayNumber: prevDayNum,
       dateStr,
@@ -85,14 +111,16 @@ export const MonthScheduleView: React.FC<MonthScheduleViewProps> = ({
 
   // 2. Real month days
   for (let day = 1; day <= daysInMonth; day++) {
-    const dateStr = `${year}-${String(monthNum).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    const mm = String(activeMonthIndex + 1).padStart(2, '0');
+    const dd = String(day).padStart(2, '0');
+    const dateStr = `${activeYear}-${mm}-${dd}`;
     const dateObj = new Date(`${dateStr}T12:00:00`);
     const dayOfWeek = (dateObj.getDay() + 6) % 7; // Mon=0, Tue=1, ..., Sun=6
     const daysEs = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
     const dayName = daysEs[dayOfWeek];
 
-    const isToday = isOctober && day === 11;
-    const isCycleExpiry = !isOctober && day === 11; // 11 de Noviembre
+    const isToday = activeYear === 2026 && activeMonthIndex === 9 && day === 15;
+    const isCycleExpiry = day === 11;
 
     // Check sessions booked for this specific date
     const daySessions = studentSessions.filter(s => s.date === dateStr);
@@ -117,8 +145,9 @@ export const MonthScheduleView: React.FC<MonthScheduleViewProps> = ({
   const totalCells = Math.ceil(calendarDays.length / 7) * 7;
   const trailingBlanks = totalCells - calendarDays.length;
   for (let i = 1; i <= trailingBlanks; i++) {
-    const nextMonthNum = isOctober ? 11 : 12;
-    const dateStr = `${year}-${String(nextMonthNum).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+    const nextMonthNum = activeMonthIndex === 11 ? 1 : activeMonthIndex + 2;
+    const nextMonthYear = activeMonthIndex === 11 ? activeYear + 1 : activeYear;
+    const dateStr = `${nextMonthYear}-${String(nextMonthNum).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
     calendarDays.push({
       dayNumber: i,
       dateStr,
@@ -132,7 +161,8 @@ export const MonthScheduleView: React.FC<MonthScheduleViewProps> = ({
   }
 
   // Monthly stats
-  const totalMonthSessions = studentSessions.filter(s => s.date.startsWith(`${year}-${String(monthNum).padStart(2, '0')}`));
+  const activeMonthPrefix = `${activeYear}-${String(activeMonthIndex + 1).padStart(2, '0')}`;
+  const totalMonthSessions = studentSessions.filter(s => s.date.startsWith(activeMonthPrefix));
   const totalMonthHours = totalMonthSessions.reduce((acc, s) => acc + (s.hours || 1), 0);
 
   return (
@@ -150,14 +180,32 @@ export const MonthScheduleView: React.FC<MonthScheduleViewProps> = ({
             </span>
           </div>
 
-          <h3 className="text-xl sm:text-2xl font-black text-white mt-1">
-            {monthTitle} • Calendario de Sesiones
-          </h3>
+          <div className="flex items-center gap-2 flex-wrap mt-1">
+            <h3 className="text-xl sm:text-2xl font-black text-white">
+              {monthTitle} • Calendario de Sesiones
+            </h3>
+            <div className="flex items-center gap-1 ml-0 sm:ml-2">
+              <button
+                type="button"
+                onClick={handlePrevMonth}
+                className="p-1.5 bg-white/10 hover:bg-white/20 rounded-lg text-white transition-colors"
+                title="Mes Anterior"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                onClick={handleNextMonth}
+                className="p-1.5 bg-white/10 hover:bg-white/20 rounded-lg text-white transition-colors"
+                title="Mes Siguiente"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
 
-          <p className="text-xs text-slate-300 max-w-xl mt-0.5">
-            {isOctober 
-              ? 'Tus clases reservadas y prepagadas aparecen programadas en cada fecha. Las horas prepagadas son válidas durante este mes calendario.'
-              : 'Visualiza la proyección para el próximo mes. Puedes apartar con anticipación tus turnos para asegurar la disponibilidad con Teacher Cokitö.'}
+          <p className="text-xs text-slate-300 max-w-xl mt-1">
+            Visualiza las clases reservadas y prepagadas del ciclo con fecha y mes exactos. Puedes avanzar a los meses siguientes para proyectar tu agenda con Teacher Cokitö.
           </p>
         </div>
 

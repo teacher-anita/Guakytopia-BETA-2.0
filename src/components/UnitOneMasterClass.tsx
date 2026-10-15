@@ -519,7 +519,7 @@ export const UnitOneMasterClass: React.FC<UnitOneMasterClassProps> = ({
               </span>
             </div>
             <p className="text-xs text-slate-900 font-medium max-w-2xl leading-snug">
-              {isSpanglish ? <>Download your PDF materials para seguir Teacher Waky, listen to the audio tracks, and complete your practice: <strong>Super Goal 1 (pp. 2–9)</strong> and <strong>Workbook (pp. 89–92)</strong>.</> : <>Download your PDFs before you begin: <strong>Super Goal 1 (pp. 2–9)</strong> and the <strong>Workbook (pp. 89–92)</strong>. Use them to follow Teacher Waky’s explanations, listen to the audio, and complete your practice.</>}
+              {isSpanglish ? <>Download your PDF materials para seguir Teacher Cokitö, listen to the audio tracks, and complete your practice: <strong>Super Goal 1 (pp. 2–9)</strong> and <strong>Workbook (pp. 89–92)</strong>.</> : <>Download your PDFs before you begin: <strong>Super Goal 1 (pp. 2–9)</strong> and the <strong>Workbook (pp. 89–92)</strong>. Use them to follow Teacher Cokitö’s explanations, listen to the audio, and complete your practice.</>}
             </p>
           </div>
         </div>
@@ -812,7 +812,7 @@ export const UnitOneMasterClass: React.FC<UnitOneMasterClassProps> = ({
                 3-Session Curricular Structure
               </span>
               <h3 className="text-xl font-black text-slate-900">
-                Live Google Meet Classes with Teacher Waky
+                Live Google Meet Classes with Teacher Cokitö
               </h3>
               <p className="text-xs text-slate-500 mt-0.5">
                 To master Unit 1 effectively, each student participates in three 60-minute interactive live sessions on Google Meet.

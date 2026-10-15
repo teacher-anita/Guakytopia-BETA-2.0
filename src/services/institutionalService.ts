@@ -137,7 +137,7 @@ export function buildStudentWelcomeEmailContent(
 
   const mentorshipDescription = student.isExclusiveTeacher && student.teacherName
     ? `Mentor Dedicado Exclusivo: ${student.teacherName} (Tus sesiones y seguimiento se coordinan directamente con tu teacher)`
-    : `Acceso Rotativo a La Manada (Güakytopia's Flock): Puedes interactuar y tomar clases con los mentores certificados en tu nivel (${options.flockMentorsSummary || 'Teacher Waky, Teacher David'}), manteniendo tu bitácora de progreso 100% unificada.`;
+    : `Acceso Rotativo a La Manada (Güakytopia's Flock): Puedes interactuar y tomar clases con los mentores certificados en tu nivel (${options.flockMentorsSummary || 'Teacher Cokitö, Teacher David'}), manteniendo tu bitácora de progreso 100% unificada.`;
 
   const subject = `🎉 Welcome to Güakytopia Campus! • Tu Carnet Digital y Acceso Oficial`;
 

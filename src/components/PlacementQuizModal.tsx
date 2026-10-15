@@ -240,7 +240,7 @@ export const PlacementQuizModal: React.FC<PlacementQuizModalProps> = ({
                 ¡Excelente esfuerzo, {studentName || 'Aspirante'}!
               </h3>
               <p className="text-xs sm:text-sm text-slate-500 mt-1 max-w-md mx-auto">
-                Has completado las 25 preguntas de la prueba diagnóstica oficial de Teacher Cokito.
+                Has completado las {completedResult.total} preguntas de la prueba diagnóstica oficial de Directora Waky (Teacher Cokitö).
               </p>
             </div>
 

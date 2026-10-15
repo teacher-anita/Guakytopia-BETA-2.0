@@ -197,22 +197,20 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({
                 </div>
               </div>
 
-              {/* Placement Test Result if exists */}
-              {student?.placementTestScore !== undefined && (
-                <div className="p-3.5 bg-blue-50/70 border border-blue-200/80 rounded-2xl text-xs space-y-1">
-                  <div className="flex justify-between items-center font-bold text-blue-900">
-                    <span>Prueba Diagnóstica Cokitö:</span>
-                    <span className="px-2 py-0.5 bg-blue-600 text-white rounded-lg text-[11px]">
-                      {student.placementTestScore} / 25 pts
-                    </span>
-                  </div>
-                  {student.placementTestDiagnosis && (
-                    <p className="text-[11px] text-blue-800 italic pt-1 leading-relaxed">
-                      "{student.placementTestDiagnosis}"
-                    </p>
-                  )}
+              {/* Placement Test Result */}
+              <div className="p-3.5 bg-blue-50/70 border border-blue-200/80 rounded-2xl text-xs space-y-1">
+                <div className="flex justify-between items-center font-bold text-blue-900">
+                  <span>Prueba Diagnóstica Oficial:</span>
+                  <span className={`px-2 py-0.5 rounded-lg text-[11px] font-bold ${student?.placementTestScore ? 'bg-blue-600 text-white' : 'bg-amber-100 text-amber-900 border border-amber-300'}`}>
+                    {student?.placementTestScore ? `${student.placementTestScore} / 50 pts` : '0 / 50 pts (Pendiente)'}
+                  </span>
                 </div>
-              )}
+                {student?.placementTestDiagnosis && (
+                  <p className="text-[11px] text-blue-800 italic pt-1 leading-relaxed">
+                    "{student.placementTestDiagnosis}"
+                  </p>
+                )}
+              </div>
 
               {/* Student Actions */}
               <div className="space-y-2 pt-1">
@@ -283,7 +281,7 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({
                   className="w-full py-2.5 px-4 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 transition-colors flex items-center justify-center gap-2"
                 >
                   <FileText className="w-4 h-4" />
-                  <span>Repetir Prueba de Nivel (Placement Test)</span>
+                  <span>{student?.placementTestScore ? 'Repetir Prueba de Nivel (50 preguntas)' : 'Hacer Prueba de Nivel Ahora (50 preguntas)'}</span>
                 </button>
               </div>
 

@@ -91,6 +91,11 @@ import {
   updateClassRequestStatus, 
   StudentClassRequest 
 } from '../services/notificationService';
+import { 
+  formatSlotLabel, 
+  generateMonthClasses, 
+  convertToBookedSessions 
+} from '../utils/scheduleFormatter';
 
 interface PrincipalDashboardProps {
   students: Student[];
@@ -317,7 +322,7 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
   const [assignLevelId, setAssignLevelId] = useState<string>('level_1');
   const [assignUnit, setAssignUnit] = useState<number>(1);
   const [assignPhoneNotes, setAssignPhoneNotes] = useState<string>('');
-  const [assignMeetLink, setAssignMeetLink] = useState<string>('https://meet.google.com/cok-waky-cls');
+  const [assignMeetLink, setAssignMeetLink] = useState<string>('https://meet.google.com/eng-cokito-room');
   const [assignMessage, setAssignMessage] = useState<string>('');
   const [assignedNotificationSummary, setAssignedNotificationSummary] = useState<{
     studentName: string;
@@ -328,10 +333,19 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
     whatsappUrl: string;
   } | null>(null);
 
+  // Multi-Month & Prepaid assignment configuration
+  const [assignSchedulingMode, setAssignSchedulingMode] = useState<'monthly_auto' | 'prepaid_picker' | 'recurring'>('monthly_auto');
+  const [assignSelectedMonth, setAssignSelectedMonth] = useState<number>(9); // 9 = Octubre, 10 = Noviembre, etc.
+  const [assignSelectedYear, setAssignSelectedYear] = useState<number>(2026);
+  const [prepaidDateInput, setPrepaidDateInput] = useState<string>('2026-10-20');
+  const [prepaidTimeInput, setPrepaidTimeInput] = useState<string>('05:00 PM');
+  const [generatedBookedSessions, setGeneratedBookedSessions] = useState<any[]>([]);
+
   const handleOpenAssignClasses = (student: Student, preferredSchedule?: string, preferredTeacher?: string) => {
     setAssigningClassesStudent(student);
     setAssignLevelId(student.levelId || 'level_1');
     setAssignUnit(student.currentUnit || 1);
+    setGeneratedBookedSessions([]);
     
     // Auto select teacher
     if (preferredTeacher) {
@@ -345,30 +359,35 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
 
     // Directora phone call & schedule configuration logic
     if (student.assignedSlots && student.assignedSlots.length > 0) {
-      setAssignSlotsList(student.assignedSlots);
-      setCustomScheduleText(student.assignedSlots.join(' • '));
+      const formatted = student.assignedSlots.map(s => formatSlotLabel(s));
+      setAssignSlotsList(formatted);
+      setCustomScheduleText(formatted.join(' • '));
       const firstSlot = student.assignedSlots[0];
       if (firstSlot.toLowerCase().includes('sábado') || firstSlot.toLowerCase().includes('sabado')) {
         setAssignDays(['Sábado']);
         setAssignStartTime('10:00 AM');
         setAssignEndTime('12:00 PM');
         setAssignFrequency('Todos los Sábados');
+      } else if (firstSlot.toLowerCase().includes('lun') || firstSlot.toLowerCase().includes('mie')) {
+        setAssignDays(['Lunes', 'Miércoles']);
+        setAssignStartTime('05:00 PM');
+        setAssignEndTime('06:00 PM');
+        setAssignFrequency('2 veces por semana');
       }
     } else {
-      // Default to Saturdays 10:00 am - 12:00 pm (especially for Genesis and weekend intensives)
-      const defaultSlot = 'Sábados de 10:00 am a 12:00 pm (Todos los Sábados)';
-      setAssignDays(['Sábado']);
-      setAssignStartTime('10:00 AM');
-      setAssignEndTime('12:00 PM');
-      setAssignFrequency('Todos los Sábados');
+      const defaultSlot = 'Lunes y Miércoles de 05:00 PM a 06:00 PM (2 veces por semana)';
+      setAssignDays(['Lunes', 'Miércoles']);
+      setAssignStartTime('05:00 PM');
+      setAssignEndTime('06:00 PM');
+      setAssignFrequency('2 veces por semana');
       setAssignSlotsList([defaultSlot]);
       setCustomScheduleText(defaultSlot);
-      setAssignPhoneNotes('Acordado directamente por llamada telefónica: clases fijas todos los sábados de 10:00 am a 12:00 pm.');
+      setAssignPhoneNotes('Horario acordado directamente con Teacher Cokitö.');
     }
 
-    setAssignMeetLink('https://meet.google.com/cok-waky-cls');
+    setAssignMeetLink('https://meet.google.com/eng-cokito-room');
     setAssignMessage(
-      `¡Hola ${student.name}! Directora Waky ha configurado oficialmente tus clases de inglés en Güakytopia. Tus sesiones quedan agendadas todos los sábados de 10:00 am a 12:00 pm con tu Teacher.`
+      `¡Hola ${student.name}! Teacher Cokitö ha configurado oficialmente tus clases de inglés en Güakytopia. Horario oficial acordado: ${student.assignedSlots?.[0] ? formatSlotLabel(student.assignedSlots[0]) : 'Próxima clase'}.`
     );
   };
 
@@ -416,6 +435,58 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
     setCustomScheduleText(updated.length > 0 ? updated.join(' • ') : '');
   };
 
+  const handleGenerateFullMonthClasses = () => {
+    const generated = generateMonthClasses(
+      assignSelectedYear,
+      assignSelectedMonth,
+      assignDays,
+      assignStartTime,
+      assignEndTime
+    );
+    const slotLabels = generated.map(g => g.slotDisplay);
+    setAssignSlotsList(slotLabels);
+    setCustomScheduleText(slotLabels.join(' • '));
+    const teacherName = teachers.find(t => t.id === assignTeacherId)?.name || 'Teacher Cokitö';
+    const sessions = convertToBookedSessions(generated, teacherName, assignTeacherId);
+    setGeneratedBookedSessions(sessions);
+  };
+
+  const handleAddPrepaidDatedClass = () => {
+    if (!prepaidDateInput) return;
+    const dateObj = new Date(`${prepaidDateInput}T12:00:00`);
+    const dayNames = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+    const monthNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+    const dayName = dayNames[dateObj.getDay()];
+    const monthShort = monthNames[dateObj.getMonth()];
+    const dayNum = String(dateObj.getDate()).padStart(2, '0');
+    const slotLabel = `${dayName} ${dayNum} ${monthShort} • ${prepaidTimeInput} (Prepago)`;
+    
+    if (!assignSlotsList.includes(slotLabel)) {
+      const updated = [...assignSlotsList, slotLabel];
+      setAssignSlotsList(updated);
+      setCustomScheduleText(updated.join(' • '));
+
+      const newPrepaidSession = {
+        id: `prepaid_${prepaidDateInput}_${Date.now()}`,
+        date: prepaidDateInput,
+        day: dayName,
+        startTime: prepaidTimeInput,
+        endTime: prepaidTimeInput,
+        hours: 1,
+        teacherName: teachers.find(t => t.id === assignTeacherId)?.name || 'Teacher Cokitö',
+        teacherId: assignTeacherId,
+        title: `Clase Prepagada • ${dayName} ${dayNum} ${monthShort}`,
+        purpose: 'lesson' as const,
+        purposeLabel: '🎟️ Clase Prepagada Puntual',
+        isPrepaid: true,
+        status: 'confirmed' as const,
+        meetLink: assignMeetLink,
+        notes: `Sesión puntual prepagada seleccionada para ${prepaidDateInput}`
+      };
+      setGeneratedBookedSessions(prev => [...prev, newPrepaidSession]);
+    }
+  };
+
   const handleConfirmClassAssignment = (e: React.FormEvent) => {
     e.preventDefault();
     if (!assigningClassesStudent) return;
@@ -432,10 +503,13 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
       teacherId: teacherObj.id,
       teacherName: teacherObj.name,
       assignedSlots: finalSlots,
+      bookedSessions: generatedBookedSessions.length > 0
+        ? [...(assigningClassesStudent.bookedSessions || []).filter(b => !generatedBookedSessions.some(g => g.date === b.date && g.startTime === b.startTime)), ...generatedBookedSessions]
+        : assigningClassesStudent.bookedSessions,
       levelId: assignLevelId,
       currentUnit: assignUnit,
       status: 'enrolled',
-      notes: `${assigningClassesStudent.notes || ''} | ${assignPhoneNotes || 'Acuerdo de Rectoría'} (${teacherObj.name} • ${finalSlots.join(', ')}) el ${new Date().toLocaleDateString('es-VE')}`
+      notes: `${assigningClassesStudent.notes || ''} | ${assignPhoneNotes || 'Acuerdo de Rectoría'} (${teacherObj.name} • ${finalSlots.slice(0, 3).join(', ')}...) el ${new Date().toLocaleDateString('es-VE')}`
     };
 
     onUpdateStudent(updatedStudent);
@@ -1501,13 +1575,74 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
               </p>
             </div>
 
-            <button
-              onClick={() => setIsNewStudentModalOpen(true)}
-              className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5 transition-colors"
-            >
-              <UserPlus className="w-4 h-4" />
-              <span>Matricular Nuevo Alumno</span>
-            </button>
+            <div className="flex items-center gap-2 flex-wrap">
+              <button
+                type="button"
+                onClick={() => {
+                  if (students.length === 0) {
+                    alert('No hay alumnos registrados actualmente para eliminar.');
+                    return;
+                  }
+                  const studentOptions = students.map((s, idx) => `${idx + 1}. ${s.name} ${s.lastName || ''} (${s.email})`).join('\n');
+                  const answer = prompt(`¿Qué perfil de alumno deseas eliminar definitivamente?\n\nEscribe el número correspondiente:\n\n${studentOptions}\n\n(O escribe Cancelar)`);
+                  if (!answer) return;
+                  const num = parseInt(answer.trim(), 10);
+                  if (!isNaN(num) && num >= 1 && num <= students.length) {
+                    const target = students[num - 1];
+                    if (confirm(`¿Confirmas eliminar definitivamente el perfil de ${target.name} ${target.lastName || ''} (${target.email})? Esta acción borrará su perfil en la nube y liberará sus horarios.`)) {
+                      onDeleteStudent(target.id);
+                      alert(`El perfil de ${target.name} ha sido eliminado definitivamente.`);
+                    }
+                  } else {
+                    alert('Número inválido o selección cancelada.');
+                  }
+                }}
+                className="px-3.5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5 transition-colors"
+                title="Eliminar cualquier perfil de alumno definitivamente"
+              >
+                <Trash2 className="w-4 h-4 text-white" />
+                <span>Eliminar Alumno</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  const seen = new Map<string, string>();
+                  const duplicateIds: string[] = [];
+                  students.forEach(s => {
+                    const key = `${s.name.trim().toLowerCase()}_${(s.lastName || '').trim().toLowerCase()}`;
+                    if (seen.has(key)) {
+                      duplicateIds.push(s.id);
+                    } else {
+                      seen.set(key, s.id);
+                    }
+                  });
+
+                  if (duplicateIds.length === 0) {
+                    alert('¡Excelente! No se detectaron perfiles duplicados en la lista de alumnos.');
+                    return;
+                  }
+
+                  if (confirm(`Se detectaron ${duplicateIds.length} perfiles duplicados. ¿Deseas depurarlos y conservar únicamente un perfil por alumno?`)) {
+                    duplicateIds.forEach(id => onDeleteStudent(id));
+                    alert(`Se han depurado ${duplicateIds.length} perfiles duplicados correctamente.`);
+                  }
+                }}
+                className="px-3.5 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-300 rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5 transition-colors"
+                title="Detectar y eliminar perfiles duplicados automáticamente"
+              >
+                <Trash2 className="w-4 h-4 text-rose-600" />
+                <span>Depurar Duplicados</span>
+              </button>
+
+              <button
+                onClick={() => setIsNewStudentModalOpen(true)}
+                className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5 transition-colors"
+              >
+                <UserPlus className="w-4 h-4" />
+                <span>Matricular Nuevo Alumno</span>
+              </button>
+            </div>
           </div>
 
           {/* Enhanced Search, View Mode & Filters Control Center */}
@@ -1873,7 +2008,7 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
                               <div className="text-xs space-y-0.5">
                                 <div className="font-bold text-slate-800 text-[11px] flex items-center gap-1">
                                   <Calendar className="w-3 h-3 text-indigo-600 shrink-0" />
-                                  <span className="truncate max-w-[170px]">{student.assignedSlots[0]}</span>
+                                  <span className="truncate max-w-[170px]" title={formatSlotLabel(student.assignedSlots[0])}>{formatSlotLabel(student.assignedSlots[0])}</span>
                                 </div>
                                 <div className="text-[10px] text-slate-400">
                                   {student.teacherName || 'Teacher Cokitö'}
@@ -1924,6 +2059,22 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
                                 title={hasClasses ? 'Modificar clases y horarios' : 'Asignar horario ahora'}
                               >
                                 <Calendar className="w-3.5 h-3.5" />
+                              </button>
+
+                              {/* Direct Delete Student Button */}
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (confirm(`¿Eliminar definitivamente el perfil de ${student.name} ${student.lastName || ''} del sistema? Esta acción no se puede deshacer.`)) {
+                                    onDeleteStudent(student.id);
+                                  }
+                                }}
+                                className="px-2 py-1.5 rounded-xl border border-rose-300 bg-rose-50 hover:bg-rose-600 text-rose-700 hover:text-white transition-colors flex items-center gap-1 text-xs font-bold shadow-2xs"
+                                title="Eliminar Alumno Definitivamente"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                                <span className="hidden md:inline">Eliminar</span>
                               </button>
 
                               {/* Secondary Actions Dropdown (•••) */}
@@ -2138,6 +2289,21 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
                           title="Editar perfil"
                         >
                           <Edit3 className="w-3.5 h-3.5 text-slate-600" />
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (confirm(`¿Eliminar definitivamente el perfil de ${student.name} ${student.lastName || ''} del sistema? Esta acción no se puede deshacer.`)) {
+                              onDeleteStudent(student.id);
+                            }
+                          }}
+                          className="px-2.5 py-2 bg-rose-50 hover:bg-rose-600 text-rose-700 hover:text-white font-bold border border-rose-300 rounded-xl text-xs transition-colors flex items-center gap-1 shadow-2xs"
+                          title="Eliminar perfil definitivamente"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          <span>Eliminar</span>
                         </button>
                       </div>
                     </div>
@@ -2595,7 +2761,7 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
                       onChange={e => setApprovalTeacherId(e.target.value)}
                       className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold"
                     >
-                      <option value="">Teacher Waky (General)</option>
+                      <option value="">Teacher Cokitö (General)</option>
                       {teachers.map(t => (
                         <option key={t.id} value={t.id}>Teacher {t.name} {t.lastName || ''} ({t.specialty})</option>
                       ))}
@@ -3099,7 +3265,7 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
                   onChange={e => setTargetTeacherId(e.target.value)}
                   className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold text-slate-800"
                 >
-                  <option value="">Teacher Waky (General)</option>
+                  <option value="">Teacher Cokitö (General)</option>
                   {teachers.map(t => (
                     <option key={t.id} value={t.id}>
                       Teacher {t.name} {t.lastName || ''} ({t.specialty})
@@ -4014,6 +4180,7 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
           onToggleStatus={(stu) => {
             handleToggleStudentStatus(stu);
           }}
+          onDeleteStudent={onDeleteStudent}
         />
       )}
 
@@ -4182,21 +4349,37 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+            <div className="flex items-center justify-between gap-2 pt-3 border-t border-slate-100 flex-wrap">
               <button
                 type="button"
-                onClick={() => setEditingStudent(null)}
-                className="px-4 py-2 text-slate-500 hover:text-slate-800 font-bold text-xs"
+                onClick={() => {
+                  if (confirm(`¿Eliminar definitivamente el perfil de ${editingStudent.name} ${editingStudent.lastName || ''} del sistema? Esta acción no se puede deshacer.`)) {
+                    onDeleteStudent(editingStudent.id);
+                    setEditingStudent(null);
+                  }
+                }}
+                className="px-3.5 py-2 bg-rose-50 hover:bg-rose-600 text-rose-700 hover:text-white border border-rose-300 font-bold rounded-xl text-xs transition-colors flex items-center gap-1.5"
+                title="Eliminar este perfil de estudiante permanentemente"
               >
-                Cancelar
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Eliminar Perfil</span>
               </button>
-              <button
-                type="submit"
-                className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-xl text-xs shadow-md transition-colors flex items-center gap-1.5"
-              >
-                <CheckCircle2 className="w-4 h-4" />
-                <span>Guardar Cambios de Perfil</span>
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setEditingStudent(null)}
+                  className="px-4 py-2 text-slate-500 hover:text-slate-800 font-bold text-xs"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-xl text-xs shadow-md transition-colors flex items-center gap-1.5"
+                >
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>Guardar Cambios de Perfil</span>
+                </button>
+              </div>
             </div>
           </form>
         </div>

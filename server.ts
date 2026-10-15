@@ -198,11 +198,42 @@ app.delete('/api/coupons/:id', (req: Request, res: Response) => {
 
 // Students Backend Dual Persistence Mirror
 const STUDENTS_FILE = path.join(process.cwd(), 'students-data.json');
+const DELETED_STUDENTS_FILE = path.join(process.cwd(), 'deleted-students.json');
+
+const INITIAL_DELETED_STUDENTS = [
+  'student_carla_lira',
+  'student_vanesa',
+  'student_ragni_ali_new',
+  'student_genesis',
+  'student_ana_sandoval',
+  'student_1791620647859',
+  'student_aspirante',
+  'student_mariana'
+];
+
+let serverDeletedCache: string[] = [...INITIAL_DELETED_STUDENTS];
+try {
+  if (fs.existsSync(DELETED_STUDENTS_FILE)) {
+    const raw = fs.readFileSync(DELETED_STUDENTS_FILE, 'utf-8');
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed)) {
+      serverDeletedCache = Array.from(new Set([...serverDeletedCache, ...parsed]));
+    }
+  } else {
+    fs.writeFileSync(DELETED_STUDENTS_FILE, JSON.stringify(serverDeletedCache, null, 2), 'utf-8');
+  }
+} catch (e) {
+  console.warn('[Students] Could not read deleted-students.json:', e);
+}
+
 let serverStudentsCache: any[] = [];
 try {
   if (fs.existsSync(STUDENTS_FILE)) {
     const raw = fs.readFileSync(STUDENTS_FILE, 'utf-8');
     serverStudentsCache = JSON.parse(raw);
+    if (Array.isArray(serverStudentsCache)) {
+      serverStudentsCache = serverStudentsCache.filter(s => s && s.id && !serverDeletedCache.includes(s.id));
+    }
   }
 } catch (e) {
   console.warn('[Students] Could not read students-data.json:', e);
@@ -217,7 +248,11 @@ function persistServerStudents() {
 }
 
 app.get('/api/students', (_req: Request, res: Response) => {
-  res.json(serverStudentsCache);
+  res.json(serverStudentsCache.filter(s => s && s.id && !serverDeletedCache.includes(s.id)));
+});
+
+app.get('/api/students/deleted', (_req: Request, res: Response) => {
+  res.json(serverDeletedCache);
 });
 
 app.post('/api/students', (req: Request, res: Response) => {
@@ -225,6 +260,12 @@ app.post('/api/students', (req: Request, res: Response) => {
   if (!student || !student.id) {
     return res.status(400).json({ error: 'ID de alumno requerido' });
   }
+  // If student was marked deleted but is being re-saved, remove from deleted
+  serverDeletedCache = serverDeletedCache.filter(id => id !== student.id);
+  try {
+    fs.writeFileSync(DELETED_STUDENTS_FILE, JSON.stringify(serverDeletedCache, null, 2), 'utf-8');
+  } catch {}
+
   const existingIdx = serverStudentsCache.findIndex(s => s.id === student.id);
   if (existingIdx >= 0) {
     serverStudentsCache[existingIdx] = { ...serverStudentsCache[existingIdx], ...student };
@@ -238,8 +279,57 @@ app.post('/api/students', (req: Request, res: Response) => {
 app.delete('/api/students/:id', (req: Request, res: Response) => {
   const { id } = req.params;
   serverStudentsCache = serverStudentsCache.filter(s => s.id !== id);
+  if (!serverDeletedCache.includes(id)) {
+    serverDeletedCache.push(id);
+    try {
+      fs.writeFileSync(DELETED_STUDENTS_FILE, JSON.stringify(serverDeletedCache, null, 2), 'utf-8');
+    } catch {}
+  }
   persistServerStudents();
-  res.json({ success: true });
+  res.json({ success: true, deletedId: id });
+});
+
+// SLOTS PERSISTENCE
+const SLOTS_FILE = path.join(process.cwd(), 'slots-data.json');
+let serverSlotsCache: any[] = [];
+try {
+  if (fs.existsSync(SLOTS_FILE)) {
+    const raw = fs.readFileSync(SLOTS_FILE, 'utf-8');
+    serverSlotsCache = JSON.parse(raw);
+  }
+} catch (e) {
+  console.warn('[Slots] Could not read slots-data.json:', e);
+}
+
+function persistServerSlots() {
+  try {
+    fs.writeFileSync(SLOTS_FILE, JSON.stringify(serverSlotsCache, null, 2), 'utf-8');
+  } catch (e) {
+    console.warn('[Slots] Could not write slots-data.json:', e);
+  }
+}
+
+app.get('/api/slots', (_req: Request, res: Response) => {
+  res.json(serverSlotsCache);
+});
+
+app.post('/api/slots', (req: Request, res: Response) => {
+  const incoming = req.body;
+  if (Array.isArray(incoming)) {
+    serverSlotsCache = incoming;
+    persistServerSlots();
+    return res.json({ success: true, count: serverSlotsCache.length });
+  } else if (incoming && incoming.id) {
+    const idx = serverSlotsCache.findIndex(s => s.id === incoming.id);
+    if (idx >= 0) {
+      serverSlotsCache[idx] = { ...serverSlotsCache[idx], ...incoming };
+    } else {
+      serverSlotsCache.push(incoming);
+    }
+    persistServerSlots();
+    return res.json({ success: true, slot: incoming });
+  }
+  res.status(400).json({ error: 'Formato de slots inválido' });
 });
 
 // Endpoint for Gemini multi-turn chat

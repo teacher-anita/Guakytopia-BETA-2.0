@@ -32,6 +32,7 @@ import { PATHWAY_LEVELS, PathwayLevel, PathwayUnit, PathwaySession } from '../da
 import { UnitQuizModal } from './UnitQuizModal';
 import { UnitOneMasterClass } from './UnitOneMasterClass';
 import { downloadUnitPdf, downloadUnitAudio } from '../services/materialDownloader';
+import { formatSlotLabel } from '../utils/scheduleFormatter';
 
 interface LearningPathwayProps {
   currentStudent: Student | null;
@@ -45,6 +46,7 @@ interface LearningPathwayProps {
   onAwardXp: (studentId: string, amount: number) => void;
   onGoToClassroom?: () => void;
   onGoToLibrary?: () => void;
+  onUpdateStudent?: (student: Student) => void;
 }
 
 export const LearningPathway: React.FC<LearningPathwayProps> = ({
@@ -58,7 +60,8 @@ export const LearningPathway: React.FC<LearningPathwayProps> = ({
   onOpenPaymentModal,
   onAwardXp,
   onGoToClassroom,
-  onGoToLibrary
+  onGoToLibrary,
+  onUpdateStudent
 }) => {
   const isTeacher = activeRole === 'teacher';
   // A student is enrolled if their status is 'enrolled'
@@ -111,7 +114,35 @@ export const LearningPathway: React.FC<LearningPathwayProps> = ({
     }
   });
 
+  // Placement test notice dismissed state per student
+  const [isQuizNoticeDismissed, setIsQuizNoticeDismissed] = useState<boolean>(() => {
+    if (!currentStudent) return true;
+    try {
+      return localStorage.getItem(`cokito_quiz_dismissed_${currentStudent.id}`) === 'true';
+    } catch {
+      return false;
+    }
+  });
+
+  const handleDismissQuizNotice = () => {
+    setIsQuizNoticeDismissed(true);
+    if (currentStudent) {
+      try {
+        localStorage.setItem(`cokito_quiz_dismissed_${currentStudent.id}`, 'true');
+      } catch {}
+    }
+  };
+
   const activeLevel = PATHWAY_LEVELS.find(l => l.levelId === selectedLevelId) || PATHWAY_LEVELS[0];
+
+  // Item-by-item granular tracking
+  const [completedItems, setCompletedItems] = useState<Record<string, boolean>>(() => {
+    const map: Record<string, boolean> = {};
+    if (currentStudent?.completedUnitItems) {
+      currentStudent.completedUnitItems.forEach(k => { map[k] = true; });
+    }
+    return map;
+  });
 
   const toggleSessionCompletion = (sessionKey: string) => {
     setCompletedSessions(prev => {
@@ -121,6 +152,58 @@ export const LearningPathway: React.FC<LearningPathwayProps> = ({
       }
       return { ...prev, [sessionKey]: nextVal };
     });
+  };
+
+  const toggleItemCompletion = (
+    unit: PathwayUnit,
+    itemNumber: number,
+    itemTitle: string,
+    session: PathwaySession
+  ) => {
+    const itemKey = `u${unit.unitNumber}_it${itemNumber}`;
+    const nextVal = !completedItems[itemKey];
+    const newItems = { ...completedItems, [itemKey]: nextVal };
+    setCompletedItems(newItems);
+
+    if (nextVal && currentStudent) {
+      onAwardXp(currentStudent.id, 10);
+    }
+
+    const allSessionDone = session.items.every(it => 
+      it.number === itemNumber ? nextVal : newItems[`u${unit.unitNumber}_it${it.number}`]
+    );
+    const sessionKey = `${unit.unitNumber}_${session.sessionCode}`;
+    setCompletedSessions(prev => ({ ...prev, [sessionKey]: allSessionDone }));
+
+    const completedKeysList = Object.keys(newItems).filter(k => newItems[k]);
+    const unitNums = completedKeysList
+      .filter(k => k.startsWith(`u${unit.unitNumber}_it`))
+      .map(k => parseInt(k.replace(`u${unit.unitNumber}_it`, ''), 10))
+      .filter(n => !isNaN(n));
+    const maxCompleted = unitNums.length > 0 ? Math.max(...unitNums) : 0;
+    const allUnitItems = unit.sessions.flatMap(s => s.items);
+    const lastItemObj = allUnitItems.find(it => it.number === maxCompleted);
+    const nextItemObj = allUnitItems.find(it => it.number === maxCompleted + 1);
+
+    const updatedHandover = {
+      lastCompletedUnit: unit.unitNumber,
+      lastCompletedItemNumber: maxCompleted,
+      lastCompletedItemTitle: lastItemObj ? lastItemObj.title : (maxCompleted > 0 ? `Ítem ${maxCompleted}` : 'Por iniciar'),
+      nextItemNumber: maxCompleted + 1,
+      nextItemTitle: nextItemObj ? nextItemObj.title : (maxCompleted >= allUnitItems.length ? '¡Unidad Completada! 🎉' : `Ítem ${maxCompleted + 1}`),
+      teacherNote: currentStudent?.unitHandover?.teacherNote || '',
+      teacherName: isTeacher ? 'Teacher Cokitö' : (currentStudent?.teacherName || 'Teacher Cokitö'),
+      updatedAt: new Date().toLocaleDateString('es-VE', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+    };
+
+    if (currentStudent && onUpdateStudent) {
+      onUpdateStudent({
+        ...currentStudent,
+        currentUnit: unit.unitNumber,
+        completedUnitItems: completedKeysList,
+        unitHandover: updatedHandover
+      });
+    }
   };
 
   const handleCopyClassroomTemplate = (unit: PathwayUnit, session: PathwaySession) => {
@@ -329,6 +412,49 @@ ${unit.owlCulture.culturalStory}
         </button>
       </div>
 
+      {/* PLACEMENT QUIZ PENDING NOTIFICATION */}
+      {!isTeacher && currentStudent && (!currentStudent.placementTestScore || currentStudent.placementTestScore === 0) && !isQuizNoticeDismissed && (
+        <div className="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 rounded-3xl p-5 text-slate-950 shadow-xl border border-amber-300 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 animate-fadeIn">
+          <div className="flex items-start gap-3.5">
+            <div className="w-12 h-12 rounded-2xl bg-white/30 backdrop-blur-xs flex items-center justify-center shrink-0 text-2xl shadow-xs">
+              📝
+            </div>
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-[10px] font-black uppercase tracking-wider bg-slate-950 text-amber-300 px-2.5 py-0.5 rounded-full">
+                  Prueba Diagnóstica Pendiente
+                </span>
+                <span className="text-xs font-bold text-slate-900">Score actual: 0 / 50 pts</span>
+              </div>
+              <h3 className="text-base sm:text-lg font-black text-slate-950 mt-1">
+                ¿Deseas nivelar tu inglés con la prueba oficial de 50 preguntas?
+              </h3>
+              <p className="text-xs text-slate-900/90 max-w-2xl leading-relaxed">
+                Aún no has realizado tu prueba de nivelación diagnóstica (Super Goal 1 a 4). Puedes realizarla ahora en unos minutos o saltarla y continuar con tus clases en tu nivel inicial.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2.5 w-full md:w-auto shrink-0 flex-wrap">
+            <button
+              type="button"
+              onClick={handleDismissQuizNotice}
+              className="px-4 py-2.5 bg-black/15 hover:bg-black/25 text-slate-950 rounded-xl font-bold text-xs transition-colors"
+            >
+              Saltar el quiz y hacerlo más tarde
+            </button>
+            <button
+              type="button"
+              onClick={onOpenPlacementTest}
+              className="px-5 py-2.5 bg-slate-950 hover:bg-slate-900 text-amber-300 rounded-xl font-black text-xs shadow-md transition-all flex items-center gap-1.5 transform hover:scale-102"
+            >
+              <Sparkles className="w-4 h-4 text-amber-400" />
+              <span>Hacer el quiz ahora y nivelarme</span>
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* 2. CLASSROOM HERO BANNER */}
       <div className="bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 rounded-3xl p-6 sm:p-8 text-white shadow-lg space-y-6">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
@@ -359,7 +485,7 @@ ${unit.owlCulture.culturalStory}
               <span className="block text-white">{isSpanglish ? 'Teacher / Profe: La Teacher Cokitö' : 'Teacher: La Teacher Cokitö'}</span>
               <span className="text-blue-200 text-[11px] block mt-0.5">
                 {currentStudent?.assignedSlots && currentStudent.assignedSlots.length > 0
-                  ? currentStudent.assignedSlots.join(', ')
+                  ? currentStudent.assignedSlots.map(s => formatSlotLabel(s)).join(' • ')
                   : 'Flexible scheduled time'}
               </span>
             </div>
@@ -687,6 +813,55 @@ ${unit.owlCulture.culturalStory}
                 )}
               </div>
 
+              {/* Bitácora de Relevo Docente & Progreso Granular de la Unidad */}
+              {(() => {
+                const totalUnitItems = unit.sessions.flatMap(s => s.items).length;
+                const completedInUnit = unit.sessions.flatMap(s => s.items).filter(it => completedItems[`u${unit.unitNumber}_it${it.number}`]).length;
+                const pct = Math.round((completedInUnit / (totalUnitItems || 1)) * 100);
+                const hasHandover = currentStudent?.unitHandover && currentStudent.unitHandover.lastCompletedUnit === unit.unitNumber;
+
+                return (
+                  <div className="px-5 sm:px-6 pt-4 pb-1">
+                    <div className="p-4 rounded-2xl bg-gradient-to-r from-indigo-50 via-amber-50/50 to-emerald-50/60 border border-indigo-200/80 space-y-2">
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs">
+                        <div className="flex items-center gap-2">
+                          <span className="px-2.5 py-0.5 rounded-full font-black text-[10px] bg-indigo-600 text-white uppercase tracking-wider">
+                            Bitácora & Relevo Docente
+                          </span>
+                          <span className="font-bold text-slate-800">
+                            Avance Real: {completedInUnit} de {totalUnitItems} ítems cubiertos ({pct}%)
+                          </span>
+                        </div>
+                        {isTeacher && (
+                          <span className="text-[11px] font-bold text-amber-700 bg-amber-100/80 px-2 py-0.5 rounded-md">
+                            🦉 Teacher Cokitö Mode: Haz clic en cualquier ítem para marcar avance
+                          </span>
+                        )}
+                      </div>
+
+                      {hasHandover && (
+                        <div className="pt-1 grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs border-t border-indigo-100 mt-1">
+                          <div className="text-slate-700">
+                            <span className="font-bold text-slate-900 block text-[11px]">Último punto alcanzado:</span>
+                            <span className="text-emerald-700 font-semibold">{currentStudent?.unitHandover?.lastCompletedItemTitle}</span>
+                          </div>
+                          <div className="text-slate-700">
+                            <span className="font-bold text-slate-900 block text-[11px]">Siguiente a ver en la próxima clase:</span>
+                            <span className="text-indigo-700 font-semibold">{currentStudent?.unitHandover?.nextItemTitle}</span>
+                          </div>
+                          {currentStudent?.unitHandover?.teacherNote && (
+                            <div className="col-span-full bg-white/80 p-2 rounded-xl border border-indigo-100 text-[11px] text-slate-700 mt-0.5">
+                              <span className="font-bold text-slate-900">Nota para el próximo Teacher: </span>
+                              <span>"{currentStudent.unitHandover.teacherNote}"</span>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })()}
+
               {/* The 3 Sessions: A, B, C (Micro-chunking) */}
               <div className="p-5 sm:p-6 grid grid-cols-1 md:grid-cols-3 gap-4">
                 {unit.sessions.map(session => {
@@ -722,24 +897,50 @@ ${unit.owlCulture.culturalStory}
 
                         <h4 className="font-bold text-slate-900 text-sm">{session.sessionName}</h4>
 
-                        {/* Items List */}
+                        {/* Items List with Interactive Checkboxes */}
                         <ul className="space-y-1.5 pt-1 text-xs">
-                          {session.items.map(it => (
-                            <li key={it.number} className="text-slate-600 flex items-start gap-1.5">
-                              <span className="w-4 h-4 rounded-full bg-slate-100 text-slate-700 text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">
-                                {it.number}
-                              </span>
-                              <div>
-                                <strong className="text-slate-800">{it.title}</strong>
-                                <span className="block text-[11px] text-slate-500">{it.description}</span>
-                                {it.audioTrack && (
-                                  <span className="inline-flex items-center gap-1 text-[10px] text-amber-700 font-bold bg-amber-50 px-1.5 py-0.5 rounded-md mt-0.5">
-                                    🎧 {it.audioTrack}
-                                  </span>
-                                )}
-                              </div>
-                            </li>
-                          ))}
+                          {session.items.map(it => {
+                            const itemKey = `u${unit.unitNumber}_it${it.number}`;
+                            const isItemChecked = Boolean(completedItems[itemKey]);
+
+                            return (
+                              <li 
+                                key={it.number} 
+                                onClick={() => toggleItemCompletion(unit, it.number, it.title, session)}
+                                className={`p-2 rounded-xl transition-all cursor-pointer flex items-start gap-2 border ${
+                                  isItemChecked
+                                    ? 'bg-emerald-50/80 border-emerald-300 text-emerald-950 font-medium'
+                                    : 'hover:bg-slate-50 border-transparent text-slate-600'
+                                }`}
+                                title={isItemChecked ? 'Hacer clic para desmarcar' : 'Hacer clic para marcar como visto en clase'}
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={isItemChecked}
+                                  onChange={() => {}} // handled by li
+                                  className="w-4 h-4 rounded text-emerald-600 mt-0.5 border-slate-300 focus:ring-emerald-500 cursor-pointer shrink-0"
+                                />
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-1.5 flex-wrap">
+                                    <strong className={isItemChecked ? 'text-emerald-900 line-through decoration-emerald-500' : 'text-slate-800'}>
+                                      {it.title}
+                                    </strong>
+                                    {isItemChecked && (
+                                      <span className="text-[9px] font-black uppercase text-emerald-700 bg-emerald-100 px-1.5 py-0.2 rounded">
+                                        ✓ Visto
+                                      </span>
+                                    )}
+                                  </div>
+                                  <span className="block text-[11px] text-slate-500">{it.description}</span>
+                                  {it.audioTrack && (
+                                    <span className="inline-flex items-center gap-1 text-[10px] text-amber-700 font-bold bg-amber-50 px-1.5 py-0.5 rounded-md mt-0.5">
+                                      🎧 {it.audioTrack}
+                                    </span>
+                                  )}
+                                </div>
+                              </li>
+                            );
+                          })}
                         </ul>
 
                         {/* Workbook mention */}

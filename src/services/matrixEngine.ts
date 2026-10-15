@@ -74,7 +74,7 @@ export function getCampusSlotsForStudent(
 }
 
 /**
- * Formats a summary of Flock Mentors for a given level (e.g. "Teacher Waky y Teacher David").
+ * Formats a summary of Flock Mentors for a given level (e.g. "Teacher Cokitö y Teacher David").
  */
 export function getFlockMentorsLabel(teachers: Teacher[], levelId: string): string {
   const certified = getFlockTeachersForLevel(teachers, levelId);

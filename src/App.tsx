@@ -35,6 +35,7 @@ import {
   deleteStudent,
   saveSlots, 
   subscribeToStudents, 
+  subscribeToSlots,
   getLocalSlots,
   saveTeacher,
   deleteTeacher,
@@ -119,6 +120,16 @@ export default function App() {
     };
   }, []);
 
+  // Real-time Firestore Sync for Schedule Slots
+  useEffect(() => {
+    const unsubSlots = subscribeToSlots((latestSlots) => {
+      setSlots(latestSlots);
+    });
+    return () => {
+      if (typeof unsubSlots === 'function') unsubSlots();
+    };
+  }, []);
+
   // Real-time Firestore Sync for Teachers
   useEffect(() => {
     const unsubTeachers = subscribeToTeachers((latestTeachers) => {
@@ -189,8 +200,8 @@ export default function App() {
                 preferredTimeSlot: '',
                 status: 'enrolled',
                 levelId: 'level_1',
-                placementTestScore: 20,
-                placementTestDiagnosis: 'Acceso inicial activado con Google Sign-In',
+                placementTestScore: 0,
+                placementTestDiagnosis: 'Prueba diagnóstica pendiente por realizar a tu propio ritmo.',
                 placementTestDate: new Date().toISOString().split('T')[0],
                 registeredAt: new Date().toISOString().split('T')[0],
                 currentUnit: 1,
@@ -455,29 +466,84 @@ export default function App() {
     setStudents(prev => prev.map(s => s.id === updatedStudent.id ? updatedStudent : s));
     await saveStudent(updatedStudent);
 
-    // Also update slots if assigned
-    if (updatedStudent.assignedSlots && updatedStudent.assignedSlots.length > 0) {
-      const updatedSlots = slots.map(slot => {
-        const slotTag = `${slot.day}-${slot.startTime}`;
-        if (updatedStudent.assignedSlots.includes(slotTag)) {
-          return {
-            ...slot,
-            status: 'booked' as const,
-            studentId: updatedStudent.id,
-            studentName: `${updatedStudent.name} ${updatedStudent.lastName || ''}`.trim(),
-            levelId: updatedStudent.levelId,
-            meetLink: 'https://meet.google.com/eng-cokito-class'
-          };
-        }
-        return slot;
+    // Bidirectional sync with agenda slots
+    const studentAssigned = updatedStudent.assignedSlots || [];
+    const updatedSlots = slots.map(slot => {
+      // Check if slot matches any assignment string
+      const isAssignedToThis = studentAssigned.some(assignment => {
+        const clean = assignment.toLowerCase().trim();
+        const slotId = slot.id.toLowerCase();
+        if (clean === slotId) return true;
+        const tag = `${slot.day}-${slot.startTime}`.toLowerCase();
+        if (clean === tag) return true;
+
+        // Text parsing: e.g. "Todos los Lunes de 17:00 a 18:00 (Semanal)" or "Lunes y Miércoles de 5 a 6"
+        const mentionsDay = clean.includes(slot.day.toLowerCase()) || 
+          (slot.day === 'Lunes' && clean.includes('lun')) ||
+          (slot.day === 'Martes' && clean.includes('mar')) ||
+          (slot.day === 'Miércoles' && clean.includes('mie')) ||
+          (slot.day === 'Jueves' && clean.includes('jue')) ||
+          (slot.day === 'Viernes' && clean.includes('vie')) ||
+          (slot.day === 'Sábado' && clean.includes('sab'));
+        if (!mentionsDay) return false;
+        
+        const hourNum = parseInt(slot.startTime.split(':')[0], 10);
+        const hour12 = hourNum > 12 ? hourNum - 12 : hourNum;
+        const matchesHour = clean.includes(`${hourNum}:00`) || 
+          clean.includes(`de ${hourNum}`) || 
+          clean.includes(`a ${hourNum + 1}`) || 
+          clean.includes(`${hour12}:00`) || 
+          clean.includes(`${hour12} pm`) || 
+          clean.includes(`${hour12} am`) || 
+          clean.includes(`de ${hour12}`);
+        return matchesHour;
       });
-      setSlots(updatedSlots);
-      await saveSlots(updatedSlots);
-    }
+
+      if (isAssignedToThis) {
+        return {
+          ...slot,
+          status: 'booked' as const,
+          studentId: updatedStudent.id,
+          studentName: `${updatedStudent.name} ${updatedStudent.lastName || ''}`.trim(),
+          levelId: updatedStudent.levelId || 'level_1',
+          teacherName: 'Teacher Cokitö / Head Teacher',
+          meetLink: slot.meetLink || 'https://meet.google.com/eng-waky-class'
+        };
+      }
+
+      // If slot previously belonged to this student but was unassigned, free it!
+      if (slot.studentId === updatedStudent.id) {
+        return {
+          ...slot,
+          status: 'available' as const,
+          studentId: undefined,
+          studentName: undefined,
+          levelId: undefined,
+          teacherName: 'Teacher Cokitö / Head Teacher'
+        };
+      }
+
+      return slot;
+    });
+
+    setSlots(updatedSlots);
+    await saveSlots(updatedSlots);
   };
 
   const handleDeleteStudent = async (studentId: string) => {
     setStudents(prev => prev.filter(s => s.id !== studentId));
+    setSlots(prev => prev.map(slot => {
+      const hasStudent = slot.studentId === studentId || slot.enrolledStudents?.some(e => e.studentId === studentId);
+      if (!hasStudent) return slot;
+      const enrolled = (slot.enrolledStudents || []).filter(e => e.studentId !== studentId);
+      return {
+        ...slot,
+        enrolledStudents: enrolled,
+        studentId: enrolled[0]?.studentId,
+        studentName: enrolled[0]?.studentName,
+        status: (enrolled.length === 0 ? 'available' : slot.status) as any
+      };
+    }));
     await deleteStudent(studentId);
   };
 
@@ -532,8 +598,8 @@ export default function App() {
         preferredTimeSlot: 'Autónomo Asincrónico',
         status: 'enrolled',
         levelId: 'level_1',
-        placementTestScore: 25,
-        placementTestDiagnosis: 'Pase Digital $5 Activado',
+        placementTestScore: 0,
+        placementTestDiagnosis: 'Pase Digital $5 Activado (Prueba diagnóstica pendiente por realizar a tu propio ritmo)',
         placementTestDate: new Date().toISOString().split('T')[0],
         registeredAt: new Date().toISOString().split('T')[0],
         currentUnit: 1,
@@ -721,6 +787,7 @@ export default function App() {
             onAwardXp={handleAwardXp}
             onGoToClassroom={() => setActiveTab('classroom')}
             onGoToLibrary={() => setActiveTab('library')}
+            onUpdateStudent={handleUpdateStudent}
           />
         )}
 
@@ -749,6 +816,7 @@ export default function App() {
               onAwardXp={handleAwardXp}
               onGoToClassroom={() => setActiveTab('classroom')}
               onGoToLibrary={() => setActiveTab('library')}
+              onUpdateStudent={handleUpdateStudent}
             />
           )
         )}

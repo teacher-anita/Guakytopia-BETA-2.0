@@ -669,7 +669,7 @@ export const RegistrationFlow: React.FC<RegistrationFlowProps> = ({
       paymentStatus: appliedCoupon ? 'scholarship' : 'pending_approval',
       depositAmountUsd: appliedCoupon ? 0 : 5,
       levelId: placementResult?.suggestedLevelId || defaultLevelId,
-      placementTestScore: placementResult?.score,
+      placementTestScore: placementResult ? placementResult.score : 0,
       placementTestDiagnosis: placementResult 
         ? `Puntaje: ${placementResult.score}/${placementResult.total}. Sugerencia: ${placementResult.suggestedLevelName}. ${placementResult.diagnosisText}`
         : 'Prueba diagnóstica pendiente por realizar a tu propio ritmo desde tu perfil de alumno.',
@@ -1532,7 +1532,7 @@ export const RegistrationFlow: React.FC<RegistrationFlowProps> = ({
                   100% Opcional
                 </span>
                 <h3 className="text-base sm:text-lg font-black tracking-tight">
-                  Prueba Diagnóstica de Nivel (25 Preguntas)
+                  Prueba Diagnóstica de Nivel (50 Preguntas)
                 </h3>
                 <p className="text-xs text-blue-200 max-w-md mt-0.5 leading-relaxed">
                   ¿Quieres medir tu nivel ahora? Puedes hacer la prueba rápida para sugerir tu libro oficial, o puedes finalizar tu inscripción directamente e iniciar desde el Nivel 1 (Principiante).
@@ -1667,7 +1667,7 @@ export const RegistrationFlow: React.FC<RegistrationFlowProps> = ({
                 </h2>
 
                 <p className="text-slate-600 text-xs sm:text-sm max-w-xl mx-auto leading-relaxed">
-                  Tus datos y tu prueba diagnóstica (<strong>{registeredStudent.placementTestScore}/25 pts</strong>) han quedado guardados en el sistema con nivel sugerido <strong>{(registeredStudent.levelId || 'level_1').toUpperCase()}</strong>.
+                  Tus datos {registeredStudent.placementTestScore ? <>y tu prueba diagnóstica (<strong>{registeredStudent.placementTestScore}/50 pts</strong>)</> : '(prueba de nivel pendiente por realizar)'} han quedado guardados en el sistema con nivel sugerido <strong>{(registeredStudent.levelId || 'level_1').toUpperCase()}</strong>.
                 </p>
               </div>
 

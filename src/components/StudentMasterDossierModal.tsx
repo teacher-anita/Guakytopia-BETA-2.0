@@ -28,10 +28,13 @@ import {
   Activity,
   Database,
   BarChart3,
-  RefreshCw
+  RefreshCw,
+  Trash2
 } from 'lucide-react';
 import { Student, EnglishLevel } from '../types';
 import { CouponItem } from '../data/couponsData';
+import { PATHWAY_LEVELS } from '../data/pathwayData';
+import { formatSlotLabel } from '../utils/scheduleFormatter';
 import { analyzeStudentWithCoquito, CoquitoCognitiveAnalysis } from '../services/coquitoBrainService';
 import { getLocalStudentTelemetry } from '../services/telemetryService';
 
@@ -41,6 +44,7 @@ interface StudentMasterDossierModalProps {
   couponsList: CouponItem[];
   onClose: () => void;
   onUpdateStudent: (updated: Student) => void;
+  onDeleteStudent?: (studentId: string) => void;
   onOpenEditStudent: (student: Student) => void;
   onOpenAssignClasses: (student: Student) => void;
   onOpenStudentLetter: (student: Student) => void;
@@ -55,6 +59,7 @@ export const StudentMasterDossierModal: React.FC<StudentMasterDossierModalProps>
   couponsList,
   onClose,
   onUpdateStudent,
+  onDeleteStudent,
   onOpenEditStudent,
   onOpenAssignClasses,
   onOpenStudentLetter,
@@ -67,6 +72,84 @@ export const StudentMasterDossierModal: React.FC<StudentMasterDossierModalProps>
   const [isSavingNote, setIsSavingNote] = useState(false);
   const [aiGenerating, setAiGenerating] = useState(false);
   const [customAiAdvice, setCustomAiAdvice] = useState<string | null>(null);
+
+  // Unit & Item Granular Progress and Handover state
+  const [selectedUnitNumber, setSelectedUnitNumber] = useState<number>(student.currentUnit || 1);
+  const [completedItems, setCompletedItems] = useState<string[]>(student.completedUnitItems || []);
+  const [handoverNote, setHandoverNote] = useState<string>(student.unitHandover?.teacherNote || '');
+  const [handoverSuccessMsg, setHandoverSuccessMsg] = useState<string | null>(null);
+
+  // Find curriculum units for student's level
+  const pathwayLevel = PATHWAY_LEVELS.find(l => l.levelId === (student.levelId || 'level_1')) || PATHWAY_LEVELS[0];
+  const activePathwayUnit = pathwayLevel.units.find(u => u.unitNumber === selectedUnitNumber) || pathwayLevel.units[0];
+  const allUnitItems = activePathwayUnit ? activePathwayUnit.sessions.flatMap(s => s.items) : [];
+
+  const handleToggleUnitItem = (itemNum: number) => {
+    const itemKey = `u${selectedUnitNumber}_it${itemNum}`;
+    const nextCompleted = completedItems.includes(itemKey)
+      ? completedItems.filter(k => k !== itemKey)
+      : [...completedItems, itemKey];
+    setCompletedItems(nextCompleted);
+
+    const unitCompletedNums = nextCompleted
+      .filter(k => k.startsWith(`u${selectedUnitNumber}_it`))
+      .map(k => parseInt(k.replace(`u${selectedUnitNumber}_it`, ''), 10))
+      .filter(n => !isNaN(n));
+
+    const maxCompleted = unitCompletedNums.length > 0 ? Math.max(...unitCompletedNums) : 0;
+    const lastItemObj = allUnitItems.find(it => it.number === maxCompleted);
+    const nextItemObj = allUnitItems.find(it => it.number === maxCompleted + 1);
+
+    const updatedHandover = {
+      lastCompletedUnit: selectedUnitNumber,
+      lastCompletedItemNumber: maxCompleted,
+      lastCompletedItemTitle: lastItemObj ? lastItemObj.title : (maxCompleted > 0 ? `Ítem ${maxCompleted}` : 'Por iniciar'),
+      nextItemNumber: maxCompleted + 1,
+      nextItemTitle: nextItemObj ? nextItemObj.title : (maxCompleted >= allUnitItems.length ? '¡Unidad Completada! 🎉' : `Ítem ${maxCompleted + 1}`),
+      teacherNote: handoverNote,
+      teacherName: student.teacherName || 'Teacher Cokitö',
+      updatedAt: new Date().toLocaleDateString('es-VE', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+    };
+
+    onUpdateStudent({
+      ...student,
+      currentUnit: selectedUnitNumber,
+      completedUnitItems: nextCompleted,
+      unitHandover: updatedHandover
+    });
+  };
+
+  const handleSaveHandoverNote = () => {
+    const unitCompletedNums = completedItems
+      .filter(k => k.startsWith(`u${selectedUnitNumber}_it`))
+      .map(k => parseInt(k.replace(`u${selectedUnitNumber}_it`, ''), 10))
+      .filter(n => !isNaN(n));
+
+    const maxCompleted = unitCompletedNums.length > 0 ? Math.max(...unitCompletedNums) : (student.unitHandover?.lastCompletedItemNumber || 0);
+    const lastItemObj = allUnitItems.find(it => it.number === maxCompleted);
+    const nextItemObj = allUnitItems.find(it => it.number === maxCompleted + 1);
+
+    const updatedHandover = {
+      lastCompletedUnit: selectedUnitNumber,
+      lastCompletedItemNumber: maxCompleted,
+      lastCompletedItemTitle: lastItemObj ? lastItemObj.title : (student.unitHandover?.lastCompletedItemTitle || 'Inicio de unidad'),
+      nextItemNumber: maxCompleted + 1,
+      nextItemTitle: nextItemObj ? nextItemObj.title : (maxCompleted >= allUnitItems.length ? '¡Unidad Completada!' : `Ítem ${maxCompleted + 1}`),
+      teacherNote: handoverNote.trim(),
+      teacherName: student.teacherName || 'Teacher Cokitö',
+      updatedAt: new Date().toLocaleDateString('es-VE', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+    };
+
+    onUpdateStudent({
+      ...student,
+      currentUnit: selectedUnitNumber,
+      completedUnitItems: completedItems,
+      unitHandover: updatedHandover
+    });
+
+    setHandoverSuccessMsg('✅ Avance y Nota de Relevo para el próximo Teacher guardados');
+    setTimeout(() => setHandoverSuccessMsg(null), 3500);
+  };
 
   const matchedLevel = allLevels.find(l => l.id === student.levelId);
   const coquitoAnalysis: CoquitoCognitiveAnalysis = analyzeStudentWithCoquito(student);
@@ -149,13 +232,31 @@ Como "Cokitö", el cerebro pedagógico institucional de Güakytopia, dame una re
       >
         {/* Top Header Card */}
         <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-950 text-white p-5 sm:p-6 relative shrink-0">
-          <button
-            onClick={onClose}
-            aria-label="Cerrar expediente"
-            className="absolute top-4 right-4 p-2 rounded-full bg-white/10 hover:bg-white/20 text-slate-300 hover:text-white transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          <div className="absolute top-4 right-4 flex items-center gap-2">
+            {onDeleteStudent && (
+              <button
+                type="button"
+                onClick={() => {
+                  if (confirm(`¿Eliminar definitivamente el perfil de ${student.name} ${student.lastName || ''} del sistema? Esta acción es irreversible.`)) {
+                    onDeleteStudent(student.id);
+                    onClose();
+                  }
+                }}
+                className="px-3 py-1.5 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors shadow-md border border-rose-500"
+                title="Eliminar este perfil de alumno definitivamente"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Eliminar Perfil</span>
+              </button>
+            )}
+            <button
+              onClick={onClose}
+              aria-label="Cerrar expediente"
+              className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-slate-300 hover:text-white transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
 
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pr-8">
             <div className="flex items-center gap-4">
@@ -527,7 +628,7 @@ Como "Cokitö", el cerebro pedagógico institucional de Güakytopia, dame una re
                       <CheckCircle2 className="w-4 h-4 text-indigo-600 shrink-0" />
                       <div>
                         <span className="font-bold text-indigo-950 block">2. Placement Test</span>
-                        <span className="text-[10px] text-indigo-800">{student.placementTestScore ?? 'N/A'}/25 pts ({matchedLevel?.levelName || 'A1'})</span>
+                        <span className="text-[10px] text-indigo-800">{student.placementTestScore ?? 'N/A'}/50 pts ({matchedLevel?.levelName || 'A1'})</span>
                       </div>
                     </div>
 
@@ -934,34 +1035,62 @@ Como "Cokitö", el cerebro pedagógico institucional de Güakytopia, dame una re
                         >
                           <div className="flex items-center gap-2">
                             <Clock className="w-4 h-4 text-indigo-600" />
-                            <span>{slot}</span>
+                            <span>{formatSlotLabel(slot)}</span>
                           </div>
                           <span className="text-[10px] uppercase font-bold text-indigo-700 bg-indigo-100 px-2 py-0.5 rounded-lg">
-                            Agendado
+                            Horario Fijo
                           </span>
                         </div>
                       ))}
                     </div>
-                  ) : student.isDigitalPass ? (
-                    <div className="p-4 rounded-2xl bg-violet-50 border border-violet-200 text-violet-900 text-xs space-y-1">
-                      <div className="font-bold flex items-center gap-1.5">
-                        <Smartphone className="w-4 h-4 text-violet-700" />
-                        <span>Membresía Plataforma (Sin Clases en Vivo)</span>
+                  ) : null}
+
+                  {student.bookedSessions && student.bookedSessions.length > 0 && (
+                    <div className="space-y-2 pt-2">
+                      <span className="text-xs font-bold text-slate-700 block">
+                        📆 Clases Fechadas del Ciclo (Mes & Día):
+                      </span>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        {student.bookedSessions.map((session, sIdx) => (
+                          <div
+                            key={session.id || sIdx}
+                            className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs flex items-center justify-between"
+                          >
+                            <div>
+                              <div className="font-bold text-slate-900">{session.date} • {session.day}</div>
+                              <div className="text-[11px] text-slate-500">{session.startTime} - {session.endTime} ({session.teacherName})</div>
+                            </div>
+                            <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-md">
+                              {session.status === 'confirmed' ? 'Confirmada' : session.status}
+                            </span>
+                          </div>
+                        ))}
                       </div>
-                      <p className="text-violet-700">
-                        Este alumno tiene acceso a la plataforma digital y biblioteca. Si desea clases en vivo, puedes asignarle horarios con el botón superior.
-                      </p>
                     </div>
-                  ) : (
-                    <div className="p-4 rounded-2xl bg-amber-50 border border-amber-300 text-amber-900 text-xs space-y-1">
-                      <div className="font-bold flex items-center gap-1.5">
-                        <AlertCircle className="w-4 h-4 text-amber-600" />
-                        <span>Sin Horario Agendado</span>
+                  )}
+
+                  {!hasClasses && (!student.bookedSessions || student.bookedSessions.length === 0) && (
+                    student.isDigitalPass ? (
+                      <div className="p-4 rounded-2xl bg-violet-50 border border-violet-200 text-violet-900 text-xs space-y-1">
+                        <div className="font-bold flex items-center gap-1.5">
+                          <Smartphone className="w-4 h-4 text-violet-700" />
+                          <span>Membresía Plataforma (Sin Clases en Vivo)</span>
+                        </div>
+                        <p className="text-violet-700">
+                          Este alumno tiene acceso a la plataforma digital y biblioteca. Si desea clases en vivo, puedes asignarle horarios con el botón superior.
+                        </p>
                       </div>
-                      <p className="text-amber-800">
-                        El alumno tiene plan con clases en vivo pero aún no se le ha reservado un espacio en agenda.
-                      </p>
-                    </div>
+                    ) : (
+                      <div className="p-4 rounded-2xl bg-amber-50 border border-amber-300 text-amber-900 text-xs space-y-1">
+                        <div className="font-bold flex items-center gap-1.5">
+                          <AlertCircle className="w-4 h-4 text-amber-600" />
+                          <span>Sin Horario Agendado</span>
+                        </div>
+                        <p className="text-amber-800">
+                          El alumno tiene plan con clases en vivo pero aún no se le ha reservado un espacio en agenda.
+                        </p>
+                      </div>
+                    )
                   )}
                 </div>
               </div>
@@ -1018,10 +1147,169 @@ Como "Cokitö", el cerebro pedagógico institucional de Güakytopia, dame una re
                 </div>
                 {student.placementTestDiagnosis && (
                   <div className="p-3.5 rounded-2xl bg-blue-50/70 border border-blue-200 text-xs text-blue-900 space-y-1">
-                    <span className="font-bold text-blue-950 block">Diagnóstico de Placement Test ({student.placementTestScore ?? 'N/A'}/25 pts):</span>
+                    <span className="font-bold text-blue-950 block">Diagnóstico de Placement Test ({student.placementTestScore ?? 'N/A'}/50 pts):</span>
                     <p>{student.placementTestDiagnosis}</p>
                   </div>
                 )}
+              </div>
+
+              {/* Control de Avance Ítem por Ítem & Relevo Docente */}
+              <div className="bg-white p-5 rounded-3xl border border-slate-200 shadow-2xs space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="p-1.5 bg-indigo-50 text-indigo-700 rounded-xl">
+                        <BookOpen className="w-4 h-4" />
+                      </span>
+                      <h3 className="text-sm font-black text-slate-900">
+                        Avance Curricular Ítem por Ítem & Relevo Docente
+                      </h3>
+                    </div>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      Marca punto por punto lo visto en clase. Si el próximo día la clase la dicta otro teacher, sabrá exactamente dónde quedó el alumno.
+                    </p>
+                  </div>
+
+                  {/* Selector de Unidad */}
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold text-slate-600">Unidad:</span>
+                    <select
+                      value={selectedUnitNumber}
+                      onChange={e => setSelectedUnitNumber(Number(e.target.value))}
+                      className="px-3 py-1.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold text-slate-900 focus:ring-2 focus:ring-indigo-500"
+                    >
+                      {pathwayLevel.units.map(u => (
+                        <option key={u.unitNumber} value={u.unitNumber}>
+                          U{u.unitNumber}: {u.title}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Banner de Relevo Actual */}
+                <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-50 to-indigo-50 border border-amber-200/80 space-y-2">
+                  <div className="flex items-center justify-between flex-wrap gap-2 text-xs">
+                    <div className="flex items-center gap-1.5 font-bold text-amber-900">
+                      <Sparkles className="w-4 h-4 text-amber-600" />
+                      <span>Relevo Docente Activo</span>
+                    </div>
+                    <span className="text-[11px] text-slate-500">
+                      Última actualización: {student.unitHandover?.updatedAt || 'Sin registros recientes'}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 text-xs">
+                    <div className="p-2.5 rounded-xl bg-white/80 border border-amber-200">
+                      <span className="text-[10px] uppercase font-bold text-slate-500 block">Último punto cubierto:</span>
+                      <strong className="text-slate-900">
+                        {student.unitHandover?.lastCompletedItemTitle 
+                          ? `Ítem ${student.unitHandover.lastCompletedItemNumber}: ${student.unitHandover.lastCompletedItemTitle}` 
+                          : 'Aún no se ha marcado ítem'}
+                      </strong>
+                    </div>
+
+                    <div className="p-2.5 rounded-xl bg-white/80 border border-indigo-200">
+                      <span className="text-[10px] uppercase font-bold text-indigo-700 block">Siguiente punto a iniciar (Próxima clase):</span>
+                      <strong className="text-indigo-950">
+                        {student.unitHandover?.nextItemTitle || 'Ítem 1 de la Unidad'}
+                      </strong>
+                    </div>
+                  </div>
+
+                  {student.unitHandover?.teacherNote && (
+                    <div className="text-xs text-slate-700 bg-white/90 p-2.5 rounded-xl border border-slate-200 mt-1">
+                      <span className="font-bold text-slate-900">💬 Nota de {student.unitHandover.teacherName || 'Teacher'}: </span>
+                      <span>"{student.unitHandover.teacherNote}"</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Lista de Ítems de la Unidad con Checkboxes individuales */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-slate-800">
+                      Ítems de {activePathwayUnit ? activePathwayUnit.title : `Unidad ${selectedUnitNumber}`}:
+                    </span>
+                    <span className="text-[11px] font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-md">
+                      {completedItems.filter(k => k.startsWith(`u${selectedUnitNumber}_it`)).length} de {allUnitItems.length} ítems cubiertos
+                    </span>
+                  </div>
+
+                  <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
+                    {allUnitItems.map(item => {
+                      const isChecked = completedItems.includes(`u${selectedUnitNumber}_it${item.number}`);
+                      return (
+                        <div
+                          key={item.number}
+                          onClick={() => handleToggleUnitItem(item.number)}
+                          className={`p-3 rounded-2xl border transition-all cursor-pointer flex items-start gap-3 ${
+                            isChecked
+                              ? 'bg-emerald-50/70 border-emerald-300 shadow-2xs'
+                              : 'bg-slate-50/70 border-slate-200 hover:border-slate-300'
+                          }`}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={isChecked}
+                            onChange={() => {}} // handled by div
+                            className="w-4 h-4 mt-0.5 rounded-md text-emerald-600 focus:ring-emerald-500 border-slate-300"
+                          />
+                          <div className="flex-1 text-xs">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="font-mono font-bold text-slate-500 text-[11px]">
+                                Ítem {item.number}
+                              </span>
+                              <strong className={`font-bold ${isChecked ? 'text-emerald-950' : 'text-slate-800'}`}>
+                                {item.title}
+                              </strong>
+                              {item.audioTrack && (
+                                <span className="text-[10px] text-amber-700 bg-amber-100/60 px-1.5 py-0.2 rounded font-medium">
+                                  🎧 {item.audioTrack}
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-slate-500 text-[11px] mt-0.5">
+                              {item.description}
+                            </p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Formulario de Nota de Relevo Docente */}
+                <div className="pt-2 border-t border-slate-100 space-y-2">
+                  <label className="block text-xs font-bold text-slate-800">
+                    ✍️ Nota para el próximo Teacher (Handover / Relevo):
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={handoverNote}
+                    onChange={e => setHandoverNote(e.target.value)}
+                    placeholder="Ej: Se completó hasta la mitad de Grammar. Le costó la pronunciación de las preguntas. En la próxima clase arrancar con el listening..."
+                    className="w-full p-3 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500 focus:outline-hidden"
+                  />
+
+                  {handoverSuccessMsg && (
+                    <div className="p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold flex items-center gap-1.5 animate-fadeIn">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                      <span>{handoverSuccessMsg}</span>
+                    </div>
+                  )}
+
+                  <div className="flex justify-end">
+                    <button
+                      type="button"
+                      onClick={handleSaveHandoverNote}
+                      className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5 shadow-sm"
+                    >
+                      <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                      <span>Guardar Avance & Nota de Relevo</span>
+                    </button>
+                  </div>
+                </div>
               </div>
 
               {/* Bitácora de la Rectora & Notas */}
@@ -1101,6 +1389,22 @@ Como "Cokitö", el cerebro pedagógico institucional de Güakytopia, dame una re
           </div>
 
           <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+            {onDeleteStudent && (
+              <button
+                type="button"
+                onClick={() => {
+                  if (confirm(`¿Eliminar definitivamente el perfil de ${student.name} ${student.lastName || ''} del sistema? Esta acción es irreversible.`)) {
+                    onDeleteStudent(student.id);
+                    onClose();
+                  }
+                }}
+                className="w-full sm:w-auto px-4 py-2 bg-rose-50 hover:bg-rose-600 text-rose-700 hover:text-white border border-rose-200 font-bold rounded-xl text-xs transition-colors flex items-center justify-center gap-1.5"
+                title="Eliminar este perfil de alumno definitivamente"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Eliminar Perfil</span>
+              </button>
+            )}
             <button
               onClick={() => onOpenEditStudent(student)}
               className="w-full sm:w-auto px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl text-xs transition-colors flex items-center justify-center gap-1.5"

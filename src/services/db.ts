@@ -23,12 +23,49 @@ import {
 
 const STORAGE_KEYS = {
   STUDENTS: 'cokito_students_data_v3',
+  DELETED_STUDENTS: 'cokito_deleted_students_v3',
   SLOTS: 'cokito_slots_data_v3',
   TEACHERS: 'cokito_teachers_data_v1'
 };
 
+const DEFAULT_DELETED_STUDENT_IDS = [
+  'student_carla_lira',
+  'student_vanesa',
+  'student_ragni_ali_new',
+  'student_genesis',
+  'student_ana_sandoval',
+  'student_1791620647859',
+  'student_aspirante',
+  'student_mariana'
+];
+
+export function getDeletedStudentIds(): Set<string> {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEYS.DELETED_STUDENTS);
+    const arr = raw ? JSON.parse(raw) : [];
+    // Ensure student_1791585084637 and student_xiomara are not blocked by obsolete local storage
+    const cleaned = (Array.isArray(arr) ? arr : []).filter(
+      (id: string) => id !== 'student_1791585084637' && id !== 'student_xiomara'
+    );
+    const merged = Array.from(new Set([...DEFAULT_DELETED_STUDENT_IDS, ...cleaned]));
+    return new Set(merged);
+  } catch {
+    return new Set(DEFAULT_DELETED_STUDENT_IDS);
+  }
+}
+
 // 1. SAVE STUDENT (Local + Firestore Cloud + Server Backup)
 export async function saveStudent(student: Student): Promise<void> {
+  // If this student was marked deleted previously, unmark them
+  try {
+    const raw = localStorage.getItem(STORAGE_KEYS.DELETED_STUDENTS);
+    if (raw) {
+      const arr: string[] = JSON.parse(raw);
+      const filtered = arr.filter(id => id !== student.id);
+      localStorage.setItem(STORAGE_KEYS.DELETED_STUDENTS, JSON.stringify(filtered));
+    }
+  } catch {}
+
   // Always save locally first for instant offline response
   try {
     const local = getLocalStudents();
@@ -58,12 +95,18 @@ export async function saveStudent(student: Student): Promise<void> {
 // 2. GET STUDENTS LOCAL FALLBACK
 export function getLocalStudents(): Student[] {
   try {
+    const deleted = getDeletedStudentIds();
     const raw = localStorage.getItem(STORAGE_KEYS.STUDENTS);
-    if (!raw) return INITIAL_STUDENTS;
+    const baseList = INITIAL_STUDENTS.filter(s => !deleted.has(s.id));
+    if (!raw) return baseList;
     const parsed: Student[] = JSON.parse(raw);
     const map = new Map<string, Student>();
-    INITIAL_STUDENTS.forEach((s) => map.set(s.id, s));
-    parsed.forEach((s) => map.set(s.id, s));
+    baseList.forEach((s) => map.set(s.id, s));
+    parsed.forEach((s) => {
+      if (s && s.id && !deleted.has(s.id) && (s.status as string) !== 'deleted') {
+        map.set(s.id, s);
+      }
+    });
     return Array.from(map.values());
   } catch {
     return INITIAL_STUDENTS;
@@ -80,9 +123,16 @@ export function subscribeToStudents(callback: (students: Student[]) => void): ()
     .then(res => res.json())
     .then((serverStudents: Student[]) => {
       if (Array.isArray(serverStudents) && serverStudents.length > 0) {
+        const currentDeleted = getDeletedStudentIds();
         const map = new Map<string, Student>();
-        getLocalStudents().forEach(s => map.set(s.id, s));
-        serverStudents.forEach(s => map.set(s.id, s));
+        getLocalStudents().forEach(s => {
+          if (!currentDeleted.has(s.id)) map.set(s.id, s);
+        });
+        serverStudents.forEach(s => {
+          if (s && s.id && !currentDeleted.has(s.id) && (s.status as string) !== 'deleted') {
+            map.set(s.id, s);
+          }
+        });
         const merged = Array.from(map.values());
         try {
           localStorage.setItem(STORAGE_KEYS.STUDENTS, JSON.stringify(merged));
@@ -97,13 +147,19 @@ export function subscribeToStudents(callback: (students: Student[]) => void): ()
     const unsubscribe = onSnapshot(
       studentsCol, 
       (snapshot) => {
+        const currentDeleted = getDeletedStudentIds();
         if (!snapshot.empty) {
           const cloudStudents: Student[] = [];
-          snapshot.forEach((d) => cloudStudents.push(d.data() as Student));
+          snapshot.forEach((d) => {
+            const data = d.data() as Student;
+            if (data && data.id && !currentDeleted.has(data.id) && (data.status as string) !== 'deleted') {
+              cloudStudents.push(data);
+            }
+          });
           
           // Merge with INITIAL_STUDENTS to preserve baseline
           const map = new Map<string, Student>();
-          INITIAL_STUDENTS.forEach(s => map.set(s.id, s));
+          INITIAL_STUDENTS.filter(s => !currentDeleted.has(s.id)).forEach(s => map.set(s.id, s));
           cloudStudents.forEach(s => map.set(s.id, s));
           const merged = Array.from(map.values());
 
@@ -114,7 +170,9 @@ export function subscribeToStudents(callback: (students: Student[]) => void): ()
         } else {
           // Seed cloud if empty
           for (const s of INITIAL_STUDENTS) {
-            setDoc(doc(db, 'students', s.id), s).catch(() => null);
+            if (!currentDeleted.has(s.id)) {
+              setDoc(doc(db, 'students', s.id), s).catch(() => null);
+            }
           }
         }
       }, 
@@ -130,14 +188,29 @@ export function subscribeToStudents(callback: (students: Student[]) => void): ()
   }
 }
 
-// 4. SAVE SCHEDULE SLOTS (Local + Cloud)
+// 4. SAVE SCHEDULE SLOTS (Local + Cloud + Server)
 export async function saveSlots(slots: ScheduleSlot[]): Promise<void> {
+  const sanitized = slots.map(slot => {
+    if (slot.status === 'booked' && !slot.teacherName) {
+      return { ...slot, teacherName: 'Teacher Cokitö / Head Teacher' };
+    }
+    return slot;
+  });
+
   try {
-    localStorage.setItem(STORAGE_KEYS.SLOTS, JSON.stringify(slots));
+    localStorage.setItem(STORAGE_KEYS.SLOTS, JSON.stringify(sanitized));
   } catch {}
 
   try {
-    for (const slot of slots) {
+    await fetch('/api/slots', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(sanitized)
+    });
+  } catch {}
+
+  try {
+    for (const slot of sanitized) {
       const docRef = doc(db, 'slots', slot.id);
       await setDoc(docRef, slot, { merge: true });
     }
@@ -150,29 +223,128 @@ export async function saveSlots(slots: ScheduleSlot[]): Promise<void> {
 export function getLocalSlots(): ScheduleSlot[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEYS.SLOTS);
-    return raw ? JSON.parse(raw) : INITIAL_SCHEDULE_SLOTS;
+    if (!raw) return INITIAL_SCHEDULE_SLOTS;
+    const parsed: ScheduleSlot[] = JSON.parse(raw);
+    const map = new Map<string, ScheduleSlot>();
+    INITIAL_SCHEDULE_SLOTS.forEach(s => map.set(s.id, s));
+    parsed.forEach(s => map.set(s.id, s));
+    return Array.from(map.values());
   } catch {
     return INITIAL_SCHEDULE_SLOTS;
   }
 }
 
-// 6. DELETE STUDENT (Local + Cloud)
+// 5.1 SUBSCRIBE TO SLOTS IN REALTIME FROM FIRESTORE & SERVER
+export function subscribeToSlots(callback: (slots: ScheduleSlot[]) => void): () => void {
+  // Initialize immediately with local data
+  callback(getLocalSlots());
+
+  // Also fetch from server cache immediately to bridge cross-device changes
+  fetch('/api/slots')
+    .then(res => res.json())
+    .then((serverSlots: ScheduleSlot[]) => {
+      if (Array.isArray(serverSlots) && serverSlots.length > 0) {
+        const map = new Map<string, ScheduleSlot>();
+        INITIAL_SCHEDULE_SLOTS.forEach(s => map.set(s.id, s));
+        serverSlots.forEach(s => map.set(s.id, s));
+        const merged = Array.from(map.values());
+        try {
+          localStorage.setItem(STORAGE_KEYS.SLOTS, JSON.stringify(merged));
+        } catch {}
+        callback(merged);
+      }
+    })
+    .catch(() => null);
+
+  try {
+    const slotsCol = collection(db, 'slots');
+    const unsubscribe = onSnapshot(
+      slotsCol,
+      (snapshot) => {
+        if (!snapshot.empty) {
+          const cloudSlots: ScheduleSlot[] = [];
+          snapshot.forEach(d => cloudSlots.push(d.data() as ScheduleSlot));
+          const map = new Map<string, ScheduleSlot>();
+          INITIAL_SCHEDULE_SLOTS.forEach(s => map.set(s.id, s));
+          cloudSlots.forEach(s => map.set(s.id, s));
+          const merged = Array.from(map.values());
+          try {
+            localStorage.setItem(STORAGE_KEYS.SLOTS, JSON.stringify(merged));
+          } catch {}
+          callback(merged);
+        } else {
+          // Seed cloud if empty
+          for (const s of INITIAL_SCHEDULE_SLOTS) {
+            setDoc(doc(db, 'slots', s.id), s).catch(() => null);
+          }
+        }
+      },
+      (error) => {
+        console.warn('Firestore slots real-time subscription note:', error.message);
+      }
+    );
+    return unsubscribe;
+  } catch (err) {
+    console.warn('Could not setup Firestore onSnapshot for slots:', err);
+    return () => {};
+  }
+}
+
+// 6. DELETE STUDENT (Local + Firestore Cloud + Server Backup + Slot Unenrollment)
 export async function deleteStudent(studentId: string): Promise<void> {
+  // 1. Mark in permanent deleted set
+  try {
+    const raw = localStorage.getItem(STORAGE_KEYS.DELETED_STUDENTS);
+    const set: string[] = raw ? JSON.parse(raw) : [];
+    if (!set.includes(studentId)) {
+      set.push(studentId);
+      localStorage.setItem(STORAGE_KEYS.DELETED_STUDENTS, JSON.stringify(set));
+    }
+  } catch {}
+
+  // 2. Remove from local storage
   try {
     const local = getLocalStudents();
     const filtered = local.filter(s => s.id !== studentId);
     localStorage.setItem(STORAGE_KEYS.STUDENTS, JSON.stringify(filtered));
   } catch {}
 
+  // 3. Delete document completely from Firestore Cloud
   try {
     const docRef = doc(db, 'students', studentId);
-    await setDoc(docRef, { status: 'inactive' }, { merge: true });
+    await deleteDoc(docRef);
+    console.log('🗑️ Student deleted from Firestore Cloud:', studentId);
   } catch (e) {
-    console.warn('Could not sync student deletion to Firestore:', e);
+    console.warn('Could not delete student from Firestore:', e);
   }
 
+  // 4. Delete from server-side cache
   try {
     await fetch(`/api/students/${studentId}`, { method: 'DELETE' });
+  } catch {}
+
+  // 5. Unenroll student from any schedule slots so the slot is released
+  try {
+    const currentSlots = getLocalSlots();
+    let slotsChanged = false;
+    const updatedSlots = currentSlots.map(slot => {
+      const hasStudent = slot.studentId === studentId || slot.enrolledStudents?.some(e => e.studentId === studentId);
+      if (!hasStudent) return slot;
+
+      slotsChanged = true;
+      const enrolled = (slot.enrolledStudents || []).filter(e => e.studentId !== studentId);
+      return {
+        ...slot,
+        enrolledStudents: enrolled,
+        studentId: enrolled[0]?.studentId,
+        studentName: enrolled[0]?.studentName,
+        status: (enrolled.length === 0 ? 'available' : slot.status) as any
+      };
+    });
+
+    if (slotsChanged) {
+      await saveSlots(updatedSlots);
+    }
   } catch {}
 }
 
@@ -180,7 +352,18 @@ export async function deleteStudent(studentId: string): Promise<void> {
 export function getLocalTeachers(): Teacher[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEYS.TEACHERS);
-    return raw ? JSON.parse(raw) : INITIAL_TEACHERS;
+    const parsed: Teacher[] = raw ? JSON.parse(raw) : INITIAL_TEACHERS;
+    // Purge any occurrence of "Deina" completely as instructed by Directora Waky
+    const cleaned = parsed.filter(t => 
+      !t.name?.toLowerCase().includes('deina') && 
+      !t.lastName?.toLowerCase().includes('deina') && 
+      !t.id?.toLowerCase().includes('deina')
+    );
+    // Ensure Head Teacher Cokitö is always present
+    if (!cleaned.some(t => t.id === 'teacher_cokito' || t.name?.toLowerCase().includes('waky'))) {
+      cleaned.unshift(INITIAL_TEACHERS[0]);
+    }
+    return cleaned;
   } catch {
     return INITIAL_TEACHERS;
   }

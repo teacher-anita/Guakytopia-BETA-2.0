@@ -102,7 +102,7 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
               onClick={onStartRegistration}
               className="px-8 py-4 bg-[#2EC4B6] hover:bg-[#259C90] text-[#18232F] rounded-2xl font-black text-sm shadow-lg transition-transform hover:scale-102 flex items-center justify-center gap-2"
             >
-              <span>Hacer Prueba Diagnóstica (25 Preguntas)</span>
+              <span>Hacer Prueba Diagnóstica (50 Preguntas)</span>
               <ArrowRight className="w-4 h-4" />
             </button>
             {onOpenPricingModal && (

@@ -136,7 +136,7 @@ export interface Student {
   teacherName?: string;
   isExclusiveTeacher?: boolean; // If true: dedicated mentor only; If false: Rotational across Güakytopia's Flock
   status: 'pending_evaluation' | 'enrolled' | 'completed' | 'paused';
-  placementTestScore?: number; // 0-25
+  placementTestScore?: number; // 0-50
   placementTestDiagnosis?: string;
   placementTestDate?: string;
   
@@ -174,6 +174,19 @@ export interface Student {
   bookedSessions?: BookedSession[];
   /** Pilot Telemetry and Real Interaction Tracking */
   telemetry?: StudentTelemetry;
+  /** Granular item-by-item completion tracking within units (e.g. ['u1_1', 'u1_2', 'u1_3']) */
+  completedUnitItems?: string[];
+  /** Teacher Handover & Progress Marker for teacher continuity across classes */
+  unitHandover?: {
+    lastCompletedUnit: number;
+    lastCompletedItemNumber: number;
+    lastCompletedItemTitle: string;
+    nextItemNumber: number;
+    nextItemTitle: string;
+    teacherNote: string;
+    teacherName: string;
+    updatedAt: string;
+  };
 }
 
 export interface StudentActivityEvent {
@@ -292,9 +305,9 @@ export interface ClassroomMaterial {
 
 export interface PlacementQuestion {
   id: number;
-  part: 1 | 2;
+  part: number;
   partTitle: string;
-  category: 'grammar' | 'reading' | 'fill_in';
+  category: 'grammar' | 'reading' | 'vocabulary' | 'fill_in';
   question: string;
   contextText?: string;
   options?: string[];
