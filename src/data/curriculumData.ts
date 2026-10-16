@@ -644,7 +644,7 @@ export const INITIAL_STUDENTS: Student[] = [
     league: 'Oro',
     rating: { fluency: 4, grammar: 3, vocabulary: 4, pronunciation: 4 },
     notes: 'Excelente pronunciación. Reforzando el uso del Present Perfect vs Past Simple.',
-    assignedSlots: ['Lunes-18:00', 'Miércoles-18:00']
+    assignedSlots: ['lun_19', 'mie_19']
   },
   {
     id: 'student_1791585084637',
@@ -676,7 +676,7 @@ export const INITIAL_STUDENTS: Student[] = [
     streak: 2,
     league: 'Plata',
     rating: { fluency: 3, grammar: 3, vocabulary: 3, pronunciation: 3 },
-    notes: 'Horario oficial confirmado: Martes y Jueves de 4:00 a 5:00 pm con Teacher Cokitö. Petición adicional: 10:00 am a 11:00 am.',
+    notes: 'Horario oficial confirmado: Martes y Jueves de 4:00 a 5:00 pm con Teacher Cokitö.',
     assignedSlots: ['mar_16', 'jue_16'],
     coupons: ['TESTER-2H'],
     couponCodeAssigned: 'TESTER-2H',
@@ -886,8 +886,8 @@ export const INITIAL_SCHEDULE_SLOTS: ScheduleSlot[] = [
         };
       }
 
-      // 6. María Guadalupe: Martes y Jueves de 6:00 a 7:00 pm (18:00 - 19:00)
-      if (slotId === 'mar_18' || slotId === 'jue_18') {
+      // 6. María Guadalupe: Lunes y Miércoles de 6:00 a 7:00 pm (18:00 - 19:00)
+      if (slotId === 'lun_18' || slotId === 'mie_18') {
         return {
           id: slotId,
           day,
@@ -898,15 +898,39 @@ export const INITIAL_SCHEDULE_SLOTS: ScheduleSlot[] = [
           classroomTitle: 'Aula Teachers CSB (María Guadalupe)',
           enrolledStudents: [{
             studentId: 'student_maria_guadalupe',
-            studentName: 'María Guadalupe Peña Montilla',
+            studentName: 'Maria Guadalupe Peña Montilla',
             levelId: 'level_1'
           }],
           teacherName: 'Teacher Cokitö / Head Teacher',
           studentId: 'student_maria_guadalupe',
-          studentName: 'María Guadalupe Peña Montilla',
+          studentName: 'Maria Guadalupe Peña Montilla',
           levelId: 'level_1',
           status: 'booked' as const,
           meetLink: 'https://meet.google.com/eng-malu-waky'
+        };
+      }
+
+      // 7. Carlos Mendoza: Lunes y Miércoles de 7:00 a 8:00 pm (19:00 - 20:00)
+      if (slotId === 'lun_19' || slotId === 'mie_19') {
+        return {
+          id: slotId,
+          day,
+          startTime: start,
+          endTime: end,
+          slotType: 'individual' as const,
+          maxCapacity: 1,
+          classroomTitle: 'Aula Individual (Carlos Mendoza)',
+          enrolledStudents: [{
+            studentId: 'student_carlos',
+            studentName: 'Carlos Mendoza',
+            levelId: 'level_3'
+          }],
+          teacherName: 'Teacher Cokitö / Head Teacher',
+          studentId: 'student_carlos',
+          studentName: 'Carlos Mendoza',
+          levelId: 'level_3',
+          status: 'booked' as const,
+          meetLink: 'https://meet.google.com/eng-carlos-waky'
         };
       }
 

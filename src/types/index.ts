@@ -176,6 +176,10 @@ export interface Student {
   telemetry?: StudentTelemetry;
   /** Granular item-by-item completion tracking within units (e.g. ['u1_1', 'u1_2', 'u1_3']) */
   completedUnitItems?: string[];
+  /** Items marked by the student during class or self-study, awaiting Teacher confirmation */
+  pendingUnitItems?: string[];
+  /** Teacher-assigned custom password */
+  customPassword?: string;
   /** Teacher Handover & Progress Marker for teacher continuity across classes */
   unitHandover?: {
     lastCompletedUnit: number;

@@ -4437,100 +4437,194 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
                 </div>
               </div>
 
-              {/* 1. SELECCIÓN RÁPIDA DE PLANTILLAS DE HORARIO */}
-              <div>
-                <label className="font-black text-slate-800 uppercase tracking-wider text-[11px] block mb-2">
-                  ⚡ Plantillas Rápidas de Horario:
-                </label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {/* MODALIDAD DE ASIGNACIÓN: MES COMPLETO / PREPAGO PUNTUAL / SEMANAL FIJO */}
+              <div className="space-y-3">
+                <div className="bg-slate-100 p-1 rounded-2xl flex flex-col sm:flex-row gap-1">
                   <button
                     type="button"
-                    onClick={() => handleApplyPresetSlot({
-                      days: ['Sábado'],
-                      start: '10:00 AM',
-                      end: '12:00 PM',
-                      frequency: 'Todos los Sábados',
-                      label: 'Sábados de 10:00 am a 12:00 pm (Todos los Sábados)'
-                    })}
-                    className={`p-3 rounded-2xl border text-left transition-all ${
-                      assignDays.includes('Sábado') && assignStartTime === '10:00 AM' && assignEndTime === '12:00 PM'
-                        ? 'bg-amber-400/20 border-amber-500 ring-2 ring-amber-400/60 shadow-xs'
-                        : 'bg-slate-50 hover:bg-amber-50 border-slate-200'
+                    onClick={() => setAssignSchedulingMode('monthly_auto')}
+                    className={`flex-1 py-2.5 px-3 rounded-xl font-black text-xs transition-all flex items-center justify-center gap-1.5 ${
+                      assignSchedulingMode === 'monthly_auto'
+                        ? 'bg-slate-900 text-amber-300 shadow-md ring-2 ring-amber-400'
+                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
                     }`}
                   >
-                    <div className="flex items-center justify-between">
-                      <span className="font-black text-slate-900 text-xs">⭐ Todos los Sábados (10am - 12m)</span>
-                      <span className="text-[10px] bg-amber-400 text-slate-950 px-2 py-0.5 rounded-full font-black">2 Horas</span>
-                    </div>
-                    <span className="text-[11px] text-slate-500 mt-1 block">Ideal para alumnos de fin de semana (Génesis, intensivo laboral).</span>
+                    <Calendar className="w-4 h-4 text-amber-400 shrink-0" />
+                    <span>📅 Plan Mes Completo (8 Clases)</span>
                   </button>
-
                   <button
                     type="button"
-                    onClick={() => handleApplyPresetSlot({
-                      days: ['Sábado'],
-                      start: '09:00 AM',
-                      end: '11:00 AM',
-                      frequency: 'Todos los Sábados',
-                      label: 'Sábados de 09:00 am a 11:00 am (Todos los Sábados)'
-                    })}
-                    className={`p-3 rounded-2xl border text-left transition-all ${
-                      assignDays.includes('Sábado') && assignStartTime === '09:00 AM' && assignEndTime === '11:00 AM'
-                        ? 'bg-amber-400/20 border-amber-500 ring-2 ring-amber-400/60 shadow-xs'
-                        : 'bg-slate-50 hover:bg-amber-50 border-slate-200'
+                    onClick={() => setAssignSchedulingMode('prepaid_picker')}
+                    className={`flex-1 py-2.5 px-3 rounded-xl font-black text-xs transition-all flex items-center justify-center gap-1.5 ${
+                      assignSchedulingMode === 'prepaid_picker'
+                        ? 'bg-emerald-700 text-white shadow-md ring-2 ring-emerald-400'
+                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
                     }`}
                   >
-                    <div className="flex items-center justify-between">
-                      <span className="font-black text-slate-900 text-xs">Sábados Mañana (9am - 11am)</span>
-                      <span className="text-[10px] bg-slate-200 text-slate-800 px-2 py-0.5 rounded-full font-bold">2 Horas</span>
-                    </div>
-                    <span className="text-[11px] text-slate-500 mt-1 block">Franja matutina de fin de semana.</span>
+                    <Tag className="w-4 h-4 text-emerald-300 shrink-0" />
+                    <span>🎟️ Clases Prepagadas (Fechas)</span>
                   </button>
-
                   <button
                     type="button"
-                    onClick={() => handleApplyPresetSlot({
-                      days: ['Lunes', 'Miércoles'],
-                      start: '05:00 PM',
-                      end: '06:00 PM',
-                      frequency: '2 veces por semana',
-                      label: 'Lunes y Miércoles 05:00 pm - 06:00 pm (2 veces por semana)'
-                    })}
-                    className={`p-3 rounded-2xl border text-left transition-all ${
-                      assignDays.includes('Lunes') && assignDays.includes('Miércoles') && assignStartTime === '05:00 PM'
-                        ? 'bg-amber-400/20 border-amber-500 ring-2 ring-amber-400/60 shadow-xs'
-                        : 'bg-slate-50 hover:bg-amber-50 border-slate-200'
+                    onClick={() => setAssignSchedulingMode('recurring')}
+                    className={`flex-1 py-2.5 px-3 rounded-xl font-black text-xs transition-all flex items-center justify-center gap-1.5 ${
+                      assignSchedulingMode === 'recurring'
+                        ? 'bg-indigo-900 text-white shadow-md ring-2 ring-indigo-400'
+                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
                     }`}
                   >
-                    <div className="flex items-center justify-between">
-                      <span className="font-black text-slate-900 text-xs">Lunes y Miércoles (5pm - 6pm)</span>
-                      <span className="text-[10px] bg-slate-200 text-slate-800 px-2 py-0.5 rounded-full font-bold">2 h/sem</span>
-                    </div>
-                    <span className="text-[11px] text-slate-500 mt-1 block">Frecuencia entre semana vespertina.</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => handleApplyPresetSlot({
-                      days: ['Martes', 'Jueves'],
-                      start: '04:00 PM',
-                      end: '05:00 PM',
-                      frequency: '2 veces por semana',
-                      label: 'Martes y Jueves 04:00 pm - 05:00 pm (2 veces por semana)'
-                    })}
-                    className={`p-3 rounded-2xl border text-left transition-all ${
-                      assignDays.includes('Martes') && assignDays.includes('Jueves')
-                        ? 'bg-amber-400/20 border-amber-500 ring-2 ring-amber-400/60 shadow-xs'
-                        : 'bg-slate-50 hover:bg-amber-50 border-slate-200'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="font-black text-slate-900 text-xs">Martes y Jueves (4pm - 5pm)</span>
-                      <span className="text-[10px] bg-slate-200 text-slate-800 px-2 py-0.5 rounded-full font-bold">2 h/sem</span>
-                    </div>
-                    <span className="text-[11px] text-slate-500 mt-1 block">Frecuencia dúo entre semana.</span>
+                    <Clock className="w-4 h-4 text-indigo-300 shrink-0" />
+                    <span>🔄 Semanal Fijo</span>
                   </button>
                 </div>
+
+                {/* CONTENIDO SEGÚN MODO SELECCIONADO */}
+                {assignSchedulingMode === 'monthly_auto' && (
+                  <div className="p-4 bg-amber-500/10 rounded-2xl border border-amber-300/80 space-y-3">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                      <div>
+                        <span className="font-black text-slate-900 text-xs block">
+                          📅 Generador Automático de Mes Completo (8 Clases Fechadas)
+                        </span>
+                        <p className="text-[11px] text-slate-600">
+                          Si el alumno pagó el mes por adelantado, genera de inmediato todas las fechas exactas con día, número y mes.
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <select
+                          value={assignSelectedMonth}
+                          onChange={e => setAssignSelectedMonth(Number(e.target.value))}
+                          className="p-2 bg-white border border-slate-300 rounded-xl font-black text-xs text-slate-900"
+                        >
+                          <option value={9}>Octubre 2026</option>
+                          <option value={10}>Noviembre 2026</option>
+                          <option value={11}>Diciembre 2026</option>
+                          <option value={0}>Enero 2027</option>
+                          <option value={1}>Febrero 2027</option>
+                          <option value={2}>Marzo 2027</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 border-t border-amber-200/60">
+                      <div className="text-[11px] font-bold text-amber-950 flex items-center gap-2">
+                        <span>Frecuencia: {assignDays.join(' y ')} ({assignStartTime} a {assignEndTime})</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleGenerateFullMonthClasses}
+                        className="px-4 py-2 bg-amber-400 hover:bg-amber-300 text-slate-950 rounded-xl font-black text-xs shadow-md transition-all flex items-center justify-center gap-1.5"
+                      >
+                        <Sparkles className="w-3.5 h-3.5 text-slate-950" />
+                        <span>Generar 8 Clases del Mes</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {assignSchedulingMode === 'prepaid_picker' && (
+                  <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-300 space-y-3">
+                    <div>
+                      <span className="font-black text-emerald-950 text-xs block">
+                        🎟️ Agendar Sesión Prepagada Puntual
+                      </span>
+                      <p className="text-[11px] text-emerald-800">
+                        Selecciona día exacto de calendario y hora para descontar de su saldo de clases prepagadas.
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                      <div>
+                        <span className="text-[11px] font-bold text-slate-600 block mb-1">Fecha de la Clase:</span>
+                        <input
+                          type="date"
+                          value={prepaidDateInput}
+                          onChange={e => setPrepaidDateInput(e.target.value)}
+                          className="w-full p-2 bg-white border border-slate-300 rounded-xl text-xs font-bold text-slate-900"
+                        />
+                      </div>
+                      <div>
+                        <span className="text-[11px] font-bold text-slate-600 block mb-1">Hora de la Clase:</span>
+                        <select
+                          value={prepaidTimeInput}
+                          onChange={e => setPrepaidTimeInput(e.target.value)}
+                          className="w-full p-2 bg-white border border-slate-300 rounded-xl text-xs font-bold text-slate-900"
+                        >
+                          {[
+                            '08:00 AM', '09:00 AM', '10:00 AM', '11:00 AM', '12:00 PM',
+                            '01:00 PM', '02:00 PM', '03:00 PM', '04:00 PM', '05:00 PM',
+                            '06:00 PM', '07:00 PM', '08:00 PM', '09:00 PM'
+                          ].map(t => (
+                            <option key={t} value={t}>{t}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="flex items-end">
+                        <button
+                          type="button"
+                          onClick={handleAddPrepaidDatedClass}
+                          className="w-full py-2 px-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-md transition-colors flex items-center justify-center gap-1"
+                        >
+                          <Plus className="w-4 h-4" />
+                          <span>Agregar Fecha</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {assignSchedulingMode === 'recurring' && (
+                  <div>
+                    <label className="font-black text-slate-800 uppercase tracking-wider text-[11px] block mb-2">
+                      ⚡ Plantillas Rápidas de Horario Fijo:
+                    </label>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleApplyPresetSlot({
+                          days: ['Sábado'],
+                          start: '10:00 AM',
+                          end: '12:00 PM',
+                          frequency: 'Todos los Sábados',
+                          label: 'Sábados de 10:00 am a 12:00 pm (Todos los Sábados)'
+                        })}
+                        className={`p-3 rounded-2xl border text-left transition-all ${
+                          assignDays.includes('Sábado') && assignStartTime === '10:00 AM' && assignEndTime === '12:00 PM'
+                            ? 'bg-amber-400/20 border-amber-500 ring-2 ring-amber-400/60 shadow-xs'
+                            : 'bg-slate-50 hover:bg-amber-50 border-slate-200'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="font-black text-slate-900 text-xs">⭐ Todos los Sábados (10am - 12m)</span>
+                          <span className="text-[10px] bg-amber-400 text-slate-950 px-2 py-0.5 rounded-full font-black">2 Horas</span>
+                        </div>
+                        <span className="text-[11px] text-slate-500 mt-1 block">Ideal para alumnos de fin de semana.</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleApplyPresetSlot({
+                          days: ['Lunes', 'Miércoles'],
+                          start: '05:00 PM',
+                          end: '06:00 PM',
+                          frequency: '2 veces por semana',
+                          label: 'Lunes y Miércoles 05:00 pm - 06:00 pm (2 veces por semana)'
+                        })}
+                        className={`p-3 rounded-2xl border text-left transition-all ${
+                          assignDays.includes('Lunes') && assignDays.includes('Miércoles') && assignStartTime === '05:00 PM'
+                            ? 'bg-amber-400/20 border-amber-500 ring-2 ring-amber-400/60 shadow-xs'
+                            : 'bg-slate-50 hover:bg-amber-50 border-slate-200'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="font-black text-slate-900 text-xs">Lunes y Miércoles (5pm - 6pm)</span>
+                          <span className="text-[10px] bg-slate-200 text-slate-800 px-2 py-0.5 rounded-full font-bold">2 h/sem</span>
+                        </div>
+                        <span className="text-[11px] text-slate-500 mt-1 block">Frecuencia entre semana vespertina.</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* 2. SELECTOR DINÁMICO DE DÍAS (PILLS CLICKEABLES) */}

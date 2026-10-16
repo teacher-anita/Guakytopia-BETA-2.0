@@ -90,6 +90,40 @@ export async function saveStudent(student: Student): Promise<void> {
       body: JSON.stringify(student)
     });
   } catch {}
+
+  // Bidirectional sync: If student has assignedSlots, lock them in Firestore Cloud and Server!
+  if (Array.isArray(student.assignedSlots) && student.assignedSlots.length > 0) {
+    const studentFullName = `${student.name} ${student.lastName || ''}`.trim();
+    for (const rawSlotId of student.assignedSlots) {
+      let slotId = rawSlotId;
+      if (rawSlotId.includes('-')) {
+        const [d, t] = rawSlotId.split('-');
+        const dayPrefix = d.toLowerCase().slice(0, 3);
+        const hour = t.split(':')[0];
+        slotId = `${dayPrefix}_${hour}`;
+      }
+      try {
+        const slotRef = doc(db, 'slots', slotId);
+        await setDoc(slotRef, {
+          id: slotId,
+          status: 'booked',
+          studentId: student.id,
+          studentName: studentFullName,
+          levelId: student.levelId || 'level_1',
+          teacherName: 'Teacher Cokitö / Head Teacher',
+          meetLink: 'https://meet.google.com/eng-class',
+          enrolledStudents: [{
+            studentId: student.id,
+            studentName: studentFullName,
+            levelId: student.levelId || 'level_1'
+          }]
+        }, { merge: true });
+        console.log(`🔒 Slot ${slotId} locked in cloud for student ${studentFullName}`);
+      } catch (err) {
+        console.warn(`Could not lock slot ${slotId} in Firestore:`, err);
+      }
+    }
+  }
 }
 
 // 2. GET STUDENTS LOCAL FALLBACK
@@ -227,7 +261,14 @@ export function getLocalSlots(): ScheduleSlot[] {
     const parsed: ScheduleSlot[] = JSON.parse(raw);
     const map = new Map<string, ScheduleSlot>();
     INITIAL_SCHEDULE_SLOTS.forEach(s => map.set(s.id, s));
-    parsed.forEach(s => map.set(s.id, s));
+    parsed.forEach(s => {
+      const init = map.get(s.id);
+      if (init && init.status === 'booked' && s.status !== 'booked') {
+        map.set(s.id, init);
+      } else {
+        map.set(s.id, s);
+      }
+    });
     return Array.from(map.values());
   } catch {
     return INITIAL_SCHEDULE_SLOTS;

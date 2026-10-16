@@ -135,11 +135,23 @@ export const LearningPathway: React.FC<LearningPathwayProps> = ({
 
   const activeLevel = PATHWAY_LEVELS.find(l => l.levelId === selectedLevelId) || PATHWAY_LEVELS[0];
 
-  // Item-by-item granular tracking
+  // Explorer mode for students to look at other levels without losing their official path
+  const [isExplorerMode, setIsExplorerMode] = useState(false);
+
+  // Item-by-item granular tracking (Confirmed by Teacher)
   const [completedItems, setCompletedItems] = useState<Record<string, boolean>>(() => {
     const map: Record<string, boolean> = {};
     if (currentStudent?.completedUnitItems) {
       currentStudent.completedUnitItems.forEach(k => { map[k] = true; });
+    }
+    return map;
+  });
+
+  // Items marked by student during self-study or live class, awaiting Teacher confirmation
+  const [pendingItems, setPendingItems] = useState<Record<string, boolean>>(() => {
+    const map: Record<string, boolean> = {};
+    if (currentStudent?.pendingUnitItems) {
+      currentStudent.pendingUnitItems.forEach(k => { map[k] = true; });
     }
     return map;
   });
@@ -154,6 +166,16 @@ export const LearningPathway: React.FC<LearningPathwayProps> = ({
     });
   };
 
+  const handleTeacherAssignUnit = (newUnitNum: number) => {
+    if (!currentStudent || !onUpdateStudent) return;
+    onUpdateStudent({
+      ...currentStudent,
+      currentUnit: newUnitNum
+    });
+    setCopiedNotice(`🎓 Unidad ${newUnitNum} asignada como oficial para ${currentStudent.name}`);
+    setTimeout(() => setCopiedNotice(null), 3000);
+  };
+
   const toggleItemCompletion = (
     unit: PathwayUnit,
     itemNumber: number,
@@ -161,9 +183,37 @@ export const LearningPathway: React.FC<LearningPathwayProps> = ({
     session: PathwaySession
   ) => {
     const itemKey = `u${unit.unitNumber}_it${itemNumber}`;
+
+    if (!isTeacher) {
+      // Student Flow: Mark as pending verification by Teacher Cokitö
+      const nextPendingVal = !pendingItems[itemKey];
+      const newPending = { ...pendingItems, [itemKey]: nextPendingVal };
+      setPendingItems(newPending);
+
+      const pendingKeysList = Object.keys(newPending).filter(k => newPending[k]);
+
+      if (currentStudent && onUpdateStudent) {
+        onUpdateStudent({
+          ...currentStudent,
+          pendingUnitItems: pendingKeysList
+        });
+      }
+
+      setCopiedNotice(
+        nextPendingVal
+          ? `🟡 Ítem ${itemNumber} marcado por ti. Pendiente de confirmación por Teacher Cokitö para sumar XP.`
+          : `Ítem ${itemNumber} desmarcado.`
+      );
+      setTimeout(() => setCopiedNotice(null), 3500);
+      return;
+    }
+
+    // Teacher Flow: Direct official confirmation
     const nextVal = !completedItems[itemKey];
     const newItems = { ...completedItems, [itemKey]: nextVal };
+    const newPending = { ...pendingItems, [itemKey]: false };
     setCompletedItems(newItems);
+    setPendingItems(newPending);
 
     if (nextVal && currentStudent) {
       onAwardXp(currentStudent.id, 10);
@@ -176,6 +226,8 @@ export const LearningPathway: React.FC<LearningPathwayProps> = ({
     setCompletedSessions(prev => ({ ...prev, [sessionKey]: allSessionDone }));
 
     const completedKeysList = Object.keys(newItems).filter(k => newItems[k]);
+    const pendingKeysList = Object.keys(newPending).filter(k => newPending[k]);
+
     const unitNums = completedKeysList
       .filter(k => k.startsWith(`u${unit.unitNumber}_it`))
       .map(k => parseInt(k.replace(`u${unit.unitNumber}_it`, ''), 10))
@@ -192,7 +244,7 @@ export const LearningPathway: React.FC<LearningPathwayProps> = ({
       nextItemNumber: maxCompleted + 1,
       nextItemTitle: nextItemObj ? nextItemObj.title : (maxCompleted >= allUnitItems.length ? '¡Unidad Completada! 🎉' : `Ítem ${maxCompleted + 1}`),
       teacherNote: currentStudent?.unitHandover?.teacherNote || '',
-      teacherName: isTeacher ? 'Teacher Cokitö' : (currentStudent?.teacherName || 'Teacher Cokitö'),
+      teacherName: 'Teacher Cokitö',
       updatedAt: new Date().toLocaleDateString('es-VE', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
     };
 
@@ -201,9 +253,96 @@ export const LearningPathway: React.FC<LearningPathwayProps> = ({
         ...currentStudent,
         currentUnit: unit.unitNumber,
         completedUnitItems: completedKeysList,
+        pendingUnitItems: pendingKeysList,
         unitHandover: updatedHandover
       });
     }
+  };
+
+  const handleTeacherConfirmPending = (
+    unit: PathwayUnit,
+    itemNumber: number
+  ) => {
+    const itemKey = `u${unit.unitNumber}_it${itemNumber}`;
+    const newItems = { ...completedItems, [itemKey]: true };
+    const newPending = { ...pendingItems, [itemKey]: false };
+    setCompletedItems(newItems);
+    setPendingItems(newPending);
+
+    if (currentStudent) {
+      onAwardXp(currentStudent.id, 15);
+    }
+
+    const completedKeysList = Object.keys(newItems).filter(k => newItems[k]);
+    const pendingKeysList = Object.keys(newPending).filter(k => newPending[k]);
+
+    const unitNums = completedKeysList
+      .filter(k => k.startsWith(`u${unit.unitNumber}_it`))
+      .map(k => parseInt(k.replace(`u${unit.unitNumber}_it`, ''), 10))
+      .filter(n => !isNaN(n));
+    const maxCompleted = unitNums.length > 0 ? Math.max(...unitNums) : 0;
+    const allUnitItems = unit.sessions.flatMap(s => s.items);
+    const lastItemObj = allUnitItems.find(it => it.number === maxCompleted);
+    const nextItemObj = allUnitItems.find(it => it.number === maxCompleted + 1);
+
+    const updatedHandover = {
+      lastCompletedUnit: unit.unitNumber,
+      lastCompletedItemNumber: maxCompleted,
+      lastCompletedItemTitle: lastItemObj ? lastItemObj.title : (maxCompleted > 0 ? `Ítem ${maxCompleted}` : 'Por iniciar'),
+      nextItemNumber: maxCompleted + 1,
+      nextItemTitle: nextItemObj ? nextItemObj.title : (maxCompleted >= allUnitItems.length ? '¡Unidad Completada! 🎉' : `Ítem ${maxCompleted + 1}`),
+      teacherNote: currentStudent?.unitHandover?.teacherNote || '',
+      teacherName: 'Teacher Cokitö',
+      updatedAt: new Date().toLocaleDateString('es-VE', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+    };
+
+    if (currentStudent && onUpdateStudent) {
+      onUpdateStudent({
+        ...currentStudent,
+        completedUnitItems: completedKeysList,
+        pendingUnitItems: pendingKeysList,
+        unitHandover: updatedHandover
+      });
+    }
+
+    setCopiedNotice(`✅ Ítem ${itemNumber} validado y confirmado por Teacher Cokitö (+15 XP)`);
+    setTimeout(() => setCopiedNotice(null), 3000);
+  };
+
+  const handleTeacherConfirmAllPendingInUnit = (unit: PathwayUnit) => {
+    const nextPending = { ...pendingItems };
+    const nextCompleted = { ...completedItems };
+    let confirmedCount = 0;
+
+    unit.sessions.flatMap(s => s.items).forEach(it => {
+      const key = `u${unit.unitNumber}_it${it.number}`;
+      if (nextPending[key]) {
+        nextPending[key] = false;
+        nextCompleted[key] = true;
+        confirmedCount++;
+      }
+    });
+
+    setPendingItems(nextPending);
+    setCompletedItems(nextCompleted);
+
+    if (currentStudent && confirmedCount > 0) {
+      onAwardXp(currentStudent.id, confirmedCount * 15);
+    }
+
+    const completedKeysList = Object.keys(nextCompleted).filter(k => nextCompleted[k]);
+    const pendingKeysList = Object.keys(nextPending).filter(k => nextPending[k]);
+
+    if (currentStudent && onUpdateStudent) {
+      onUpdateStudent({
+        ...currentStudent,
+        completedUnitItems: completedKeysList,
+        pendingUnitItems: pendingKeysList
+      });
+    }
+
+    setCopiedNotice(`✅ ${confirmedCount} ítems confirmados por Teacher Cokitö (+${confirmedCount * 15} XP)`);
+    setTimeout(() => setCopiedNotice(null), 3500);
   };
 
   const handleCopyClassroomTemplate = (unit: PathwayUnit, session: PathwaySession) => {

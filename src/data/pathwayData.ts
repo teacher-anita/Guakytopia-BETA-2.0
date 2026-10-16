@@ -37,6 +37,9 @@ export interface PathwayUnit {
   unitNumber: number;
   title: string;
   bookTitle: string;
+  isExpansion?: boolean;
+  expansionLabel?: string;
+  displayOrder?: number;
   studentBookCode?: string; // Standard format: SG01-SB-U01
   workbookCode?: string;    // Standard format: SG01-WB-U01
   sbPages: string;
@@ -306,7 +309,545 @@ export const PATHWAY_LEVELS: PathwayLevel[] = [
             explanation: '"How old are you?" is the standard formula to inquire about someone\'s age.'
           }
         ]
+      },
+
+      // UNIT 3: What's That?
+      {
+        unitNumber: 3,
+        displayOrder: 3,
+        title: "What's That?",
+        bookTitle: 'SuperGoal 1',
+        studentBookCode: 'SG01-SB-U03',
+        workbookCode: 'SG01-WB-U03',
+        sbPages: 'Pages 18 to 25',
+        wbPages: 'Pages 97 to 100',
+        grammarFocus: 'Demonstratives (This / That / These / Those) • Indefinite Articles (a / an) • Plural Nouns (-s, -es)',
+        vocabularyTheme: 'Personal items: camera, cell phone, key, wallet, sunglasses, pencil, laptop, souvenir',
+        tipCokito: 'Remember: THIS and THESE are for items close to you (here), while THAT and THOSE are for items far away (there)!',
+        googleFormUrl: 'https://docs.google.com/forms/d/e/1FAIpQLSc-unit3-sg1/viewform',
+        owlCulture: {
+          owlTitle: 'Cyber Owl Trivia: High-Tech Souvenirs',
+          topic: 'What travels in our pockets across continents?',
+          didYouKnow: 'The word "souvenir" comes directly from the French verb meaning "to remember".',
+          culturalStory: 'In modern airports and hotels across the US and UK, electronic wallets and contactless pay have almost entirely replaced cash.',
+          inOnAtRule: 'Say "IN my pocket", "ON the table", and "AT the cash register".'
+        },
+        sessions: [
+          {
+            sessionCode: 'A',
+            sessionName: 'Session A: Demonstratives & Personal Belongings',
+            itemsRange: 'Items 1 to 4',
+            items: [
+              { number: 1, title: 'Listen and Discuss: Personal Gadgets', description: 'Identifying everyday objects: camera, watch, cell phone, sunglasses, wallet.' },
+              { number: 2, title: 'Pair Work: Inquiring About Objects', description: 'Asking: "What\'s this? It\'s a smartwatch. What are those? They are headphones."' },
+              { number: 3, title: 'Grammar Focus: This/That/These/Those', description: 'Singular vs Plural demonstratives and regular plurals (-s, -es).' },
+              { number: 4, title: 'Language in Context: Lost & Found', description: 'Describing lost items in the academy lobby or airport baggage claim.' }
+            ]
+          },
+          {
+            sessionCode: 'B',
+            sessionName: 'Session B: Pronunciation of Plurals & Real Talk',
+            itemsRange: 'Items 5 to 8',
+            items: [
+              { number: 5, title: 'Listening Comprehension: Bag Check', description: 'Listening to security airport bag descriptions to identify owners.' },
+              { number: 6, title: 'Pronunciation: Plural Endings /s/, /z/, /ɪz/', description: 'Distinguishing phonetic sounds in books /s/, pens /z/, and watches /ɪz/.' },
+              { number: 7, title: 'About You Form: Everyday Carry', description: 'Listing top 5 essential belongings you never leave home without.' },
+              { number: 8, title: 'Conversation & Real Talk: Tech Store', description: 'Buying accessories: "How much is that headset? It\'s really awesome."' }
+            ]
+          },
+          {
+            sessionCode: 'C',
+            sessionName: 'Session C: Reading, Writing & Workbook Practice',
+            itemsRange: 'Items 9 to 11 + Workbook Practice',
+            workbookPages: 'Pages 97 to 100',
+            items: [
+              { number: 9, title: 'Reading: Inventions We Can\'t Live Without', description: 'Short article on the evolution of personal communications.' },
+              { number: 10, title: 'Writing: Museum of Everyday Belongings', description: 'Writing a short catalog entry for a treasured possession.' },
+              { number: 11, title: 'Form, Meaning & Function: Imperatives', description: 'Polite classroom commands: Please turn off your mobile phone, Keep quiet.' }
+            ]
+          }
+        ],
+        quizQuestions: [
+          {
+            id: 1,
+            question: 'Which demonstrative is used for plural objects close to the speaker?',
+            options: ['This', 'That', 'These', 'Those'],
+            correctIndex: 2,
+            explanation: '"These" is used for multiple items located near the speaker.'
+          }
+        ]
+      },
+
+      // UNIT 4: Around the World
+      {
+        unitNumber: 4,
+        displayOrder: 4,
+        title: 'Around the World',
+        bookTitle: 'SuperGoal 1',
+        studentBookCode: 'SG01-SB-U04',
+        workbookCode: 'SG01-WB-U04',
+        sbPages: 'Pages 26 to 33',
+        wbPages: 'Pages 101 to 104',
+        grammarFocus: 'Verb Be with Question Words (Where... from?) • Nationalities • Preposition "from"',
+        vocabularyTheme: 'Countries, Nationalities, World Capitals, Languages, Continents',
+        tipCokito: 'Always capitalize countries and nationalities in English! Write "Mexican", "Venezuelan", "Japanese", never in lowercase.',
+        googleFormUrl: 'https://docs.google.com/forms/d/e/1FAIpQLSc-unit4-sg1/viewform',
+        owlCulture: {
+          owlTitle: 'Cyber Owl Trivia: The Global Passport',
+          topic: 'How international greeting etiquettes vary',
+          didYouKnow: 'English is an official language in over 50 countries and spoken by over 1.5 billion people worldwide.',
+          culturalStory: 'In international summits, saying "Where are you based?" is often preferred to "Where are you from?" for global nomads.',
+          inOnAtRule: 'Use "FROM" for origin (I\'m from Caracas), "IN" for residence (I live in London).'
+        },
+        sessions: [
+          {
+            sessionCode: 'A',
+            sessionName: 'Session A: Countries & Nationalities',
+            itemsRange: 'Items 1 to 4',
+            items: [
+              { number: 1, title: 'Listen & Discuss: World Map', description: 'Countries, flags, and world capital cities across 5 continents.' },
+              { number: 2, title: 'Pair Work: Origin & Languages', description: 'Asking: "Where is Sophia from? She is from France. Does she speak French? Yes, she does."' },
+              { number: 3, title: 'Grammar Focus: Where from & Nationalities', description: 'Conjugating Be with origin prepositions and nationality suffixes (-an, -ish, -ese).' },
+              { number: 4, title: 'Language in Context: Global Conference', description: 'Matching world delegates to their countries and native languages.' }
+            ]
+          },
+          {
+            sessionCode: 'B',
+            sessionName: 'Session B: Word Stress & Real Talk',
+            itemsRange: 'Items 5 to 8',
+            items: [
+              { number: 5, title: 'Listening Comprehension: Flight Arrivals', description: 'Listening to international arrival announcements at London Heathrow.' },
+              { number: 6, title: 'Pronunciation: Syllable Stress in Nationalities', description: 'Shifting stress: CAnada vs CaNAdian, CHIna vs ChiNESE.' },
+              { number: 7, title: 'About You: Dream Travel Destinations', description: 'Discussing countries you would like to visit in your lifetime.' },
+              { number: 8, title: 'Conversation & Real Talk: International Youth Camp', description: 'Teens meeting on an exchange trip sharing cultural customs.' }
+            ]
+          },
+          {
+            sessionCode: 'C',
+            sessionName: 'Session C: Reading, Writing & Workbook Practice',
+            itemsRange: 'Items 9 to 11 + Workbook Practice',
+            workbookPages: 'Pages 101 to 104',
+            items: [
+              { number: 9, title: 'Reading: The Global Village', description: 'How communication technology unites people across distant time zones.' },
+              { number: 10, title: 'Writing: Country Fact Sheet', description: 'Designing an informational fact sheet about a country of your choice.' },
+              { number: 11, title: 'Form, Meaning & Function: Question Words', description: 'Forming accurate questions with What, Who, and Where.' }
+            ]
+          }
+        ],
+        quizQuestions: [
+          {
+            id: 1,
+            question: 'What is the correct nationality for someone from Spain?',
+            options: ['Spaniard', 'Spanish', 'Spainish', 'Spanian'],
+            correctIndex: 1,
+            explanation: 'The adjective and nationality is "Spanish".'
+          }
+        ]
+      },
+
+      // EXPANSION PACK 1: Units 1–4
+      {
+        unitNumber: 101,
+        displayOrder: 4.5,
+        isExpansion: true,
+        expansionLabel: '⚡ EXPANSION PACK: Units 1–4 (Review & Boss Fight 1)',
+        title: 'EXPANSION Pack: Units 1–4',
+        bookTitle: 'SuperGoal 1',
+        studentBookCode: 'SG01-EXP-1-4',
+        workbookCode: 'SG01-WB-EXP1',
+        sbPages: 'Pages 34 to 39',
+        wbPages: 'Pages 105 to 106',
+        grammarFocus: 'Comprehensive Review: Verb Be • Demonstratives • Prepositions • Nationalities',
+        vocabularyTheme: 'Rhythm Chant, Global Connections, Classroom Review, Cultural Crosswords',
+        tipCokito: 'This Expansion Pack is our first major milestone! Consolidate everything from Units 1 to 4 before proceeding to Unit 5.',
+        googleFormUrl: 'https://docs.google.com/forms/d/e/1FAIpQLSe-bossfight-1/viewform',
+        owlCulture: {
+          owlTitle: 'Cyber Owl Trivia: The Milestone Celebration',
+          topic: 'Celebrating language milestones',
+          didYouKnow: 'Mastering the first 4 units gives you 250+ active words and covers 70% of beginner conversational situations!',
+          culturalStory: 'In language academies worldwide, completing Module 1 milestones unlocks conversational badges.',
+          inOnAtRule: 'Use "AT the end of the module", "ON test day".'
+        },
+        sessions: [
+          {
+            sessionCode: 'A',
+            sessionName: 'Session A: Chant Along & Grammar Consolidation',
+            itemsRange: 'Items 1 to 3',
+            items: [
+              { number: 1, title: 'Chant Along: "Where Are You From?"', description: 'Rhythmic language chant practicing rhythm, intonation, and national origins.' },
+              { number: 2, title: 'Grammar Synthesis: Units 1 to 4', description: 'Comprehensive grammar matrix reviewing Be, possessives, and demonstratives.' },
+              { number: 3, title: 'Vocabulary Grand Crossword', description: 'Solving the combined thematic puzzle of classroom objects, calendar, and countries.' }
+            ]
+          },
+          {
+            sessionCode: 'B',
+            sessionName: 'Session B: Cultural Reading & Writing Workshop',
+            itemsRange: 'Items 4 to 5',
+            items: [
+              { number: 4, title: 'Reading: International Student Profiles', description: 'In-depth profile of students studying abroad in Sydney and New York.' },
+              { number: 5, title: 'Writing Workshop: My Complete Profile', description: 'Composing a 3-paragraph bio covering greetings, age, origin, and everyday belongings.' }
+            ]
+          },
+          {
+            sessionCode: 'C',
+            sessionName: 'Session C: Interactive Project & Milestone Test',
+            itemsRange: 'Items 6 to 7',
+            workbookPages: 'Pages 105 to 106',
+            items: [
+              { number: 6, title: 'Project: Classroom World Expo', description: 'Presenting a poster representing your dream country or cultural heritage.' },
+              { number: 7, title: 'Milestone Assessment: Boss Fight 1', description: 'Official Units 1–4 evaluation testing oral and written competencies.' }
+            ]
+          }
+        ],
+        quizQuestions: [
+          {
+            id: 1,
+            question: 'Which of the following is correct?',
+            options: ['These is my pen', 'Those are my keys', 'This are my books', 'That are my watch'],
+            correctIndex: 1,
+            explanation: '"Those" takes plural verb "are" and plural noun "keys".'
+          }
+        ]
+      },
+
+      // UNIT 5: Families, Families
+      {
+        unitNumber: 5,
+        displayOrder: 5,
+        title: 'Families, Families',
+        bookTitle: 'SuperGoal 1',
+        studentBookCode: 'SG01-SB-U05',
+        workbookCode: 'SG01-WB-U05',
+        sbPages: 'Pages 40 to 47',
+        wbPages: 'Pages 107 to 110',
+        grammarFocus: 'Verb Have / Has • Possessive Nouns (Apostrophe \'s) • How Many...? • Descriptive Adjectives',
+        vocabularyTheme: 'Family members: parents, grandparents, siblings, aunt, uncle, cousin, nephew, niece; Physical appearance',
+        tipCokito: 'Watch out: "He has" and "She has", but "I have", "You have", "They have". Do not say "He haves"!',
+        googleFormUrl: 'https://docs.google.com/forms/d/e/1FAIpQLSc-unit5-sg1/viewform',
+        owlCulture: {
+          owlTitle: 'Cyber Owl Trivia: Family Terms Worldwide',
+          topic: 'How family structures are described in English',
+          didYouKnow: 'English uses the term "in-laws" for family acquired by marriage (mother-in-law, brother-in-law).',
+          culturalStory: 'In North America and the UK, calling someone by their first name after adolescence is common, but courtesy titles remain respectful for elders.',
+          inOnAtRule: 'Use "IN my family", "AT home with family".'
+        },
+        sessions: [
+          {
+            sessionCode: 'A',
+            sessionName: 'Session A: Family Tree & Verb Have/Has',
+            itemsRange: 'Items 1 to 4',
+            items: [
+              { number: 1, title: 'Listen & Discuss: The Family Tree', description: 'The Martinez and Al-Harbi family trees and relationships.' },
+              { number: 2, title: 'Pair Work: Asking About Siblings', description: 'Asking: "Do you have any brothers or sisters? Yes, I have two brothers."' },
+              { number: 3, title: 'Grammar Focus: Have / Has & Apostrophe \'s', description: 'Rules for possessive nouns (my sister\'s car, John\'s parents) and Have/Has.' },
+              { number: 4, title: 'Language in Context: Photo Album', description: 'Describing family photos: "This is my aunt. She has brown eyes and curly hair."' }
+            ]
+          },
+          {
+            sessionCode: 'B',
+            sessionName: 'Session B: Pronunciation & Real Talk',
+            itemsRange: 'Items 5 to 8',
+            items: [
+              { number: 5, title: 'Listening Comprehension: Family Descriptions', description: 'Identifying family members from an audio conversation.' },
+              { number: 6, title: 'Pronunciation: Contracted \'s vs Possessive \'s', description: 'Distinguishing "He\'s tall" (he is) from "Tom\'s dog" (possession).' },
+              { number: 7, title: 'About You Form: Family Heritage', description: 'Writing about your family size, traditions, and favorite gatherings.' },
+              { number: 8, title: 'Conversation & Real Talk: Family Reunion', description: 'Talking about relatives: "You look just like your grandfather! Really?"' }
+            ]
+          },
+          {
+            sessionCode: 'C',
+            sessionName: 'Session C: Reading, Writing & Workbook Practice',
+            itemsRange: 'Items 9 to 11 + Workbook Practice',
+            workbookPages: 'Pages 107 to 110',
+            items: [
+              { number: 9, title: 'Reading: Big Families vs Small Families', description: 'Sociological look at family dynamics and bonds in different cultures.' },
+              { number: 10, title: 'Writing: My Family Portrait', description: 'Composing a structured essay describing family members and their occupations.' },
+              { number: 11, title: 'Form, Meaning & Function: Descriptive Adjectives', description: 'Word order: Opinion + Size + Age + Color + Noun (a kind, tall, young teacher).' }
+            ]
+          }
+        ],
+        quizQuestions: [
+          {
+            id: 1,
+            question: 'Complete: "My sister _____ two daughters."',
+            options: ['have', 'has', 'haves', 'is having'],
+            correctIndex: 1,
+            explanation: 'Third person singular takes "has".'
+          }
+        ]
+      },
+
+      // UNIT 6: Is There a View?
+      {
+        unitNumber: 6,
+        displayOrder: 6,
+        title: 'Is There a View?',
+        bookTitle: 'SuperGoal 1',
+        studentBookCode: 'SG01-SB-U06',
+        workbookCode: 'SG01-WB-U06',
+        sbPages: 'Pages 48 to 55',
+        wbPages: 'Pages 111 to 114',
+        grammarFocus: 'There is / There are (Affirmative, Negative, Questions) • Prepositions of Place (in, on, under, behind, next to)',
+        vocabularyTheme: 'Rooms of the house (living room, bedroom, kitchen, balcony, yard), Furniture, Appliances',
+        tipCokito: 'Use "There is" for one singular item (There is a garden) and "There are" for two or more (There are three bedrooms).',
+        googleFormUrl: 'https://docs.google.com/forms/d/e/1FAIpQLSc-unit6-sg1/viewform',
+        owlCulture: {
+          owlTitle: 'Cyber Owl Trivia: Architecture Around the World',
+          topic: 'How homes reflect local climates and traditions',
+          didYouKnow: 'The traditional Japanese home uses sliding doors (fusuma) to transform space dynamically.',
+          culturalStory: 'In modern cities, micro-apartments have made multifunction furniture popular.',
+          inOnAtRule: 'Say "AT home", "IN the bedroom", "ON the sofa", "UNDER the table".'
+        },
+        sessions: [
+          {
+            sessionCode: 'A',
+            sessionName: 'Session A: Rooms & There is / There are',
+            itemsRange: 'Items 1 to 4',
+            items: [
+              { number: 1, title: 'Listen & Discuss: Dream Homes', description: 'Touring a mountain cabin, a seaside villa, and a downtown loft.' },
+              { number: 2, title: 'Pair Work: Inquiring About Amenities', description: 'Asking: "Is there a balcony? Yes, there is. Are there two bathrooms? No, there aren\'t."' },
+              { number: 3, title: 'Grammar Focus: There is / There are', description: 'Statements and questions with There is / There are and Prepositions of place.' },
+              { number: 4, title: 'Language in Context: Floor Plan', description: 'Furnishing an apartment blueprint with sofas, appliances, and lamps.' }
+            ]
+          },
+          {
+            sessionCode: 'B',
+            sessionName: 'Session B: Pronunciation & Real Talk',
+            itemsRange: 'Items 5 to 8',
+            items: [
+              { number: 5, title: 'Listening Comprehension: Real Estate Tour', description: 'Listening to an apartment viewing audio and checking true/false statements.' },
+              { number: 6, title: 'Pronunciation: Sound Linking in "There is / There are"', description: 'Fluid liaison: /ðɛərɪz/ and /ðɛərɑːr/.' },
+              { number: 7, title: 'About You Form: My Living Space', description: 'Describing your ideal bedroom setup and views from your window.' },
+              { number: 8, title: 'Conversation & Real Talk: Renting an Apartment', description: 'Dialogue with a landlord: "How much is the rent? Does it include utilities?"' }
+            ]
+          },
+          {
+            sessionCode: 'C',
+            sessionName: 'Session C: Reading, Writing & Workbook Practice',
+            itemsRange: 'Items 9 to 11 + Workbook Practice',
+            workbookPages: 'Pages 111 to 114',
+            items: [
+              { number: 9, title: 'Reading: Unusual Homes of the Planet', description: 'Living in lighthouses, cave dwellings, and floating canal boats.' },
+              { number: 10, title: 'Writing: Real Estate Advertisement', description: 'Writing an enticing advertisement to rent or sell a furnished home.' },
+              { number: 11, title: 'Form, Meaning & Function: Prepositions of Position', description: 'Specifying positions: between the lamp and desk, across from the sofa.' }
+            ]
+          }
+        ],
+        quizQuestions: [
+          {
+            id: 1,
+            question: 'Complete: "_____ three windows in the living room."',
+            options: ['There is', 'There are', 'They are', 'It is'],
+            correctIndex: 1,
+            explanation: '"Three windows" is plural, requiring "There are".'
+          }
+        ]
+      },
+
+      // UNIT 7: Where Do You Live?
+      {
+        unitNumber: 7,
+        displayOrder: 7,
+        title: 'Where Do You Live?',
+        bookTitle: 'SuperGoal 1',
+        studentBookCode: 'SG01-SB-U07',
+        workbookCode: 'SG01-WB-U07',
+        sbPages: 'Pages 56 to 63',
+        wbPages: 'Pages 115 to 118',
+        grammarFocus: 'Imperatives for Directions • Simple Present (live, work, study) • Prepositions of Location (on the corner of, across from, between)',
+        vocabularyTheme: 'Neighborhood places: supermarket, bank, post office, pharmacy, bookstore, cafe, bus station, park',
+        tipCokito: 'For directions, use the base imperative: "Turn left", "Go straight", "Cross the street". Never add -ing or to!',
+        googleFormUrl: 'https://docs.google.com/forms/d/e/1FAIpQLSc-unit7-sg1/viewform',
+        owlCulture: {
+          owlTitle: 'Cyber Owl Trivia: The 15-Minute City',
+          topic: 'Urban design where daily needs are within walking distance',
+          didYouKnow: 'The oldest known city maps date back over 4,000 years in ancient Mesopotamia.',
+          culturalStory: 'In London and New York, asking someone for directions is easy if you begin politely with "Excuse me, could you tell me where... is?"',
+          inOnAtRule: 'Use "ON Oxford Street" (street name), "AT 142 Elm Street" (exact address with number).'
+        },
+        sessions: [
+          {
+            sessionCode: 'A',
+            sessionName: 'Session A: Neighborhood Amenities & Locations',
+            itemsRange: 'Items 1 to 4',
+            items: [
+              { number: 1, title: 'Listen & Discuss: City Map', description: 'Exploring a neighborhood grid with banks, cafes, libraries, and subways.' },
+              { number: 2, title: 'Pair Work: Asking for Directions', description: 'Asking: "Where is the post office? It\'s on Maple Street, across from the bank."' },
+              { number: 3, title: 'Grammar Focus: Directions & Prepositions of Location', description: 'Using Turn right, Go straight for two blocks, Next to, Between A and B.' },
+              { number: 4, title: 'Language in Context: City Tour', description: 'Guiding an international tourist to monuments and transit hubs.' }
+            ]
+          },
+          {
+            sessionCode: 'B',
+            sessionName: 'Session B: Pronunciation & Real Talk',
+            itemsRange: 'Items 5 to 8',
+            items: [
+              { number: 5, title: 'Listening Comprehension: Audio Directions', description: 'Following audio prompts on a map to locate hidden landmarks.' },
+              { number: 6, title: 'Pronunciation: Intonation in Polite Requests', description: 'Rising pitch on polite openings: "Excuse me? Could you help me?"' },
+              { number: 7, title: 'About You Form: My Neighborhood', description: 'Analyzing pros and cons of your hometown or residential area.' },
+              { number: 8, title: 'Conversation & Real Talk: Asking a Local', description: 'Dialogue: "Are you from around here? You can\'t miss it!"' }
+            ]
+          },
+          {
+            sessionCode: 'C',
+            sessionName: 'Session C: Reading, Writing & Workbook Practice',
+            itemsRange: 'Items 9 to 11 + Workbook Practice',
+            workbookPages: 'Pages 115 to 118',
+            items: [
+              { number: 9, title: 'Reading: Famous Neighborhoods of the World', description: 'Cultural exploration of Montmartre in Paris and Greenwich Village in NYC.' },
+              { number: 10, title: 'Writing: Directions to My House', description: 'Writing clear step-by-step directions for guests coming to an event.' },
+              { number: 11, title: 'Form, Meaning & Function: Prepositions of Motion', description: 'Prepositions: through the park, over the bridge, into the building.' }
+            ]
+          }
+        ],
+        quizQuestions: [
+          {
+            id: 1,
+            question: 'What is the correct imperative to tell someone to make a right turn?',
+            options: ['Turning right', 'Turn right', 'To turn right', 'Turn to right'],
+            correctIndex: 1,
+            explanation: 'Imperative sentences use the base form of the verb without "to": "Turn right".'
+          }
+        ]
+      },
+
+      // UNIT 8: What Are You Doing?
+      {
+        unitNumber: 8,
+        displayOrder: 8,
+        title: 'What Are You Doing?',
+        bookTitle: 'SuperGoal 1',
+        studentBookCode: 'SG01-SB-U08',
+        workbookCode: 'SG01-WB-U08',
+        sbPages: 'Pages 64 to 71',
+        wbPages: 'Pages 119 to 122',
+        grammarFocus: 'Present Continuous / Progressive (am/is/are + verb-ing) • Questions with What are you doing? • Clothes & Actions',
+        vocabularyTheme: 'Daily activities, hobbies, clothing (shirt, jacket, jeans, sneakers, dress), sports',
+        tipCokito: 'Present Continuous is for actions happening RIGHT NOW! Remember the formula: Subject + Be (am/is/are) + Verb-ing.',
+        googleFormUrl: 'https://docs.google.com/forms/d/e/1FAIpQLSc-unit8-sg1/viewform',
+        owlCulture: {
+          owlTitle: 'Cyber Owl Trivia: The World In Motion',
+          topic: 'Time zones and simultaneous human activities',
+          didYouKnow: 'While someone is eating breakfast in New York at 8:00 AM, someone in Tokyo is sleeping at 10:00 PM!',
+          culturalStory: 'In English casual conversation, greeting someone with "What are you doing?" often just means "What\'s up?".',
+          inOnAtRule: 'Use "AT the moment", "RIGHT NOW", "TODAY".'
+        },
+        sessions: [
+          {
+            sessionCode: 'A',
+            sessionName: 'Session A: Actions in Progress & Present Continuous',
+            itemsRange: 'Items 1 to 4',
+            items: [
+              { number: 1, title: 'Listen & Discuss: Community Center', description: 'People engaged in hobbies: cooking, playing basketball, reading, working on laptop.' },
+              { number: 2, title: 'Pair Work: Inquiring Actions', description: 'Asking: "What is Robert doing? He is studying math. What are they wearing? Warm jackets."' },
+              { number: 3, title: 'Grammar Focus: Present Progressive Matrix', description: 'Forming affirmative, negative, and questions with am/is/are + verb-ing.' },
+              { number: 4, title: 'Language in Context: Live Webcams', description: 'Describing activities occurring simultaneously in webcams around the world.' }
+            ]
+          },
+          {
+            sessionCode: 'B',
+            sessionName: 'Session B: Pronunciation & Real Talk',
+            itemsRange: 'Items 5 to 8',
+            items: [
+              { number: 5, title: 'Listening Comprehension: Ambient Sounds', description: 'Guessing what people are doing based on audio background sounds.' },
+              { number: 6, title: 'Pronunciation: The /-ɪŋ/ Ending', description: 'Clean pronunciation of participle endings without nasal distortion.' },
+              { number: 7, title: 'About You Form: Today\'s Outfit & Activities', description: 'Describing your clothing style today and your current weekly hobbies.' },
+              { number: 8, title: 'Conversation & Real Talk: Phone Check-in', description: 'Chatting on the phone: "Hey, what are you up to? Just chilling at home."' }
+            ]
+          },
+          {
+            sessionCode: 'C',
+            sessionName: 'Session C: Reading, Writing & Workbook Practice',
+            itemsRange: 'Items 9 to 11 + Workbook Practice',
+            workbookPages: 'Pages 119 to 122',
+            items: [
+              { number: 9, title: 'Reading: A Day in the Life of a Photojournalist', description: 'Following an action photographer documenting wildlife in Patagonia.' },
+              { number: 10, title: 'Writing: Social Media Story Post', description: 'Writing an engaging caption describing what you and your friends are doing.' },
+              { number: 11, title: 'Form, Meaning & Function: Present Simple vs Continuous', description: 'Contrasting habitual routines (I study every day) with current actions (I am studying now).' }
+            ]
+          }
+        ],
+        quizQuestions: [
+          {
+            id: 1,
+            question: 'Complete: "Listen! The baby _____ right now."',
+            options: ['cries', 'is crying', 'are crying', 'cried'],
+            correctIndex: 1,
+            explanation: 'The signal phrase "right now" indicates Present Continuous: "is crying".'
+          }
+        ]
+      },
+
+      // EXPANSION PACK 2: Units 5–8 (Graduation Milestone Level 1)
+      {
+        unitNumber: 102,
+        displayOrder: 8.5,
+        isExpansion: true,
+        expansionLabel: '🎓 EXPANSION PACK: Units 5–8 & Graduación Nivel 1',
+        title: 'EXPANSION Pack: Units 5–8 (Level 1 Capstone)',
+        bookTitle: 'SuperGoal 1',
+        studentBookCode: 'SG01-EXP-5-8',
+        workbookCode: 'SG01-WB-EXP2',
+        sbPages: 'Pages 72 to 77',
+        wbPages: 'Pages 123 to 124',
+        grammarFocus: 'Level 1 Capstone Synthesis: Have/Has • There is/are • Directions • Present Continuous',
+        vocabularyTheme: 'Rhythm Chant, Capstone Project, Certification Review, Level 1 Graduation',
+        tipCokito: 'Congratulations on reaching the final Expansion Pack of Level 1! Review all 8 units before taking your graduation certification exam.',
+        googleFormUrl: 'https://docs.google.com/forms/d/e/1FAIpQLSe-bossfight-2/viewform',
+        owlCulture: {
+          owlTitle: 'Cyber Owl Trivia: Celebrating Level 1 Mastery',
+          topic: 'From absolute beginner to confident basic speaker (A1 CEFR)',
+          didYouKnow: 'Reaching Level 1 completion proves you can communicate basic needs, introduce yourself and family, navigate a city, and talk about everyday items.',
+          culturalStory: 'In the international CEFR framework, completing A1 is the foundation for all spontaneous speech.',
+          inOnAtRule: 'Use "UPON graduation", "AT the end of Level I".'
+        },
+        sessions: [
+          {
+            sessionCode: 'A',
+            sessionName: 'Session A: Chant Along & Grammar Mastery Matrix',
+            itemsRange: 'Items 1 to 3',
+            items: [
+              { number: 1, title: 'Chant Along: "People Everywhere"', description: 'Fluency chant reviewing present continuous actions and family professions.' },
+              { number: 2, title: 'Level 1 Comprehensive Grammar Matrix', description: 'Reviewing all tenses and structures learned in Units 1 through 8.' },
+              { number: 3, title: 'Vocabulary Grand Finale', description: 'Mastery challenge over all 8 units of SuperGoal 1.' }
+            ]
+          },
+          {
+            sessionCode: 'B',
+            sessionName: 'Session B: Capstone Reading & Writing Portfolio',
+            itemsRange: 'Items 4 to 5',
+            items: [
+              { number: 4, title: 'Reading: Global Youth Cultures', description: 'Comparing teen lifestyles, schools, and homes across four continents.' },
+              { number: 5, title: 'Writing Portfolio: My World Presentation', description: 'Comprehensive personal portfolio synthesizing home, family, city, and daily routine.' }
+            ]
+          },
+          {
+            sessionCode: 'C',
+            sessionName: 'Session C: Oral Presentation & Level 1 Graduation Exam',
+            itemsRange: 'Items 6 to 7',
+            workbookPages: 'Pages 123 to 124',
+            items: [
+              { number: 6, title: 'Capstone Presentation & Role-play', description: 'Live speaking evaluation acting out hotel check-in, asking directions, and family introductions.' },
+              { number: 7, title: 'Official Level 1 Graduation Exam (Boss Fight 2)', description: 'Final certification test unlocking Level II (SuperGoal 2).' }
+            ]
+          }
+        ],
+        quizQuestions: [
+          {
+            id: 1,
+            question: 'Which sentence correctly combines Level 1 structures?',
+            options: [
+              'There is two brothers in my family and he are playing',
+              'There are two bedrooms in my house, and my brother is studying in his room',
+              'This are my mother and she have brown eyes',
+              'Where is you live?'
+            ],
+            correctIndex: 1,
+            explanation: '"There are two bedrooms... and my brother is studying" combines There are and Present Continuous flawlessly.'
+          }
+        ]
       }
+
     ]
   },
 
@@ -760,4 +1301,583 @@ export const PATHWAY_LEVELS: PathwayLevel[] = [
       }
     ]
   }
+
+  // 6. LEVEL V: SuperGoal 5 (Intermediate B1)
+  {
+    levelId: 'level_5',
+    levelNumber: 5,
+    levelName: 'Level V • SuperGoal 5',
+    series: 'SuperGoal',
+    book: 'Super Goal 5',
+    module: 2,
+    moduleName: 'Consolidación e Independencia',
+    cefrEquiv: 'B1',
+    audience: 'all',
+    isIntegratedWorkbook: true,
+    bossFights: [],
+    units: [
+      {
+        unitNumber: 1,
+        title: 'Since When?',
+        bookTitle: 'SuperGoal 5',
+        sbPages: 'Pages 2 to 9',
+        wbPages: 'Pages 89 to 92',
+        grammarFocus: 'Present Perfect with Since and For • How long...? • Past Simple vs Present Perfect',
+        vocabularyTheme: 'Inventions, milestones, personal achievements, hobbies over time',
+        tipCokito: 'Use SINCE for the starting point in time (since 2018), and FOR for the duration of time (for 5 years).',
+        googleFormUrl: '',
+        owlCulture: {
+          owlTitle: 'Cyber Owl Trivia: How Time Flies',
+          topic: 'Duration expressions across history',
+          didYouKnow: 'The phrase 'Time is money' was first popularized by Benjamin Franklin in 1748.',
+          culturalStory: 'In British conversations, speaking of life experiences frequently alternates between Present Perfect and Past Simple.',
+          inOnAtRule: 'Use SINCE yesterday, FOR three hours.'
+        },
+        sessions: [
+          {
+            sessionCode: 'A',
+            sessionName: 'Session A: Inventions & Present Perfect',
+            itemsRange: 'Items 1 to 4',
+            items: [
+              { number: 1, title: 'Listen & Discuss: Inventions Through Decades', description: 'Examining inventions that changed human lifestyle since 1900.' },
+              { number: 2, title: 'Pair Work: Inquiring Durations', description: 'Asking: "How long have you lived here? Since 2020."' },
+              { number: 3, title: 'Grammar Focus: Present Perfect with Since & For', description: 'Contrasting precise starting points vs duration periods.' },
+              { number: 4, title: 'Language in Context: Personal Milestones', description: 'Chronology of sports achievements and hobbies.' }
+            ]
+          },
+          {
+            sessionCode: 'B',
+            sessionName: 'Session B: Pronunciation & Real Talk',
+            itemsRange: 'Items 5 to 8',
+            items: [
+              { number: 5, title: 'Listening Comprehension: Radio Interviews', description: 'Radio profiles of athletes and innovators.' },
+              { number: 6, title: 'Pronunciation: Have / Has Weak Forms', description: 'Distinguishing unstressed auxiliary pronunciations in connected speech.' },
+              { number: 7, title: 'About You Form: Life Timeline', description: 'Mapping your personal timeline of major accomplishments.' },
+              { number: 8, title: 'Conversation & Real Talk: Catching Up', description: 'Dialogue between former colleagues reconnecting after years.' }
+            ]
+          },
+          {
+            sessionCode: 'C',
+            sessionName: 'Session C: Reading, Writing & Workbook Practice',
+            itemsRange: 'Items 9 to 11 + Workbook Practice',
+            workbookPages: 'Pages 89 to 92',
+            items: [
+              { number: 9, title: 'Reading: The Story of Everyday Things', description: 'Historical account of the invention of chocolate and matches.' },
+              { number: 10, title: 'Writing: Biography of an Innovator', description: 'Composing a structured profile of an inspiring scientist.' },
+              { number: 11, title: 'Form, Meaning & Function: Expressing Purpose', description: 'Using in order to, so that, and to-infinitive.' }
+            ]
+          }
+        ],
+        quizQuestions: [
+          {
+            id: 1,
+            question: 'Which word correctly completes: "I have worked here _____ six months"?',
+            options: ['since', 'for', 'at', 'during'],
+            correctIndex: 1,
+            explanation: '"Six months" is a duration of time, so "for" is required.'
+          }
+        ]
+      }
+    ]
+  },
+
+  // 7. LEVEL VI: SuperGoal 6 (Intermediate II B1+)
+  {
+    levelId: 'level_6',
+    levelNumber: 6,
+    levelName: 'Level VI • SuperGoal 6',
+    series: 'SuperGoal',
+    book: 'Super Goal 6',
+    module: 2,
+    moduleName: 'Consolidación e Independencia',
+    cefrEquiv: 'B1+',
+    audience: 'all',
+    isIntegratedWorkbook: true,
+    bossFights: [],
+    units: [
+      {
+        unitNumber: 1,
+        title: 'Teen Life',
+        bookTitle: 'SuperGoal 6',
+        sbPages: 'Pages 2 to 9',
+        wbPages: 'Pages 89 to 92',
+        grammarFocus: 'Gerunds vs Infinitives • Modal Auxiliaries for Advice (should, ought to, had better) • Phrasal Verbs',
+        vocabularyTheme: 'Youth culture, life dilemmas, personal goals, digital balance',
+        tipCokito: 'Use HAD BETTER when there is a negative consequence if the advice is not followed (e.g. "You had better study or you will fail").',
+        googleFormUrl: '',
+        owlCulture: {
+          owlTitle: 'Cyber Owl Trivia: The Global Teen Voice',
+          topic: 'How youth cultures communicate globally',
+          didYouKnow: 'The word 'teenager' first appeared in print in Popular Science in 1941.',
+          culturalStory: 'In international high schools, counseling on study habits emphasizes time management and balance.',
+          inOnAtRule: 'Use "ON social media", "IN the afternoon".'
+        },
+        sessions: [
+          {
+            sessionCode: 'A',
+            sessionName: 'Session A: Youth Topics & Advice Modals',
+            itemsRange: 'Items 1 to 4',
+            items: [
+              { number: 1, title: 'Listen & Discuss: Life Choices', description: 'Common dilemmas teens and young adults face regarding career and study.' },
+              { number: 2, title: 'Pair Work: Giving Advice', description: 'Using: "What should I do? You ought to talk to your mentor."' },
+              { number: 3, title: 'Grammar Focus: Modals of Advice', description: 'Distinguishing should, ought to, and had better in context.' },
+              { number: 4, title: 'Language in Context: Advice Column', description: 'Matching reader letters with expert guidance.' }
+            ]
+          },
+          {
+            sessionCode: 'B',
+            sessionName: 'Session B: Pronunciation & Real Talk',
+            itemsRange: 'Items 5 to 8',
+            items: [
+              { number: 5, title: 'Listening Comprehension: School Podcast', description: 'Students debating school policies and study schedules.' },
+              { number: 6, title: 'Pronunciation: Modal Reductions', description: 'Natural fast speech reductions like /ʃʊdə/ for should have.' },
+              { number: 7, title: 'About You Form: Future Goals', description: 'Setting short-term and long-term personal objectives.' },
+              { number: 8, title: 'Conversation & Real Talk: Peer Discussion', description: 'Discussing preparation for entrance exams.' }
+            ]
+          },
+          {
+            sessionCode: 'C',
+            sessionName: 'Session C: Reading, Writing & Workbook Practice',
+            itemsRange: 'Items 9 to 11 + Workbook Practice',
+            workbookPages: 'Pages 89 to 92',
+            items: [
+              { number: 9, title: 'Reading: Overcoming Obstacles', description: 'Inspiring young leaders making global impacts.' },
+              { number: 10, title: 'Writing: Advice Letter', description: 'Writing a structured response to an advice-seeking letter.' },
+              { number: 11, title: 'Form, Meaning & Function: Gerunds after Prepositions', description: 'Rules for verb-ing following prepositional phrases.' }
+            ]
+          }
+        ],
+        quizQuestions: [
+          {
+            id: 1,
+            question: 'Complete: "You look exhausted. You _____ to take a rest."',
+            options: ['should', 'ought', 'must', 'had better'],
+            correctIndex: 1,
+            explanation: '"Ought" is followed by "to" (ought to take a rest).'
+          }
+        ]
+      }
+    ]
+  },
+
+  // 8. LEVEL VIII: MegaGoal 2 (Intermediate - Advanced B2)
+  {
+    levelId: 'level_8',
+    levelNumber: 8,
+    levelName: 'Level VIII • MegaGoal 2',
+    series: 'MegaGoal',
+    book: 'Mega Goal 2',
+    module: 3,
+    moduleName: 'Fluidez Avanzada y Debate',
+    cefrEquiv: 'B2',
+    audience: 'adults',
+    isIntegratedWorkbook: false,
+    bossFights: [],
+    units: [
+      {
+        unitNumber: 1,
+        title: 'You've Got Mail!',
+        bookTitle: 'MegaGoal 2',
+        sbPages: 'Pages 6 to 19',
+        wbPages: 'Pages 1 to 10',
+        grammarFocus: 'Prepositional Verbs • Passive Voice in Present & Past • Phrasal Verbs with Two Particles',
+        vocabularyTheme: 'Electronic communication, digital security, professional email writing',
+        tipCokito: 'Remember: In the Passive Voice, the object of the active sentence becomes the subject: "Alexander Bell invented the telephone" -> "The telephone was invented by Alexander Bell".',
+        googleFormUrl: '',
+        owlCulture: {
+          owlTitle: 'Cyber Owl Trivia: The First Email in History',
+          topic: 'How Ray Tomlinson sent the first @ in 1971',
+          didYouKnow: 'Ray Tomlinson invented email in 1971 and chose the @ symbol because it meant "at" the host computer!',
+          culturalStory: 'In business etiquette, email signatures convey seniority, verified credentials, and corporate tone.',
+          inOnAtRule: 'Use "BY email", "ON the server", "AT his inbox".'
+        },
+        sessions: [
+          {
+            sessionCode: 'A',
+            sessionName: 'Session A: Digital Communications & Passive Voice',
+            itemsRange: 'Items 1 to 4',
+            items: [
+              { number: 1, title: 'Listen & Discuss: The Communication Revolution', description: 'Evolution from carrier pigeons and telegraph to fiber optics.' },
+              { number: 2, title: 'Pair Work: Digital Habits Survey', description: 'Surveying screen time and corporate email practices.' },
+              { number: 3, title: 'Grammar Focus: Passive Voice Forms', description: 'Forming passive structures in present, past, and future contexts.' },
+              { number: 4, title: 'Language in Context: IT Security Protocols', description: 'Analyzing cybersecurity best practices for company networks.' }
+            ]
+          },
+          {
+            sessionCode: 'B',
+            sessionName: 'Session B: Pronunciation & Real Talk',
+            itemsRange: 'Items 5 to 8',
+            items: [
+              { number: 5, title: 'Listening Comprehension: Tech Support Calls', description: 'Troubleshooting digital accounts and connectivity issues.' },
+              { number: 6, title: 'Pronunciation: Sentence Rhythm & Intonation in Inquiries', description: 'Falling intonation on formal corporate questions.' },
+              { number: 7, title: 'About You Form: Digital Footprint', description: 'Reflecting on personal data safety and social platforms.' },
+              { number: 8, title: 'Conversation & Real Talk: Office Negotiations', description: 'Navigating professional deadlines and deliverables.' }
+            ]
+          },
+          {
+            sessionCode: 'C',
+            sessionName: 'Session C: Reading, Writing & Workbook Practice',
+            itemsRange: 'Items 9 to 11 + Workbook Practice',
+            workbookPages: 'Pages 1 to 10',
+            items: [
+              { number: 9, title: 'Reading: The Art of the Corporate Memo', description: 'Analyzing effective executive communication.' },
+              { number: 10, title: 'Writing: Professional Inquiries & Invoices', description: 'Drafting formal business communications with clear calls to action.' },
+              { number: 11, title: 'Form, Meaning & Function: Relative Clauses', description: 'Defining and non-defining relative clauses in formal text.' }
+            ]
+          }
+        ],
+        quizQuestions: [
+          {
+            id: 1,
+            question: 'Convert to passive: "The team sent the contract yesterday."',
+            options: [
+              'The contract was sent by the team yesterday.',
+              'The contract is sent by the team yesterday.',
+              'The team was sent the contract yesterday.',
+              'The contract were sent yesterday.'
+            ],
+            correctIndex: 0,
+            explanation: 'Singular object (The contract) + past BE (was) + past participle (sent).'
+          }
+        ]
+      }
+    ]
+  },
+
+  // 9. LEVEL IX: MegaGoal 3 (Upper-Intermediate B2+)
+  {
+    levelId: 'level_9',
+    levelNumber: 9,
+    levelName: 'Level IX • MegaGoal 3',
+    series: 'MegaGoal',
+    book: 'Mega Goal 3',
+    module: 3,
+    moduleName: 'Fluidez Avanzada y Debate',
+    cefrEquiv: 'B2+',
+    audience: 'adults',
+    isIntegratedWorkbook: false,
+    bossFights: [],
+    units: [
+      {
+        unitNumber: 1,
+        title: 'Connected by Technology',
+        bookTitle: 'MegaGoal 3',
+        sbPages: 'Pages 6 to 19',
+        wbPages: 'Pages 1 to 10',
+        grammarFocus: 'Auxiliary Verbs for Emphasis • Conditional Sentences with If & Unless • Inverted Conditionals',
+        vocabularyTheme: 'Artificial Intelligence, social robotics, automation, ethics in tech',
+        tipCokito: 'Use auxiliary DO/DID for dramatic emphasis: "I DO understand your point!" or "She DID call yesterday!"',
+        googleFormUrl: '',
+        owlCulture: {
+          owlTitle: 'Cyber Owl Trivia: Artificial Intelligence Milestones',
+          topic: 'From Turing's test to generative neural nets',
+          didYouKnow: 'Alan Turing proposed the imitation game in 1950 to evaluate if a machine could exhibit intelligent behavior.',
+          culturalStory: 'In modern tech conferences in Silicon Valley and London, speaking persuasively requires conditional hedging.',
+          inOnAtRule: 'Use "AT the vanguard", "IN the algorithm".'
+        },
+        sessions: [
+          {
+            sessionCode: 'A',
+            sessionName: 'Session A: AI & Emphatic Auxiliaries',
+            itemsRange: 'Items 1 to 4',
+            items: [
+              { number: 1, title: 'Listen & Discuss: The Automated Future', description: 'Debating robotics in healthcare, transportation, and creative arts.' },
+              { number: 2, title: 'Pair Work: Technological Dilemmas', description: 'Arguing ethical considerations of automated decisions.' },
+              { number: 3, title: 'Grammar Focus: Emphatic Auxiliaries & Advanced Conditionals', description: 'Using do/does/did for conviction and Unless / Provided that.' },
+              { number: 4, title: 'Language in Context: Tech Keynote Analysis', description: 'Dissecting rhetorical patterns in executive keynote speeches.' }
+            ]
+          },
+          {
+            sessionCode: 'B',
+            sessionName: 'Session B: Pronunciation & Real Talk',
+            itemsRange: 'Items 5 to 8',
+            items: [
+              { number: 5, title: 'Listening Comprehension: Panel Debate', description: 'Academic panel on data governance and intellectual property.' },
+              { number: 6, title: 'Pronunciation: Emphatic Stress & Pitch Peaks', description: 'Placing melodic pitch peaks on auxiliary verbs to convey conviction.' },
+              { number: 7, title: 'About You Form: The Technology You Rely On', description: 'Critiquing dependency on algorithmic feeds and personal gadgets.' },
+              { number: 8, title: 'Conversation & Real Talk: Boardroom Strategy', description: 'High-level business discussion on technology adoption.' }
+            ]
+          },
+          {
+            sessionCode: 'C',
+            sessionName: 'Session C: Reading, Writing & Workbook Practice',
+            itemsRange: 'Items 9 to 11 + Workbook Practice',
+            workbookPages: 'Pages 1 to 10',
+            items: [
+              { number: 9, title: 'Reading: The Singularity Debate', description: 'Scholarly overview of machine cognitive evolution.' },
+              { number: 10, title: 'Writing: Position Paper', description: 'Composing a persuasive 4-paragraph argument on tech regulation.' },
+              { number: 11, title: 'Form, Meaning & Function: Subjunctive Mood', description: 'Formal structures: It is essential that he be present.' }
+            ]
+          }
+        ],
+        quizQuestions: [
+          {
+            id: 1,
+            question: 'Complete the emphatic sentence: "Although he was quiet, he _____ know the solution!"',
+            options: ['did', 'does', 'do', 'was'],
+            correctIndex: 0,
+            explanation: 'Past tense emphatic auxiliary is "did".'
+          }
+        ]
+      }
+    ]
+  },
+
+  // 10. LEVEL X: MegaGoal 4 (Advanced C1 Foundation)
+  {
+    levelId: 'level_10',
+    levelNumber: 10,
+    levelName: 'Level X • MegaGoal 4',
+    series: 'MegaGoal',
+    book: 'Mega Goal 4',
+    module: 4,
+    moduleName: 'Maestría Cognitiva y Profesional',
+    cefrEquiv: 'C1',
+    audience: 'adults',
+    isIntegratedWorkbook: false,
+    bossFights: [],
+    units: [
+      {
+        unitNumber: 1,
+        title: 'There's No Place Like Home',
+        bookTitle: 'MegaGoal 4',
+        sbPages: 'Pages 6 to 19',
+        wbPages: 'Pages 1 to 10',
+        grammarFocus: 'Inversion with Negative Adverbials • Cleft Sentences (It was... that) • Nuanced Discourse Markers',
+        vocabularyTheme: 'Cultural belonging, diaspora, architectural heritage, national identity',
+        tipCokito: 'Inversion happens when a negative word starts the sentence: "Never have I seen such beauty" instead of "I have never seen".',
+        googleFormUrl: '',
+        owlCulture: {
+          owlTitle: 'Cyber Owl Trivia: The Global Concept of Home',
+          topic: 'Untranslatable concepts of home across languages',
+          didYouKnow: 'The Welsh word 'Hiraeth' and Portuguese 'Saudade' describe profound longing for a home that may no longer exist.',
+          culturalStory: 'In high-level C1 academic discourse, cleft sentences allow speakers to place surgical emphasis on key concepts.',
+          inOnAtRule: 'Use "AT home in the world", "IN the heart of the community".'
+        },
+        sessions: [
+          {
+            sessionCode: 'A',
+            sessionName: 'Session A: Belonging & Inversion Rules',
+            itemsRange: 'Items 1 to 4',
+            items: [
+              { number: 1, title: 'Listen & Discuss: The Global Nomad', description: 'Profiles of cultural ambassadors living across three continents.' },
+              { number: 2, title: 'Pair Work: Debate on Cultural Identity', description: 'Discussing language preservation in multicultural cities.' },
+              { number: 3, title: 'Grammar Focus: Negative Inversion & Cleft Sentences', description: 'Mastering structures: Seldom do we witness, What we need is...' },
+              { number: 4, title: 'Language in Context: Diplomatic Speech Analysis', description: 'Examining rhetorical figures in United Nations cultural addresses.' }
+            ]
+          },
+          {
+            sessionCode: 'B',
+            sessionName: 'Session B: Pronunciation & Real Talk',
+            itemsRange: 'Items 5 to 8',
+            items: [
+              { number: 5, title: 'Listening Comprehension: Literary Podcast', description: 'Critical analysis of contemporary travel memoirs.' },
+              { number: 6, title: 'Pronunciation: Dramatic Intonation in Inversion', description: 'Vocal inflection signaling literary emphasis.' },
+              { number: 7, title: 'About You Form: The Meaning of Heritage', description: 'Essay reflection on roots, family diaspora, and citizenship.' },
+              { number: 8, title: 'Conversation & Real Talk: Diplomatic Exchange', description: 'Negotiating cross-cultural collaborations with high tact.' }
+            ]
+          },
+          {
+            sessionCode: 'C',
+            sessionName: 'Session C: Reading, Writing & Workbook Practice',
+            itemsRange: 'Items 9 to 11 + Workbook Practice',
+            workbookPages: 'Pages 1 to 10',
+            items: [
+              { number: 9, title: 'Reading: Architecture and Memory', description: 'Essay on how urban monuments preserve historical consciousness.' },
+              { number: 10, title: 'Writing: Academic Essay with Cleft Focus', description: 'Composing an analytical thesis on urban identity.' },
+              { number: 11, title: 'Form, Meaning & Function: Sophisticated Transitionals', description: 'Using albeit, nonetheless, notwithstanding in formal prose.' }
+            ]
+          }
+        ],
+        quizQuestions: [
+          {
+            id: 1,
+            question: 'Complete the inverted sentence: "Rarely _____ such dedication to international peace."',
+            options: ['we have seen', 'have we seen', 'we saw', 'did we saw'],
+            correctIndex: 1,
+            explanation: 'Negative adverbials like "Rarely" require subject-auxiliary inversion: "have we seen".'
+          }
+        ]
+      }
+    ]
+  },
+
+  // 11. LEVEL XI: MegaGoal 5 (Advanced C1+ Mastery)
+  {
+    levelId: 'level_11',
+    levelNumber: 11,
+    levelName: 'Level XI • MegaGoal 5',
+    series: 'MegaGoal',
+    book: 'Mega Goal 5',
+    module: 4,
+    moduleName: 'Maestría Cognitiva y Profesional',
+    cefrEquiv: 'C1+',
+    audience: 'adults',
+    isIntegratedWorkbook: false,
+    bossFights: [],
+    units: [
+      {
+        unitNumber: 1,
+        title: 'Two Is Better Than One',
+        bookTitle: 'MegaGoal 5',
+        sbPages: 'Pages 6 to 19',
+        wbPages: 'Pages 1 to 10',
+        grammarFocus: 'Advanced Subordination • Subjunctive Structures • Participle Clauses',
+        vocabularyTheme: 'Symbiosis, corporate mergers, diplomatic alliances, collaborative science',
+        tipCokito: 'Use Participle Clauses to make your English concise and elegant: "Having completed the trial, the researchers published the study" instead of "After they had completed...".',
+        googleFormUrl: '',
+        owlCulture: {
+          owlTitle: 'Cyber Owl Trivia: Synergy in Science and Nature',
+          topic: 'How mutualistic bonds shape ecosystems and business',
+          didYouKnow: 'The Human Genome Project succeeded ahead of schedule because 20 international labs collaborated openly.',
+          culturalStory: 'In international multilateral summits, speaking with precision requires mastery of participle clauses.',
+          inOnAtRule: 'Use "IN synergy", "AT the summit".'
+        },
+        sessions: [
+          {
+            sessionCode: 'A',
+            sessionName: 'Session A: Alliances & Participle Clauses',
+            itemsRange: 'Items 1 to 4',
+            items: [
+              { number: 1, title: 'Listen & Discuss: The Power of Two', description: 'Examining successful historical partnerships from Watson & Crick to Apple & Jobs.' },
+              { number: 2, title: 'Pair Work: Strategic Synergy Analysis', description: 'Evaluating business mergers and scientific joint ventures.' },
+              { number: 3, title: 'Grammar Focus: Participle Clauses (-ing and -ed)', description: 'Synthesizing complex sentences into elegant reduced clauses.' },
+              { number: 4, title: 'Language in Context: Executive Joint Statement', description: 'Dissecting diplomatic joint communiqués.' }
+            ]
+          },
+          {
+            sessionCode: 'B',
+            sessionName: 'Session B: Pronunciation & Real Talk',
+            itemsRange: 'Items 5 to 8',
+            items: [
+              { number: 5, title: 'Listening Comprehension: Keynote Press Conference', description: 'Evaluating nuance and subtext in executive Q&A sessions.' },
+              { number: 6, title: 'Pronunciation: Rhetorical Pauses & Cadence', description: 'Mastering the rhythm of high-level oratory.' },
+              { number: 7, title: 'About You Form: Collaboration Philosophy', description: 'Reflecting on personal teamwork ethics and conflict resolution.' },
+              { number: 8, title: 'Conversation & Real Talk: High-Stakes Negotiation', description: 'Finding mutually beneficial compromises under pressure.' }
+            ]
+          },
+          {
+            sessionCode: 'C',
+            sessionName: 'Session C: Reading, Writing & Workbook Practice',
+            itemsRange: 'Items 9 to 11 + Workbook Practice',
+            workbookPages: 'Pages 1 to 10',
+            items: [
+              { number: 9, title: 'Reading: Symbiotic Wonders of the Biosphere', description: 'Biological interdependence as a metaphor for human systems.' },
+              { number: 10, title: 'Writing: Executive Partnership Proposal', description: 'Drafting an investment-grade alliance memorandum.' },
+              { number: 11, title: 'Form, Meaning & Function: Advanced Connectors of Concession', description: 'Mastering albeit, much as, granted that, even so.' }
+            ]
+          }
+        ],
+        quizQuestions: [
+          {
+            id: 1,
+            question: 'Which participle clause correctly reduces: "Because he had studied medicine for a decade, Dr. Alvarez recognized the rare symptom."?',
+            options: [
+              'Having studied medicine for a decade, Dr. Alvarez recognized the rare symptom.',
+              'Studied medicine for a decade, Dr. Alvarez recognized the rare symptom.',
+              'Being studied medicine for a decade, Dr. Alvarez recognized the rare symptom.',
+              'After studying medicine for a decade, recognizing the rare symptom.'
+            ],
+            correctIndex: 0,
+            explanation: 'The perfect participle "Having studied" cleanly expresses an action completed before the main clause.'
+          }
+        ]
+      }
+    ]
+  },
+
+  // 12. LEVEL XII: MegaGoal 6 (Executive Fluency & Mastery C2)
+  {
+    levelId: 'level_12',
+    levelNumber: 12,
+    levelName: 'Level XII • MegaGoal 6',
+    series: 'MegaGoal',
+    book: 'Mega Goal 6',
+    module: 4,
+    moduleName: 'Maestría Cognitiva y Profesional',
+    cefrEquiv: 'C2',
+    audience: 'adults',
+    isIntegratedWorkbook: false,
+    bossFights: [
+      {
+        id: 'boss_m4_mg6_final',
+        afterUnit: 1,
+        title: 'C2 Executive Master Capstone: Güakytopia Grand Graduation',
+        badgeName: 'World Conqueror 👑',
+        badgeIcon: '🏆',
+        description: 'The pinnacle of English mastery. Certified spontaneous fluency, persuasive eloquence, and native-level executive competence.',
+        googleFormUrl: ''
+      }
+    ],
+    units: [
+      {
+        unitNumber: 1,
+        title: 'Everyone Makes Mistakes',
+        bookTitle: 'MegaGoal 6',
+        sbPages: 'Pages 6 to 19',
+        wbPages: 'Pages 1 to 10',
+        grammarFocus: 'Past Modal Auxiliaries for Regret and Speculation • Advanced Subjunctive • Nuanced Register Adaptation',
+        vocabularyTheme: 'Crisis management, cognitive biases, historic blunders, philosophical resilience',
+        tipCokito: 'Use "Should have + Past Participle" for regret/criticism ("I should have known"), and "Could have / Might have" for past possibilities that did not happen.',
+        googleFormUrl: '',
+        owlCulture: {
+          owlTitle: 'Cyber Owl Trivia: Serendipity from Errors',
+          topic: 'How penicillin, pacemakers, and Post-it notes were born from blunders',
+          didYouKnow: 'Alexander Fleming discovered penicillin in 1928 because he accidentally left a petri dish uncovered before vacation!',
+          culturalStory: 'In native English idioms, saying "To learn the hard way" and "Every cloud has a silver lining" encapsulate philosophical resilience.',
+          inOnAtRule: 'Use "IN hindsight", "AT the eleventh hour".'
+        },
+        sessions: [
+          {
+            sessionCode: 'A',
+            sessionName: 'Session A: Crisis Management & Past Modals',
+            itemsRange: 'Items 1 to 4',
+            items: [
+              { number: 1, title: 'Listen & Discuss: Fateful Decisions in History', description: 'Examining NASA's Challenger review and maritime navigation errors.' },
+              { number: 2, title: 'Pair Work: Speculating About Alternatives', description: 'Debating: "What could they have done differently to avert the outcome?"' },
+              { number: 3, title: 'Grammar Focus: Past Modals (should have, would have, might have)', description: 'Expressing nuanced regret, counterfactual reasoning, and deduction.' },
+              { number: 4, title: 'Language in Context: Corporate Post-Mortem', description: 'Conducting a blame-free blameless retrospective analysis.' }
+            ]
+          },
+          {
+            sessionCode: 'B',
+            sessionName: 'Session B: Pronunciation & Real Talk',
+            itemsRange: 'Items 5 to 8',
+            items: [
+              { number: 5, title: 'Listening Comprehension: Investigative Journalism Report', description: 'Dissecting whistle-blower testimonies and investigative findings.' },
+              { number: 6, title: 'Pronunciation: Past Modal Triple Reductions', description: 'Mastering native connected speech: /ʃʊdəv/ or /wʊdəv/.' },
+              { number: 7, title: 'About You Form: The Lessons that Shaped Me', description: 'Personal philosophical essay on failure as a precursor to mastery.' },
+              { number: 8, title: 'Conversation & Real Talk: Executive Crisis Briefing', description: 'Navigating public accountability with composure and authority.' }
+            ]
+          },
+          {
+            sessionCode: 'C',
+            sessionName: 'Session C: Reading, Writing & Grand Graduation',
+            itemsRange: 'Items 9 to 11 + Master Capstone',
+            workbookPages: 'Pages 1 to 10',
+            items: [
+              { number: 9, title: 'Reading: The Psychology of Error', description: 'Cognitive science of heuristics, confirmation bias, and decision trees.' },
+              { number: 10, title: 'Writing: Grand Capstone White Paper', description: 'Drafting an executive white paper offering institutional recommendations.' },
+              { number: 11, title: 'C2 Graduation Capstone: The Master Defense', description: 'Live oral defense before Teacher Cokitö and the Academic Council.' }
+            ]
+          }
+        ],
+        quizQuestions: [
+          {
+            id: 1,
+            question: 'Which sentence correctly expresses a past criticism?',
+            options: [
+              'You should have informed the director before signing the lease.',
+              'You must have inform the director before signing the lease.',
+              'You should had informed the director before signing the lease.',
+              'You could inform the director before signing the lease.'
+            ],
+            correctIndex: 0,
+            explanation: '"Should have + past participle" (should have informed) is used to express past criticism or regret.'
+          }
+        ]
+      }
+    ]
+  }
+
 ];

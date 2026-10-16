@@ -1,0 +1,1106 @@
+[
+  {
+    "status": "available",
+    "enrolledStudents": [],
+    "classroomTitle": "Grupo Madrugador 1 (6:00 am)",
+    "slotType": "group",
+    "day": "Jueves",
+    "maxCapacity": 4,
+    "teacherName": "Teacher Cokitö",
+    "id": "jue_06",
+    "startTime": "06:00",
+    "endTime": "07:00"
+  },
+  {
+    "slotType": "group",
+    "startTime": "07:00",
+    "classroomTitle": "Grupo Madrugador 2 (7:00 am)",
+    "endTime": "08:00",
+    "maxCapacity": 4,
+    "teacherName": "Teacher Cokitö",
+    "status": "available",
+    "day": "Jueves",
+    "id": "jue_07",
+    "enrolledStudents": []
+  },
+  {
+    "id": "jue_08",
+    "endTime": "09:00",
+    "slotType": "individual",
+    "status": "booked",
+    "startTime": "08:00",
+    "meetLink": "https://meet.google.com/eng-class",
+    "levelId": "level_7",
+    "enrolledStudents": [],
+    "classroomTitle": "Aula Individual (08:00 - 09:00)",
+    "studentName": "Ana T Sandoval",
+    "studentId": "student_1791621089118",
+    "maxCapacity": 1,
+    "teacherName": "Teacher Cokitö",
+    "day": "Jueves"
+  },
+  {
+    "status": "available",
+    "slotType": "individual",
+    "enrolledStudents": [],
+    "day": "Jueves",
+    "endTime": "10:00",
+    "startTime": "09:00",
+    "maxCapacity": 1,
+    "id": "jue_09",
+    "teacherName": "Teacher Cokitö",
+    "classroomTitle": "Aula Individual (09:00 - 10:00)"
+  },
+  {
+    "maxCapacity": 1,
+    "teacherName": "Teacher Cokitö",
+    "id": "jue_10",
+    "day": "Jueves",
+    "status": "available",
+    "classroomTitle": "Aula Individual (10:00 - 11:00)",
+    "enrolledStudents": [],
+    "endTime": "11:00",
+    "slotType": "individual",
+    "startTime": "10:00"
+  },
+  {
+    "id": "jue_11",
+    "teacherName": "Teacher Cokitö",
+    "maxCapacity": 1,
+    "enrolledStudents": [],
+    "status": "available",
+    "classroomTitle": "Aula Individual (11:00 - 12:00)",
+    "slotType": "individual",
+    "day": "Jueves",
+    "startTime": "11:00",
+    "endTime": "12:00"
+  },
+  {
+    "day": "Jueves",
+    "endTime": "14:00",
+    "status": "available",
+    "slotType": "individual",
+    "maxCapacity": 1,
+    "teacherName": "Teacher Cokitö",
+    "classroomTitle": "Aula Individual (13:00 - 14:00)",
+    "enrolledStudents": [],
+    "startTime": "13:00",
+    "id": "jue_13"
+  },
+  {
+    "day": "Jueves",
+    "status": "available",
+    "classroomTitle": "Aula Individual (14:00 - 15:00)",
+    "teacherName": "Teacher Cokitö",
+    "enrolledStudents": [],
+    "maxCapacity": 1,
+    "slotType": "individual",
+    "endTime": "15:00",
+    "startTime": "14:00",
+    "id": "jue_14"
+  },
+  {
+    "id": "jue_15",
+    "endTime": "16:00",
+    "status": "available",
+    "startTime": "15:00",
+    "day": "Jueves",
+    "slotType": "institutional_csb",
+    "enrolledStudents": [],
+    "maxCapacity": 4,
+    "teacherName": "Teacher Cokitö",
+    "classroomTitle": "Aula Prioridad Alumnos CSB (3:00 pm)"
+  },
+  {
+    "slotType": "individual",
+    "day": "Jueves",
+    "levelId": "level_1",
+    "meetLink": "https://meet.google.com/eng-xiomara-cokito",
+    "startTime": "16:00",
+    "status": "booked",
+    "endTime": "17:00",
+    "studentId": "student_1791585084637",
+    "teacherName": "Teacher Cokitö / Head Teacher",
+    "maxCapacity": 1,
+    "studentName": "Xiomara Muñoz",
+    "classroomTitle": "Aula Individual (Xiomara Muñoz)",
+    "id": "jue_16",
+    "enrolledStudents": [
+      {
+        "levelId": "level_1",
+        "studentName": "Xiomara Muñoz",
+        "studentId": "student_1791585084637"
+      }
+    ]
+  },
+  {
+    "id": "jue_17",
+    "teacherName": "Teacher Cokitö",
+    "maxCapacity": 4,
+    "classroomTitle": "Aula Prioridad Teachers CSB (5:00 pm)",
+    "startTime": "17:00",
+    "status": "available",
+    "endTime": "18:00",
+    "slotType": "institutional_csb",
+    "enrolledStudents": [],
+    "day": "Jueves"
+  },
+  {
+    "id": "jue_18",
+    "status": "available",
+    "classroomTitle": "Aula Prioridad Teachers CSB (6:00 pm)",
+    "startTime": "18:00",
+    "endTime": "19:00",
+    "maxCapacity": 4,
+    "day": "Jueves",
+    "enrolledStudents": [],
+    "teacherName": "Teacher Cokitö",
+    "slotType": "institutional_csb"
+  },
+  {
+    "startTime": "19:00",
+    "id": "jue_19",
+    "endTime": "20:00",
+    "classroomTitle": "Aula Individual (19:00 - 20:00)",
+    "teacherName": "Teacher Cokitö",
+    "status": "available",
+    "slotType": "individual",
+    "maxCapacity": 1,
+    "day": "Jueves",
+    "enrolledStudents": []
+  },
+  {
+    "enrolledStudents": [],
+    "day": "Jueves",
+    "status": "available",
+    "slotType": "group",
+    "maxCapacity": 4,
+    "classroomTitle": "Grupo Nocturno 1 (8:00 pm)",
+    "teacherName": "Teacher Cokitö",
+    "endTime": "21:00",
+    "id": "jue_20",
+    "startTime": "20:00"
+  },
+  {
+    "slotType": "group",
+    "enrolledStudents": [],
+    "classroomTitle": "Grupo Nocturno 2 (9:00 pm)",
+    "maxCapacity": 4,
+    "teacherName": "Teacher Cokitö",
+    "day": "Jueves",
+    "id": "jue_21",
+    "status": "available",
+    "startTime": "21:00",
+    "endTime": "22:00"
+  },
+  {
+    "teacherName": "Teacher Cokitö",
+    "id": "lun_06",
+    "endTime": "07:00",
+    "maxCapacity": 4,
+    "startTime": "06:00",
+    "slotType": "group",
+    "day": "Lunes",
+    "status": "available",
+    "classroomTitle": "Grupo Madrugador 1 (6:00 am)",
+    "enrolledStudents": []
+  },
+  {
+    "endTime": "08:00",
+    "maxCapacity": 4,
+    "classroomTitle": "Grupo Madrugador 2 (7:00 am)",
+    "teacherName": "Teacher Cokitö",
+    "slotType": "group",
+    "status": "available",
+    "id": "lun_07",
+    "startTime": "07:00",
+    "enrolledStudents": [],
+    "day": "Lunes"
+  },
+  {
+    "teacherName": "Teacher Cokitö",
+    "enrolledStudents": [],
+    "maxCapacity": 1,
+    "slotType": "individual",
+    "day": "Lunes",
+    "id": "lun_08",
+    "classroomTitle": "Aula Individual (08:00 - 09:00)",
+    "startTime": "08:00",
+    "status": "available",
+    "endTime": "09:00"
+  },
+  {
+    "day": "Lunes",
+    "classroomTitle": "Aula Individual (09:00 - 10:00)",
+    "startTime": "09:00",
+    "endTime": "10:00",
+    "maxCapacity": 1,
+    "teacherName": "Teacher Cokitö",
+    "slotType": "individual",
+    "status": "available",
+    "enrolledStudents": [],
+    "id": "lun_09"
+  },
+  {
+    "studentName": "Ian Gabriel Mendoza",
+    "id": "lun_10",
+    "startTime": "10:00",
+    "classroomTitle": "Aula Matutina (Ian Gabriel Mendoza • 2 Horas)",
+    "status": "booked",
+    "levelId": "level_1",
+    "teacherName": "Teacher Cokitö / Head Teacher",
+    "endTime": "11:00",
+    "maxCapacity": 1,
+    "slotType": "individual",
+    "enrolledStudents": [
+      {
+        "studentName": "Ian Gabriel Mendoza",
+        "levelId": "level_1",
+        "studentId": "student_ian_gabriel"
+      }
+    ],
+    "day": "Lunes",
+    "studentId": "student_ian_gabriel",
+    "meetLink": "https://meet.google.com/eng-ian-waky"
+  },
+  {
+    "classroomTitle": "Aula Matutina (Ian Gabriel Mendoza • 2 Horas)",
+    "status": "booked",
+    "meetLink": "https://meet.google.com/eng-ian-waky",
+    "studentName": "Ian Gabriel Mendoza",
+    "day": "Lunes",
+    "studentId": "student_ian_gabriel",
+    "maxCapacity": 1,
+    "teacherName": "Teacher Cokitö / Head Teacher",
+    "slotType": "individual",
+    "enrolledStudents": [
+      {
+        "studentId": "student_ian_gabriel",
+        "levelId": "level_1",
+        "studentName": "Ian Gabriel Mendoza"
+      }
+    ],
+    "endTime": "12:00",
+    "startTime": "11:00",
+    "id": "lun_11",
+    "levelId": "level_1"
+  },
+  {
+    "day": "Lunes",
+    "startTime": "13:00",
+    "maxCapacity": 1,
+    "teacherName": "Teacher Cokitö",
+    "classroomTitle": "Aula Individual (13:00 - 14:00)",
+    "enrolledStudents": [],
+    "id": "lun_13",
+    "slotType": "individual",
+    "status": "available",
+    "endTime": "14:00"
+  },
+  {
+    "maxCapacity": 1,
+    "status": "available",
+    "startTime": "14:00",
+    "teacherName": "Teacher Cokitö",
+    "slotType": "individual",
+    "day": "Lunes",
+    "id": "lun_14",
+    "enrolledStudents": [],
+    "endTime": "15:00",
+    "classroomTitle": "Aula Individual (14:00 - 15:00)"
+  },
+  {
+    "id": "lun_15",
+    "endTime": "16:00",
+    "day": "Lunes",
+    "status": "available",
+    "startTime": "15:00",
+    "classroomTitle": "Aula Prioridad Alumnos CSB (3:00 pm)",
+    "maxCapacity": 4,
+    "enrolledStudents": [],
+    "teacherName": "Teacher Cokitö",
+    "slotType": "institutional_csb"
+  },
+  {
+    "teacherName": "Teacher Cokitö",
+    "maxCapacity": 4,
+    "enrolledStudents": [],
+    "endTime": "17:00",
+    "day": "Lunes",
+    "id": "lun_16",
+    "status": "available",
+    "startTime": "16:00",
+    "classroomTitle": "Aula Prioridad Alumnos CSB (4:00 pm)",
+    "slotType": "institutional_csb"
+  },
+  {
+    "maxCapacity": 4,
+    "enrolledStudents": [
+      {
+        "levelId": "level_1",
+        "studentId": "student_1791825726430",
+        "studentName": "Carla Andreina Lira"
+      }
+    ],
+    "teacherName": "Teacher Cokitö / Head Teacher",
+    "endTime": "18:00",
+    "day": "Lunes",
+    "studentName": "Carla Andreina Lira",
+    "levelId": "level_1",
+    "studentId": "student_1791825726430",
+    "id": "lun_17",
+    "status": "booked",
+    "meetLink": "https://meet.google.com/eng-carla-waky",
+    "startTime": "17:00",
+    "classroomTitle": "Aula Individual (Carla Andreina Lira)",
+    "slotType": "institutional_csb"
+  },
+  {
+    "status": "booked",
+    "teacherName": "Teacher Cokitö / Head Teacher",
+    "maxCapacity": 4,
+    "slotType": "institutional_csb",
+    "studentName": "Maria Guadalupe Peña Montilla",
+    "enrolledStudents": [
+      {
+        "studentId": "student_maria_guadalupe",
+        "levelId": "level_1",
+        "studentName": "Maria Guadalupe Peña Montilla"
+      }
+    ],
+    "studentId": "student_maria_guadalupe",
+    "classroomTitle": "Aula Teachers CSB (María Guadalupe)",
+    "meetLink": "https://meet.google.com/eng-malu-waky",
+    "startTime": "18:00",
+    "levelId": "level_1",
+    "day": "Lunes",
+    "id": "lun_18",
+    "endTime": "19:00"
+  },
+  {
+    "slotType": "individual",
+    "teacherName": "Teacher Cokitö / Head Teacher",
+    "maxCapacity": 1,
+    "studentId": "student_carlos",
+    "studentName": "Carlos Mendoza",
+    "meetLink": "https://meet.google.com/eng-carlos-waky",
+    "levelId": "level_3",
+    "startTime": "19:00",
+    "day": "Lunes",
+    "classroomTitle": "Aula Individual (Carlos Mendoza)",
+    "enrolledStudents": [
+      {
+        "studentId": "student_carlos",
+        "studentName": "Carlos Mendoza",
+        "levelId": "level_3"
+      }
+    ],
+    "status": "booked",
+    "endTime": "20:00",
+    "id": "lun_19"
+  },
+  {
+    "teacherName": "Teacher Cokitö / Head Teacher",
+    "status": "booked",
+    "day": "Lunes",
+    "maxCapacity": 4,
+    "slotType": "group",
+    "enrolledStudents": [
+      {
+        "studentName": "Génesis Puello",
+        "levelId": "level_1",
+        "studentId": "student_genesis_puello_new"
+      }
+    ],
+    "studentName": "Génesis Puello",
+    "id": "lun_20",
+    "studentId": "student_genesis_puello_new",
+    "meetLink": "https://meet.google.com/eng-genesis-waky",
+    "startTime": "20:00",
+    "levelId": "level_1",
+    "endTime": "21:00",
+    "classroomTitle": "Aula Nocturna (Génesis Puello)"
+  },
+  {
+    "meetLink": "https://meet.google.com/eng-vaneska-waky",
+    "classroomTitle": "Aula Nocturna (Vaneska Lopez)",
+    "slotType": "group",
+    "enrolledStudents": [
+      {
+        "studentId": "student_vaneska",
+        "studentName": "Vaneska Lopez",
+        "levelId": "level_1"
+      }
+    ],
+    "status": "booked",
+    "studentId": "student_vaneska",
+    "startTime": "21:00",
+    "studentName": "Vaneska Lopez",
+    "endTime": "22:00",
+    "maxCapacity": 4,
+    "id": "lun_21",
+    "teacherName": "Teacher Cokitö / Head Teacher",
+    "day": "Lunes",
+    "levelId": "level_1"
+  },
+  {
+    "day": "Martes",
+    "classroomTitle": "Grupo Madrugador 1 (6:00 am)",
+    "endTime": "07:00",
+    "startTime": "06:00",
+    "maxCapacity": 4,
+    "teacherName": "Teacher Cokitö",
+    "slotType": "group",
+    "status": "available",
+    "id": "mar_06",
+    "enrolledStudents": []
+  },
+  {
+    "endTime": "08:00",
+    "status": "available",
+    "id": "mar_07",
+    "startTime": "07:00",
+    "maxCapacity": 4,
+    "slotType": "group",
+    "classroomTitle": "Grupo Madrugador 2 (7:00 am)",
+    "teacherName": "Teacher Cokitö",
+    "enrolledStudents": [],
+    "day": "Martes"
+  },
+  {
+    "day": "Martes",
+    "classroomTitle": "Aula Individual (08:00 - 09:00)",
+    "studentName": "Ana T Sandoval",
+    "studentId": "student_1791621089118",
+    "maxCapacity": 1,
+    "teacherName": "Teacher Cokitö",
+    "id": "mar_08",
+    "meetLink": "https://meet.google.com/eng-class",
+    "enrolledStudents": [],
+    "endTime": "09:00",
+    "startTime": "08:00",
+    "status": "booked",
+    "slotType": "individual",
+    "levelId": "level_7"
+  },
+  {
+    "startTime": "09:00",
+    "slotType": "individual",
+    "classroomTitle": "Aula Individual (09:00 - 10:00)",
+    "endTime": "10:00",
+    "maxCapacity": 1,
+    "teacherName": "Teacher Cokitö",
+    "day": "Martes",
+    "status": "available",
+    "enrolledStudents": [],
+    "id": "mar_09"
+  },
+  {
+    "slotType": "individual",
+    "id": "mar_10",
+    "teacherName": "Teacher Cokitö",
+    "day": "Martes",
+    "enrolledStudents": [],
+    "maxCapacity": 1,
+    "startTime": "10:00",
+    "status": "available",
+    "endTime": "11:00",
+    "classroomTitle": "Aula Individual (10:00 - 11:00)"
+  },
+  {
+    "status": "available",
+    "teacherName": "Teacher Cokitö",
+    "enrolledStudents": [],
+    "maxCapacity": 1,
+    "id": "mar_11",
+    "day": "Martes",
+    "startTime": "11:00",
+    "endTime": "12:00",
+    "slotType": "individual",
+    "classroomTitle": "Aula Individual (11:00 - 12:00)"
+  },
+  {
+    "id": "mar_13",
+    "slotType": "individual",
+    "enrolledStudents": [],
+    "day": "Martes",
+    "endTime": "14:00",
+    "classroomTitle": "Aula Individual (13:00 - 14:00)",
+    "maxCapacity": 1,
+    "status": "available",
+    "teacherName": "Teacher Cokitö",
+    "startTime": "13:00"
+  },
+  {
+    "startTime": "14:00",
+    "id": "mar_14",
+    "endTime": "15:00",
+    "status": "available",
+    "teacherName": "Teacher Cokitö",
+    "classroomTitle": "Aula Individual (14:00 - 15:00)",
+    "maxCapacity": 1,
+    "slotType": "individual",
+    "day": "Martes",
+    "enrolledStudents": []
+  },
+  {
+    "enrolledStudents": [],
+    "id": "mar_15",
+    "day": "Martes",
+    "status": "available",
+    "startTime": "15:00",
+    "slotType": "institutional_csb",
+    "endTime": "16:00",
+    "maxCapacity": 4,
+    "teacherName": "Teacher Cokitö",
+    "classroomTitle": "Aula Prioridad Alumnos CSB (3:00 pm)"
+  },
+  {
+    "slotType": "individual",
+    "levelId": "level_1",
+    "startTime": "16:00",
+    "day": "Martes",
+    "enrolledStudents": [
+      {
+        "studentName": "Xiomara Muñoz",
+        "studentId": "student_1791585084637",
+        "levelId": "level_1"
+      }
+    ],
+    "meetLink": "https://meet.google.com/eng-xiomara-cokito",
+    "status": "booked",
+    "endTime": "17:00",
+    "id": "mar_16",
+    "studentName": "Xiomara Muñoz",
+    "studentId": "student_1791585084637",
+    "maxCapacity": 1,
+    "classroomTitle": "Aula Individual (Xiomara Muñoz)",
+    "teacherName": "Teacher Cokitö / Head Teacher"
+  },
+  {
+    "classroomTitle": "Aula Prioridad Teachers CSB (5:00 pm)",
+    "id": "mar_17",
+    "teacherName": "Teacher Cokitö",
+    "enrolledStudents": [],
+    "maxCapacity": 4,
+    "slotType": "institutional_csb",
+    "status": "available",
+    "endTime": "18:00",
+    "day": "Martes",
+    "startTime": "17:00"
+  },
+  {
+    "day": "Martes",
+    "status": "available",
+    "startTime": "18:00",
+    "enrolledStudents": [],
+    "endTime": "19:00",
+    "slotType": "institutional_csb",
+    "classroomTitle": "Aula Prioridad Teachers CSB (6:00 pm)",
+    "id": "mar_18",
+    "teacherName": "Teacher Cokitö",
+    "maxCapacity": 4
+  },
+  {
+    "teacherName": "Teacher Cokitö",
+    "endTime": "20:00",
+    "maxCapacity": 1,
+    "status": "available",
+    "classroomTitle": "Aula Individual (19:00 - 20:00)",
+    "id": "mar_19",
+    "day": "Martes",
+    "startTime": "19:00",
+    "enrolledStudents": [],
+    "slotType": "individual"
+  },
+  {
+    "slotType": "group",
+    "maxCapacity": 4,
+    "enrolledStudents": [],
+    "teacherName": "Teacher Cokitö",
+    "startTime": "20:00",
+    "status": "available",
+    "day": "Martes",
+    "endTime": "21:00",
+    "classroomTitle": "Grupo Nocturno 1 (8:00 pm)",
+    "id": "mar_20"
+  },
+  {
+    "day": "Martes",
+    "status": "available",
+    "teacherName": "Teacher Cokitö",
+    "maxCapacity": 4,
+    "slotType": "group",
+    "classroomTitle": "Grupo Nocturno 2 (9:00 pm)",
+    "endTime": "22:00",
+    "enrolledStudents": [],
+    "startTime": "21:00",
+    "id": "mar_21"
+  },
+  {
+    "endTime": "07:00",
+    "classroomTitle": "Grupo Madrugador 1 (6:00 am)",
+    "status": "available",
+    "day": "Miércoles",
+    "startTime": "06:00",
+    "enrolledStudents": [],
+    "teacherName": "Teacher Cokitö",
+    "id": "mie_06",
+    "maxCapacity": 4,
+    "slotType": "group"
+  },
+  {
+    "classroomTitle": "Grupo Madrugador 2 (7:00 am)",
+    "id": "mie_07",
+    "startTime": "07:00",
+    "endTime": "08:00",
+    "day": "Miércoles",
+    "status": "available",
+    "maxCapacity": 4,
+    "teacherName": "Teacher Cokitö",
+    "enrolledStudents": [],
+    "slotType": "group"
+  },
+  {
+    "slotType": "individual",
+    "day": "Miércoles",
+    "classroomTitle": "Aula Individual (08:00 - 09:00)",
+    "maxCapacity": 1,
+    "startTime": "08:00",
+    "teacherName": "Teacher Cokitö",
+    "enrolledStudents": [],
+    "status": "available",
+    "id": "mie_08",
+    "endTime": "09:00"
+  },
+  {
+    "status": "available",
+    "enrolledStudents": [],
+    "slotType": "individual",
+    "classroomTitle": "Aula Individual (09:00 - 10:00)",
+    "day": "Miércoles",
+    "maxCapacity": 1,
+    "endTime": "10:00",
+    "startTime": "09:00",
+    "teacherName": "Teacher Cokitö",
+    "id": "mie_09"
+  },
+  {
+    "startTime": "10:00",
+    "slotType": "individual",
+    "meetLink": "https://meet.google.com/eng-ian-waky",
+    "status": "booked",
+    "endTime": "11:00",
+    "studentName": "Ian Gabriel Mendoza",
+    "day": "Miércoles",
+    "id": "mie_10",
+    "maxCapacity": 1,
+    "enrolledStudents": [
+      {
+        "levelId": "level_1",
+        "studentName": "Ian Gabriel Mendoza",
+        "studentId": "student_ian_gabriel"
+      }
+    ],
+    "teacherName": "Teacher Cokitö / Head Teacher",
+    "levelId": "level_1",
+    "studentId": "student_ian_gabriel",
+    "classroomTitle": "Aula Matutina (Ian Gabriel Mendoza • 2 Horas)"
+  },
+  {
+    "day": "Miércoles",
+    "studentName": "Ian Gabriel Mendoza",
+    "status": "booked",
+    "enrolledStudents": [
+      {
+        "levelId": "level_1",
+        "studentName": "Ian Gabriel Mendoza",
+        "studentId": "student_ian_gabriel"
+      }
+    ],
+    "levelId": "level_1",
+    "endTime": "12:00",
+    "teacherName": "Teacher Cokitö / Head Teacher",
+    "maxCapacity": 1,
+    "id": "mie_11",
+    "startTime": "11:00",
+    "studentId": "student_ian_gabriel",
+    "slotType": "individual",
+    "classroomTitle": "Aula Matutina (Ian Gabriel Mendoza • 2 Horas)",
+    "meetLink": "https://meet.google.com/eng-ian-waky"
+  },
+  {
+    "teacherName": "Teacher Cokitö",
+    "id": "mie_13",
+    "maxCapacity": 1,
+    "endTime": "14:00",
+    "slotType": "individual",
+    "enrolledStudents": [],
+    "startTime": "13:00",
+    "status": "available",
+    "classroomTitle": "Aula Individual (13:00 - 14:00)",
+    "day": "Miércoles"
+  },
+  {
+    "day": "Miércoles",
+    "slotType": "individual",
+    "startTime": "14:00",
+    "classroomTitle": "Aula Individual (14:00 - 15:00)",
+    "status": "available",
+    "teacherName": "Teacher Cokitö",
+    "maxCapacity": 1,
+    "endTime": "15:00",
+    "id": "mie_14",
+    "enrolledStudents": []
+  },
+  {
+    "startTime": "15:00",
+    "teacherName": "Teacher Cokitö",
+    "slotType": "institutional_csb",
+    "maxCapacity": 4,
+    "endTime": "16:00",
+    "day": "Miércoles",
+    "classroomTitle": "Aula Prioridad Alumnos CSB (3:00 pm)",
+    "status": "available",
+    "enrolledStudents": [],
+    "id": "mie_15"
+  },
+  {
+    "id": "mie_16",
+    "classroomTitle": "Aula Prioridad Alumnos CSB (4:00 pm)",
+    "endTime": "17:00",
+    "enrolledStudents": [],
+    "day": "Miércoles",
+    "slotType": "institutional_csb",
+    "startTime": "16:00",
+    "status": "available",
+    "teacherName": "Teacher Cokitö",
+    "maxCapacity": 4
+  },
+  {
+    "startTime": "17:00",
+    "day": "Miércoles",
+    "slotType": "institutional_csb",
+    "studentName": "Carla Andreina Lira",
+    "status": "booked",
+    "enrolledStudents": [
+      {
+        "studentName": "Carla Andreina Lira",
+        "levelId": "level_1",
+        "studentId": "student_1791825726430"
+      }
+    ],
+    "teacherName": "Teacher Cokitö / Head Teacher",
+    "id": "mie_17",
+    "meetLink": "https://meet.google.com/eng-carla-waky",
+    "maxCapacity": 4,
+    "classroomTitle": "Aula Individual (Carla Andreina Lira)",
+    "levelId": "level_1",
+    "endTime": "18:00",
+    "studentId": "student_1791825726430"
+  },
+  {
+    "id": "mie_18",
+    "startTime": "18:00",
+    "day": "Miércoles",
+    "enrolledStudents": [
+      {
+        "levelId": "level_1",
+        "studentName": "Maria Guadalupe Peña Montilla",
+        "studentId": "student_maria_guadalupe"
+      }
+    ],
+    "classroomTitle": "Aula Teachers CSB (María Guadalupe)",
+    "endTime": "19:00",
+    "status": "booked",
+    "studentName": "Maria Guadalupe Peña Montilla",
+    "slotType": "institutional_csb",
+    "meetLink": "https://meet.google.com/eng-malu-waky",
+    "studentId": "student_maria_guadalupe",
+    "maxCapacity": 4,
+    "levelId": "level_1",
+    "teacherName": "Teacher Cokitö / Head Teacher"
+  },
+  {
+    "classroomTitle": "Aula Individual (Carlos Mendoza)",
+    "id": "mie_19",
+    "startTime": "19:00",
+    "status": "booked",
+    "endTime": "20:00",
+    "day": "Miércoles",
+    "teacherName": "Teacher Cokitö / Head Teacher",
+    "slotType": "individual",
+    "maxCapacity": 1,
+    "studentId": "student_carlos",
+    "meetLink": "https://meet.google.com/eng-carlos-waky",
+    "enrolledStudents": [
+      {
+        "levelId": "level_3",
+        "studentId": "student_carlos",
+        "studentName": "Carlos Mendoza"
+      }
+    ],
+    "levelId": "level_3",
+    "studentName": "Carlos Mendoza"
+  },
+  {
+    "teacherName": "Teacher Cokitö / Head Teacher",
+    "maxCapacity": 4,
+    "status": "booked",
+    "levelId": "level_1",
+    "studentName": "Génesis Puello",
+    "endTime": "21:00",
+    "studentId": "student_genesis_puello_new",
+    "startTime": "20:00",
+    "id": "mie_20",
+    "meetLink": "https://meet.google.com/eng-genesis-waky",
+    "classroomTitle": "Aula Nocturna (Génesis Puello)",
+    "day": "Miércoles",
+    "slotType": "group",
+    "enrolledStudents": [
+      {
+        "studentName": "Génesis Puello",
+        "levelId": "level_1",
+        "studentId": "student_genesis_puello_new"
+      }
+    ]
+  },
+  {
+    "maxCapacity": 4,
+    "enrolledStudents": [
+      {
+        "levelId": "level_1",
+        "studentName": "Vaneska Lopez",
+        "studentId": "student_vaneska"
+      }
+    ],
+    "teacherName": "Teacher Cokitö / Head Teacher",
+    "endTime": "22:00",
+    "day": "Miércoles",
+    "levelId": "level_1",
+    "studentName": "Vaneska Lopez",
+    "studentId": "student_vaneska",
+    "id": "mie_21",
+    "status": "booked",
+    "meetLink": "https://meet.google.com/eng-vaneska-waky",
+    "startTime": "21:00",
+    "classroomTitle": "Aula Nocturna (Vaneska Lopez)",
+    "slotType": "group"
+  },
+  {
+    "day": "Sábado",
+    "enrolledStudents": [],
+    "maxCapacity": 6,
+    "startTime": "08:00",
+    "teacherName": "Teacher Cokitö",
+    "slotType": "group",
+    "classroomTitle": "Sabatino Bloque 1 (2 Horas: 8:00 - 10:00 am)",
+    "status": "available",
+    "id": "sab_08_10",
+    "endTime": "10:00"
+  },
+  {
+    "id": "sab_08_12",
+    "teacherName": "Teacher Cokitö",
+    "classroomTitle": "Sabatino Intensivo (4 Horas: 8:00 am - 12:00 m)",
+    "enrolledStudents": [],
+    "maxCapacity": 6,
+    "endTime": "12:00",
+    "slotType": "group",
+    "day": "Sábado",
+    "status": "available",
+    "startTime": "08:00"
+  },
+  {
+    "classroomTitle": "Sabatino Bloque 2 (2 Horas: 10:00 - 12:00 m)",
+    "id": "sab_10_12",
+    "enrolledStudents": [],
+    "slotType": "group",
+    "maxCapacity": 6,
+    "endTime": "12:00",
+    "teacherName": "Teacher Cokitö",
+    "status": "available",
+    "day": "Sábado",
+    "startTime": "10:00"
+  },
+  {
+    "endTime": "07:00",
+    "enrolledStudents": [],
+    "status": "available",
+    "teacherName": "Teacher Cokitö",
+    "maxCapacity": 4,
+    "classroomTitle": "Grupo Madrugador 1 (6:00 am)",
+    "slotType": "group",
+    "id": "vie_06",
+    "day": "Viernes",
+    "startTime": "06:00"
+  },
+  {
+    "endTime": "08:00",
+    "status": "available",
+    "id": "vie_07",
+    "day": "Viernes",
+    "slotType": "group",
+    "maxCapacity": 4,
+    "teacherName": "Teacher Cokitö",
+    "enrolledStudents": [],
+    "classroomTitle": "Grupo Madrugador 2 (7:00 am)",
+    "startTime": "07:00"
+  },
+  {
+    "day": "Viernes",
+    "endTime": "09:00",
+    "enrolledStudents": [],
+    "status": "available",
+    "slotType": "individual",
+    "classroomTitle": "Aula Individual (08:00 - 09:00)",
+    "startTime": "08:00",
+    "teacherName": "Teacher Cokitö",
+    "id": "vie_08",
+    "maxCapacity": 1
+  },
+  {
+    "day": "Viernes",
+    "slotType": "individual",
+    "teacherName": "Teacher Cokitö",
+    "classroomTitle": "Aula Individual (09:00 - 10:00)",
+    "maxCapacity": 1,
+    "status": "available",
+    "enrolledStudents": [],
+    "startTime": "09:00",
+    "endTime": "10:00",
+    "id": "vie_09"
+  },
+  {
+    "day": "Viernes",
+    "enrolledStudents": [],
+    "classroomTitle": "Aula Individual (10:00 - 11:00)",
+    "slotType": "individual",
+    "status": "available",
+    "id": "vie_10",
+    "maxCapacity": 1,
+    "startTime": "10:00",
+    "endTime": "11:00",
+    "teacherName": "Teacher Cokitö"
+  },
+  {
+    "day": "Viernes",
+    "enrolledStudents": [],
+    "endTime": "12:00",
+    "status": "available",
+    "startTime": "11:00",
+    "classroomTitle": "Aula Individual (11:00 - 12:00)",
+    "maxCapacity": 1,
+    "slotType": "individual",
+    "id": "vie_11",
+    "teacherName": "Teacher Cokitö"
+  },
+  {
+    "day": "Viernes",
+    "status": "available",
+    "teacherName": "Teacher Cokitö",
+    "slotType": "individual",
+    "maxCapacity": 1,
+    "startTime": "13:00",
+    "endTime": "14:00",
+    "id": "vie_13",
+    "classroomTitle": "Aula Individual (13:00 - 14:00)",
+    "enrolledStudents": []
+  },
+  {
+    "id": "vie_14",
+    "enrolledStudents": [],
+    "day": "Viernes",
+    "slotType": "individual",
+    "endTime": "15:00",
+    "classroomTitle": "Aula Individual (14:00 - 15:00)",
+    "teacherName": "Teacher Cokitö",
+    "status": "available",
+    "maxCapacity": 1,
+    "startTime": "14:00"
+  },
+  {
+    "maxCapacity": 4,
+    "classroomTitle": "Aula Prioridad Alumnos CSB (3:00 pm)",
+    "teacherName": "Teacher Cokitö",
+    "enrolledStudents": [],
+    "day": "Viernes",
+    "status": "available",
+    "startTime": "15:00",
+    "id": "vie_15",
+    "slotType": "institutional_csb",
+    "endTime": "16:00"
+  },
+  {
+    "id": "vie_16",
+    "classroomTitle": "Aula Prioridad Alumnos CSB (4:00 pm)",
+    "teacherName": "Teacher Cokitö",
+    "endTime": "17:00",
+    "slotType": "institutional_csb",
+    "day": "Viernes",
+    "maxCapacity": 4,
+    "enrolledStudents": [],
+    "status": "available",
+    "startTime": "16:00"
+  },
+  {
+    "status": "available",
+    "endTime": "18:00",
+    "day": "Viernes",
+    "id": "vie_17",
+    "startTime": "17:00",
+    "classroomTitle": "Aula Prioridad Teachers CSB (5:00 pm)",
+    "maxCapacity": 4,
+    "enrolledStudents": [],
+    "slotType": "institutional_csb",
+    "teacherName": "Teacher Cokitö"
+  },
+  {
+    "teacherName": "Teacher Cokitö",
+    "maxCapacity": 4,
+    "id": "vie_18",
+    "enrolledStudents": [],
+    "day": "Viernes",
+    "startTime": "18:00",
+    "classroomTitle": "Aula Prioridad Teachers CSB (6:00 pm)",
+    "status": "available",
+    "slotType": "institutional_csb",
+    "endTime": "19:00"
+  },
+  {
+    "id": "vie_19",
+    "day": "Viernes",
+    "slotType": "individual",
+    "maxCapacity": 1,
+    "classroomTitle": "Aula Individual (19:00 - 20:00)",
+    "teacherName": "Teacher Cokitö",
+    "enrolledStudents": [],
+    "startTime": "19:00",
+    "status": "available",
+    "endTime": "20:00"
+  },
+  {
+    "endTime": "21:00",
+    "day": "Viernes",
+    "enrolledStudents": [],
+    "classroomTitle": "Grupo Nocturno 1 (8:00 pm)",
+    "slotType": "group",
+    "status": "available",
+    "maxCapacity": 4,
+    "id": "vie_20",
+    "startTime": "20:00",
+    "teacherName": "Teacher Cokitö"
+  },
+  {
+    "startTime": "21:00",
+    "status": "available",
+    "classroomTitle": "Grupo Nocturno 2 (9:00 pm)",
+    "id": "vie_21",
+    "endTime": "22:00",
+    "day": "Viernes",
+    "teacherName": "Teacher Cokitö",
+    "slotType": "group",
+    "maxCapacity": 4,
+    "enrolledStudents": []
+  }
+]

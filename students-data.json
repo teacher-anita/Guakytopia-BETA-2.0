@@ -127,7 +127,7 @@
     "placementTestScore": 14,
     "placementTestDiagnosis": "Buen manejo de vocabulario cotidiano. Necesita soltar la lengua en Presente Perfecto y fluidez auditiva.",
     "league": "Oro",
-    "preferredTimeSlot": "Noches (6:00 - 8:00 pm)",
+    "preferredTimeSlot": "Noches (7:00 - 8:00 pm)",
     "rating": {
       "vocabulary": 4,
       "grammar": 3,
@@ -144,8 +144,8 @@
     "lastName": "Mendoza",
     "currentUnit": 4,
     "assignedSlots": [
-      "Lunes-18:00",
-      "Miércoles-18:00"
+      "lun_19",
+      "mie_19"
     ],
     "email": "carlos.mendoza@example.com",
     "placementTestDate": "2026-08-15",
@@ -354,7 +354,7 @@
       "vocabulary": 3,
       "pronunciation": 3
     },
-    "notes": "Horario oficial confirmado: Martes y Jueves de 4:00 a 5:00 pm con Teacher Cokitö. Petición adicional: 10:00 am a 11:00 am.",
+    "notes": "Horario oficial confirmado: Martes y Jueves de 4:00 a 5:00 pm con Teacher Cokitö.",
     "assignedSlots": [
       "mar_16",
       "jue_16"

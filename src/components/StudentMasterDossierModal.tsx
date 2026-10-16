@@ -29,7 +29,9 @@ import {
   Database,
   BarChart3,
   RefreshCw,
-  Trash2
+  Trash2,
+  Lock,
+  Copy
 } from 'lucide-react';
 import { Student, EnglishLevel } from '../types';
 import { CouponItem } from '../data/couponsData';
@@ -79,10 +81,100 @@ export const StudentMasterDossierModal: React.FC<StudentMasterDossierModalProps>
   const [handoverNote, setHandoverNote] = useState<string>(student.unitHandover?.teacherNote || '');
   const [handoverSuccessMsg, setHandoverSuccessMsg] = useState<string | null>(null);
 
+  // Manual credentials assignment state
+  const [customUsernameInput, setCustomUsernameInput] = useState<string>(student.username || student.email.split('@')[0] || '');
+  const [customPasswordInput, setCustomPasswordInput] = useState<string>(student.customPassword || student.password || student.temporaryPassword || 'ingles2026');
+  const [credSuccessMsg, setCredSuccessMsg] = useState<string | null>(null);
+
+  // Pending items tracking
+  const [pendingItems, setPendingItems] = useState<string[]>(student.pendingUnitItems || []);
+
   // Find curriculum units for student's level
   const pathwayLevel = PATHWAY_LEVELS.find(l => l.levelId === (student.levelId || 'level_1')) || PATHWAY_LEVELS[0];
   const activePathwayUnit = pathwayLevel.units.find(u => u.unitNumber === selectedUnitNumber) || pathwayLevel.units[0];
   const allUnitItems = activePathwayUnit ? activePathwayUnit.sessions.flatMap(s => s.items) : [];
+
+  const handleConfirmPendingItem = (itemKey: string, itemNum: number) => {
+    const nextPending = pendingItems.filter(k => k !== itemKey);
+    const nextCompleted = completedItems.includes(itemKey) ? completedItems : [...completedItems, itemKey];
+    setPendingItems(nextPending);
+    setCompletedItems(nextCompleted);
+
+    const unitCompletedNums = nextCompleted
+      .filter(k => k.startsWith(`u${selectedUnitNumber}_it`))
+      .map(k => parseInt(k.replace(`u${selectedUnitNumber}_it`, ''), 10))
+      .filter(n => !isNaN(n));
+
+    const maxCompleted = unitCompletedNums.length > 0 ? Math.max(...unitCompletedNums) : 0;
+    const lastItemObj = allUnitItems.find(it => it.number === maxCompleted);
+    const nextItemObj = allUnitItems.find(it => it.number === maxCompleted + 1);
+
+    const updatedHandover = {
+      lastCompletedUnit: selectedUnitNumber,
+      lastCompletedItemNumber: maxCompleted,
+      lastCompletedItemTitle: lastItemObj ? lastItemObj.title : (maxCompleted > 0 ? `Ítem ${maxCompleted}` : 'Por iniciar'),
+      nextItemNumber: maxCompleted + 1,
+      nextItemTitle: nextItemObj ? nextItemObj.title : (maxCompleted >= allUnitItems.length ? '¡Unidad Completada! 🎉' : `Ítem ${maxCompleted + 1}`),
+      teacherNote: handoverNote,
+      teacherName: student.teacherName || 'Teacher Cokitö',
+      updatedAt: new Date().toLocaleDateString('es-VE', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+    };
+
+    onUpdateStudent({
+      ...student,
+      currentUnit: selectedUnitNumber,
+      completedUnitItems: nextCompleted,
+      pendingUnitItems: nextPending,
+      unitHandover: updatedHandover,
+      xp: (student.xp || 0) + 15
+    });
+  };
+
+  const handleConfirmAllPending = () => {
+    const unitPending = pendingItems.filter(k => k.startsWith(`u${selectedUnitNumber}_it`));
+    const nextPending = pendingItems.filter(k => !k.startsWith(`u${selectedUnitNumber}_it`));
+    const nextCompleted = Array.from(new Set([...completedItems, ...unitPending]));
+    setPendingItems(nextPending);
+    setCompletedItems(nextCompleted);
+
+    onUpdateStudent({
+      ...student,
+      completedUnitItems: nextCompleted,
+      pendingUnitItems: nextPending,
+      xp: (student.xp || 0) + (unitPending.length * 15)
+    });
+    setHandoverSuccessMsg(`✅ ${unitPending.length} ítems confirmados por Teacher Cokitö (+${unitPending.length * 15} XP)`);
+    setTimeout(() => setHandoverSuccessMsg(null), 3500);
+  };
+
+  const handleSaveCustomCredentials = () => {
+    onUpdateStudent({
+      ...student,
+      username: customUsernameInput.trim(),
+      customPassword: customPasswordInput.trim(),
+      password: customPasswordInput.trim(),
+      temporaryPassword: customPasswordInput.trim()
+    });
+    setCredSuccessMsg('✅ Credenciales guardadas exitosamente');
+    setTimeout(() => setCredSuccessMsg(null), 3000);
+  };
+
+  const handleCopyCredentialsMessage = () => {
+    const appUrl = window.location.origin;
+    const msg = `¡Hola ${student.name}! 👋✨ Aquí tienes tus credenciales oficiales de acceso a Güakytopia:
+
+🌐 Enlace de Acceso: ${appUrl}
+👤 Usuario: ${customUsernameInput.trim()}
+🔑 Contraseña: ${customPasswordInput.trim()}
+📚 Nivel Asignado: ${matchedLevel?.levelName || 'Nivel 1'} (${matchedLevel?.book || 'SuperGoal 1'}) • Unidad ${student.currentUnit || 1}
+👩‍🏫 Tu Teacher: ${student.teacherName || 'Teacher Cokitö'}
+
+¡Nos vemos en clase en el aula virtual! 🦉🚀`;
+
+    navigator.clipboard.writeText(msg);
+    setCredSuccessMsg('📋 ¡Mensaje listo para WhatsApp/Email copiado al portapapeles!');
+    setTimeout(() => setCredSuccessMsg(null), 3500);
+  };
 
   const handleToggleUnitItem = (itemNum: number) => {
     const itemKey = `u${selectedUnitNumber}_it${itemNum}`;
@@ -851,6 +943,84 @@ Como "Cokitö", el cerebro pedagógico institucional de Güakytopia, dame una re
                 </div>
               </div>
 
+              {/* Asignación Manual de Usuario & Contraseña Personalizada por el Teacher */}
+              <div className="bg-white p-5 rounded-3xl border border-slate-200 shadow-2xs space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="p-1.5 bg-amber-100 text-amber-900 rounded-xl">
+                      <Lock className="w-4 h-4 text-amber-600" />
+                    </span>
+                    <div>
+                      <h3 className="text-sm font-black text-slate-900">
+                        Credenciales de Acceso (Usuario & Contraseña Manual)
+                      </h3>
+                      <p className="text-[11px] text-slate-500">
+                        Como Teacher, puedes fijarle el usuario y clave exacta que prefieras para su ingreso oficial a la plataforma.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                  <div>
+                    <label className="text-xs font-bold text-slate-700 block mb-1">
+                      👤 Usuario / Login Oficial:
+                    </label>
+                    <input
+                      type="text"
+                      value={customUsernameInput}
+                      onChange={e => setCustomUsernameInput(e.target.value)}
+                      placeholder="Ej: carla_lira o carla@correo.com"
+                      className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold text-slate-900 focus:ring-2 focus:ring-amber-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-bold text-slate-700 block mb-1">
+                      🔑 Contraseña Asignada por el Teacher:
+                    </label>
+                    <input
+                      type="text"
+                      value={customPasswordInput}
+                      onChange={e => setCustomPasswordInput(e.target.value)}
+                      placeholder="Ej: ingles2026 o carla_cokito"
+                      className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold font-mono text-slate-900 focus:ring-2 focus:ring-amber-500"
+                    />
+                  </div>
+                </div>
+
+                {credSuccessMsg && (
+                  <div className="p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold flex items-center gap-1.5 animate-fadeIn">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <span>{credSuccessMsg}</span>
+                  </div>
+                )}
+
+                <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-2 border-t border-slate-100">
+                  <span className="text-[11px] text-slate-500">
+                    El alumno podrá ingresar introduciendo este usuario y clave en su modal de perfil.
+                  </span>
+                  <div className="flex items-center gap-2 w-full sm:w-auto">
+                    <button
+                      type="button"
+                      onClick={handleSaveCustomCredentials}
+                      className="flex-1 sm:flex-none px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition-colors shadow-xs"
+                    >
+                      💾 Guardar Credenciales
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleCopyCredentialsMessage}
+                      className="flex-1 sm:flex-none px-4 py-2 bg-amber-400 hover:bg-amber-300 text-slate-950 rounded-xl text-xs font-black transition-colors shadow-xs flex items-center justify-center gap-1.5"
+                      title="Copiar mensaje listo para WhatsApp"
+                    >
+                      <Copy className="w-3.5 h-3.5 text-slate-950" />
+                      <span>Copiar para WhatsApp</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
               {/* Coupons & Discounts Details */}
               <div className="bg-white p-5 rounded-3xl border border-slate-200 shadow-2xs space-y-4">
                 <div className="flex items-center justify-between">
@@ -1225,6 +1395,37 @@ Como "Cokitö", el cerebro pedagógico institucional de Güakytopia, dame una re
                   )}
                 </div>
 
+                {/* Alerta de Ítems Pendientes Marcados por el Alumno */}
+                {(() => {
+                  const pendingInUnit = pendingItems.filter(k => k.startsWith(`u${selectedUnitNumber}_it`));
+                  if (pendingInUnit.length === 0) return null;
+                  return (
+                    <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-300 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 animate-fadeIn">
+                      <div className="flex items-center gap-2">
+                        <span className="p-1.5 bg-amber-200 text-amber-900 rounded-lg font-black text-xs">
+                          {pendingInUnit.length}
+                        </span>
+                        <div>
+                          <strong className="text-amber-950 font-bold block text-xs">
+                            {pendingInUnit.length} {pendingInUnit.length === 1 ? 'ítem marcado' : 'ítems marcados'} por el alumno pendientes de tu confirmación
+                          </strong>
+                          <span className="text-[11px] text-amber-800">
+                            El alumno marcó avance en su sesión. Como Teacher puedes validarlo y otorgarle sus XP.
+                          </span>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleConfirmAllPending}
+                        className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-xs transition-colors shrink-0 flex items-center gap-1"
+                      >
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                        <span>Aprobar Todos (+{pendingInUnit.length * 15} XP)</span>
+                      </button>
+                    </div>
+                  );
+                })()}
+
                 {/* Lista de Ítems de la Unidad con Checkboxes individuales */}
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
@@ -1238,41 +1439,75 @@ Como "Cokitö", el cerebro pedagógico institucional de Güakytopia, dame una re
 
                   <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
                     {allUnitItems.map(item => {
-                      const isChecked = completedItems.includes(`u${selectedUnitNumber}_it${item.number}`);
+                      const itemKey = `u${selectedUnitNumber}_it${item.number}`;
+                      const isChecked = completedItems.includes(itemKey);
+                      const isPending = pendingItems.includes(itemKey);
+
                       return (
                         <div
                           key={item.number}
-                          onClick={() => handleToggleUnitItem(item.number)}
-                          className={`p-3 rounded-2xl border transition-all cursor-pointer flex items-start gap-3 ${
+                          className={`p-3 rounded-2xl border transition-all flex items-start justify-between gap-3 ${
                             isChecked
                               ? 'bg-emerald-50/70 border-emerald-300 shadow-2xs'
-                              : 'bg-slate-50/70 border-slate-200 hover:border-slate-300'
+                              : isPending
+                                ? 'bg-amber-50/80 border-amber-300 shadow-xs ring-1 ring-amber-300'
+                                : 'bg-slate-50/70 border-slate-200 hover:border-slate-300'
                           }`}
                         >
-                          <input
-                            type="checkbox"
-                            checked={isChecked}
-                            onChange={() => {}} // handled by div
-                            className="w-4 h-4 mt-0.5 rounded-md text-emerald-600 focus:ring-emerald-500 border-slate-300"
-                          />
-                          <div className="flex-1 text-xs">
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <span className="font-mono font-bold text-slate-500 text-[11px]">
-                                Ítem {item.number}
-                              </span>
-                              <strong className={`font-bold ${isChecked ? 'text-emerald-950' : 'text-slate-800'}`}>
-                                {item.title}
-                              </strong>
-                              {item.audioTrack && (
-                                <span className="text-[10px] text-amber-700 bg-amber-100/60 px-1.5 py-0.2 rounded font-medium">
-                                  🎧 {item.audioTrack}
+                          <div 
+                            onClick={() => handleToggleUnitItem(item.number)}
+                            className="flex items-start gap-3 flex-1 cursor-pointer"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={isChecked}
+                              onChange={() => {}} // handled by click
+                              className="w-4 h-4 mt-0.5 rounded-md text-emerald-600 focus:ring-emerald-500 border-slate-300 cursor-pointer shrink-0"
+                            />
+                            <div className="flex-1 text-xs">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className="font-mono font-bold text-slate-500 text-[11px]">
+                                  Ítem {item.number}
                                 </span>
-                              )}
+                                <strong className={`font-bold ${isChecked ? 'text-emerald-950' : 'text-slate-800'}`}>
+                                  {item.title}
+                                </strong>
+                                {isChecked && (
+                                  <span className="text-[9px] font-black uppercase text-emerald-700 bg-emerald-100 px-1.5 py-0.2 rounded">
+                                    ✓ Confirmado
+                                  </span>
+                                )}
+                                {isPending && !isChecked && (
+                                  <span className="text-[9px] font-black uppercase text-amber-800 bg-amber-200 px-1.5 py-0.2 rounded animate-pulse">
+                                    🟡 Marcado por alumno (Pendiente)
+                                  </span>
+                                )}
+                                {item.audioTrack && (
+                                  <span className="text-[10px] text-amber-700 bg-amber-100/60 px-1.5 py-0.2 rounded font-medium">
+                                    🎧 {item.audioTrack}
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-slate-500 text-[11px] mt-0.5">
+                                {item.description}
+                              </p>
                             </div>
-                            <p className="text-slate-500 text-[11px] mt-0.5">
-                              {item.description}
-                            </p>
                           </div>
+
+                          {isPending && !isChecked && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleConfirmPendingItem(itemKey, item.number);
+                              }}
+                              className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[11px] font-bold shadow-xs transition-colors shrink-0 flex items-center gap-1"
+                              title="Aprobar este ítem marcado por el alumno"
+                            >
+                              <CheckCircle2 className="w-3 h-3" />
+                              <span>Aprobar (+15 XP)</span>
+                            </button>
+                          )}
                         </div>
                       );
                     })}

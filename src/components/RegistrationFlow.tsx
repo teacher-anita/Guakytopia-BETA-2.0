@@ -636,6 +636,19 @@ export const RegistrationFlow: React.FC<RegistrationFlowProps> = ({
       return;
     }
 
+    // Anti-oversell collision guard: Verify that none of selectedSlotIds is already booked
+    const collidedSlotId = selectedSlotIds.find(id => {
+      const found = slots.find(s => s.id === id);
+      return found && found.status === 'booked';
+    });
+
+    if (collidedSlotId) {
+      setIsSubmitting(false);
+      const slotObj = slots.find(s => s.id === collidedSlotId);
+      alert(`⚠️ El horario ${slotObj ? `${slotObj.day} ${slotObj.startTime} a ${slotObj.endTime}` : 'seleccionado'} acaba de ser reservado por otro estudiante. Por favor selecciona otro turno disponible.`);
+      return;
+    }
+
     setIsSubmitting(true);
 
     const defaultLevelId = isKid ? 'level_1' : 'level_7';
