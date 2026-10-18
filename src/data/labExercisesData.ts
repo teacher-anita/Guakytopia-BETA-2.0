@@ -348,7 +348,7 @@ export const UNIT_1_LAB_EXERCISES: LabExercise[] = [
     stationNumber: 2,
     type: 'multiple_choice',
     instruction: 'Choose the correct form of the verb "be" for the subject pronoun "I".',
-    prompt: 'I ______ a new student at Cokitö Academy.',
+    prompt: 'I ______ a new student at Güakytopia.',
     options: ['am', 'is', 'are', 'be'],
     correctAnswer: 'am',
     explanation: 'The pronoun "I" always pairs with "am" in the simple present: I am.',
@@ -669,7 +669,7 @@ export const UNIT_1_LAB_EXERCISES: LabExercise[] = [
     stationNumber: 3,
     type: 'multiple_choice',
     instruction: 'Select the possessive adjective for "We".',
-    prompt: 'We are students at Cokitö Academy. ______ teacher is fantastic.',
+    prompt: 'We are students at Güakytopia. ______ teacher is fantastic.',
     options: ['Our', 'Their', 'Your', 'His'],
     correctAnswer: 'Our',
     explanation: 'The possessive adjective for "we" is "our": "Our teacher is fantastic."',
@@ -916,7 +916,7 @@ export const UNIT_1_LAB_EXERCISES: LabExercise[] = [
     options: ['WELCOME', 'WOMELC', 'MELLOW', 'CLOWME'],
     correctAnswer: 'WELCOME',
     explanation: 'The unscrambled word is WELCOME (W-E-L-C-O-M-E).',
-    hint: '"Welcome to Cokitö Academy!"'
+    hint: '"Welcome to Güakytopia!"'
   },
   {
     id: 64,
@@ -1349,10 +1349,10 @@ export const UNIT_1_LAB_EXERCISES: LabExercise[] = [
     stationNumber: 6,
     type: 'fill_blank',
     instruction: 'Complete the sentence with the correct preposition.',
-    prompt: 'Welcome ______ Cokitö Academy! We are excited to learn together.',
+    prompt: 'Welcome ______ Güakytopia! We are excited to learn together.',
     options: ['to', 'at', 'in', 'on'],
     correctAnswer: 'to',
-    explanation: 'We say "Welcome TO [place]": "Welcome to Cokitö Academy!"',
+    explanation: 'We say "Welcome TO [place]": "Welcome to Güakytopia!"',
     hint: 'Preposition of direction: t-o.'
   },
   {
@@ -1470,7 +1470,7 @@ export const UNIT_1_LAB_EXERCISES: LabExercise[] = [
     stationTitle: 'Sentence Builder & Dialogues',
     stationNumber: 6,
     type: 'multiple_choice',
-    instruction: 'FINAL MILESTONE DRILL (100 of 100): Congratulations! What is the motto of Cokitö Academy?',
+    instruction: 'FINAL MILESTONE DRILL (100 of 100): Congratulations! What is the motto of Güakytopia?',
     prompt: 'You have mastered Unit 1: "Good Morning!". What is the key to speaking English fluently?',
     options: [
       'Practice without fear & at your own pace! (Aprende sin miedo y a tu ritmo)',

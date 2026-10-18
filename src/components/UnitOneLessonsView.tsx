@@ -279,7 +279,7 @@ export const UnitOneLessonsView: React.FC<UnitOneLessonsViewProps> = ({
       checks: [
         {
           id: 's3_q1',
-          question: 'Complete: "They ______ new students at Cokitö Academy."',
+          question: 'Complete: "They ______ new students at Güakytopia."',
           options: ['are', 'is', 'am', 'be'],
           correct: 'are',
           explanation: '"They" is plural and requires the verb "are".'
@@ -468,7 +468,7 @@ export const UnitOneLessonsView: React.FC<UnitOneLessonsViewProps> = ({
       checks: [
         {
           id: 's7_q1',
-          question: 'Complete the welcoming phrase: "Welcome ______ Cokitö Academy!"',
+          question: 'Complete the welcoming phrase: "Welcome ______ Güakytopia!"',
           options: ['to', 'at', 'in', 'for'],
           correct: 'to',
           explanation: 'We always say "Welcome TO [place]".'

@@ -2684,7 +2684,7 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
                               {/* WhatsApp Contact */}
                               {st.phone && (
                                 <a
-                                  href={`https://wa.me/${st.phone.replace(/\D/g, '')}?text=${encodeURIComponent(`¡Hola ${st.name}! Te saluda la Directora Waky de Cokits Academy. Te escribo con respecto a tu inscripción y confirmación de horario en la academia.`)}`}
+                                  href={`https://wa.me/${st.phone.replace(/\D/g, '')}?text=${encodeURIComponent(`¡Hola ${st.name}! Te saluda la Directora Waky de Güakytopia. Te escribo con respecto a tu inscripción y confirmación de horario en el campus.`)}`}
                                   target="_blank"
                                   rel="noreferrer"
                                   className="p-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-300 rounded-xl text-xs font-bold transition-colors"
@@ -3077,7 +3077,7 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
                     The Principal • Directora General
                   </span>
                   <span className="bg-white/90 text-slate-900 text-xs font-bold px-3 py-1 rounded-full border border-amber-300">
-                    Güakytopia • Coquitos Academy
+                    Güakytopia • Campus Oficial
                   </span>
                 </div>
 
@@ -3191,7 +3191,7 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
               <div className="p-3 bg-white/5 rounded-2xl border border-white/10">
                 <span className="text-amber-300 font-bold block mb-1">🌴 Sello Institucional</span>
                 <p className="text-slate-300 text-[11px]">
-                  Firma digital registrada bajo la jurisdicción de Güakytopia & Coquitos Academy.
+                  Firma digital registrada bajo la jurisdicción de Güakytopia Campus Internacional.
                 </p>
               </div>
             </div>

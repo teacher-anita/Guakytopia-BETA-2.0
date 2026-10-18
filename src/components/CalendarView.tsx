@@ -316,21 +316,30 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
     <div className="max-w-7xl mx-auto py-6 px-4 space-y-6 animate-fadeIn">
       
       {/* 1. Header Card with Title & Staff Badge */}
-      <div className="bg-white rounded-3xl border border-slate-200 shadow-xs p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div className={`rounded-3xl border shadow-xs p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 transition-all ${
+        isKids 
+          ? 'bg-gradient-to-r from-purple-50 via-indigo-50 to-sky-50 border-purple-200 font-fredoka' 
+          : 'bg-white border-slate-200'
+      }`}>
         <div className="flex items-center gap-3">
           <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-xs shrink-0 ${
-            isKids ? 'bg-sky-100 text-sky-700' : 'bg-[#2EC4B6]/10 text-[#2EC4B6] border border-[#2EC4B6]/20'
+            isKids ? 'bg-gradient-to-br from-purple-500 to-indigo-600 text-white shadow-md' : 'bg-[#2EC4B6]/10 text-[#2EC4B6] border border-[#2EC4B6]/20'
           }`}>
             <CalendarIcon className="w-6 h-6" />
           </div>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
               <h2 className="text-xl sm:text-2xl font-black text-[#243447] tracking-tight">
-                Agenda Semanal • Horarios de Vuelo
+                {isKids ? '🚀 Agenda de Misiones • Horarios Junior' : 'Agenda Semanal • Horarios de Vuelo'}
               </h2>
               {activeRole === 'teacher' ? (
                 <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-300">
                   👑 Vista Staff Teacher / Rectoría
+                </span>
+              ) : isKids ? (
+                <span className="text-[11px] font-black px-2.5 py-0.5 rounded-full bg-purple-100 text-purple-900 border border-purple-300 flex items-center gap-1">
+                  <Shield className="w-3 h-3 text-purple-600" />
+                  Misiones 1 a 1 y Squad
                 </span>
               ) : (
                 <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200 flex items-center gap-1">
@@ -340,7 +349,9 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
               )}
             </div>
             <p className="text-xs text-slate-500 mt-0.5">
-              Filtra según la frecuencia de tu plan para ver solo los días que te corresponden sin sobrecarga visual.
+              {isKids 
+                ? 'Elige tus bloques semanales para practicar en vivo con tus mentores. ¡Reserva a tiempo para no quedarte sin cupo!'
+                : 'Filtra según la frecuencia de tu plan para ver solo los días que te corresponden sin sobrecarga visual.'}
             </p>
           </div>
         </div>
@@ -348,10 +359,14 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
         {/* Action Button to Register / Book */}
         <button
           onClick={() => handleInitiateBooking()}
-          className="w-full md:w-auto px-4 py-2.5 bg-[#2EC4B6] hover:bg-[#259C90] text-slate-950 rounded-2xl font-black text-xs shadow-xs transition-all flex items-center justify-center gap-2"
+          className={`w-full md:w-auto px-5 py-3 rounded-2xl font-black text-xs shadow-xs transition-all flex items-center justify-center gap-2 ${
+            isKids 
+              ? 'btn-game-3d btn-game-yellow text-slate-950 font-black' 
+              : 'bg-[#2EC4B6] hover:bg-[#259C90] text-slate-950'
+          }`}
         >
           <Plus className="w-4 h-4" />
-          <span>{effectiveStudent ? 'Solicitar / Agendar Mi Turno' : 'Solicitar Inscripción en un Turno'}</span>
+          <span>{isKids ? '🎯 Agendar Mi Misión en Vivo' : effectiveStudent ? 'Solicitar / Agendar Mi Turno' : 'Solicitar Inscripción en un Turno'}</span>
         </button>
       </div>
 
@@ -1270,28 +1285,40 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                     return (
                       <div
                         key={slot.id}
-                        className="p-3 rounded-2xl border border-emerald-200/90 bg-emerald-50/40 hover:bg-emerald-50/80 transition-all flex items-center justify-between gap-2"
+                        className={`p-3 rounded-2xl border transition-all flex items-center justify-between gap-2 ${
+                          isKids
+                            ? 'border-purple-200 bg-gradient-to-r from-purple-50/70 to-indigo-50/70 hover:border-purple-400'
+                            : 'border-emerald-200/90 bg-emerald-50/40 hover:bg-emerald-50/80'
+                        }`}
                       >
                         <div className="min-w-0">
-                          <div className="flex items-center gap-1.5 font-black text-xs text-emerald-950">
-                            <Clock className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                          <div className="flex items-center gap-1.5 font-black text-xs text-slate-900">
+                            <Clock className={`w-3.5 h-3.5 shrink-0 ${isKids ? 'text-purple-600' : 'text-emerald-600'}`} />
                             <span>{slot.startTime} - {slot.endTime}</span>
                           </div>
 
                           {/* Pedagogical Band label */}
                           <div className="flex items-center gap-1 mt-0.5">
-                            <span className={`inline-flex items-center gap-1 text-[9px] font-bold px-2 py-0.2 rounded-md border ${bandInfo.badgeColor} truncate max-w-[200px]`}>
-                              {bandInfo.icon}
-                              <span>{bandInfo.name}</span>
+                            <span className={`inline-flex items-center gap-1 text-[9px] font-bold px-2 py-0.2 rounded-md border ${
+                              isKids 
+                                ? 'bg-purple-100 text-purple-900 border-purple-200' 
+                                : `${bandInfo.badgeColor}`
+                            } truncate max-w-[200px]`}>
+                              {isKids ? '🎮' : bandInfo.icon}
+                              <span>{isKids ? 'Turno Squad / 1 a 1' : bandInfo.name}</span>
                             </span>
                           </div>
                         </div>
 
                         <button
                           onClick={() => handleInitiateBooking(slot)}
-                          className="shrink-0 text-[11px] font-black text-emerald-900 bg-white border border-emerald-300 hover:bg-emerald-100 px-3 py-1.5 rounded-xl shadow-2xs transition-colors"
+                          className={`shrink-0 text-[11px] font-black rounded-xl shadow-2xs transition-all ${
+                            isKids
+                              ? 'btn-game-3d btn-game-yellow text-slate-950 px-3 py-1.5'
+                              : 'text-emerald-900 bg-white border border-emerald-300 hover:bg-emerald-100 px-3 py-1.5'
+                          }`}
                         >
-                          {currentStudent && currentStudent.id !== 'guest' ? 'Agendar' : 'Reservar'}
+                          {isKids ? '🚀 Reservar' : currentStudent && currentStudent.id !== 'guest' ? 'Agendar' : 'Reservar'}
                         </button>
                       </div>
                     );

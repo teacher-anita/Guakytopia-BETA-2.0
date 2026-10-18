@@ -1,4 +1,4 @@
-// Notification and Student Class Request Service for Güakytopia / Coquitos Academy
+// Notification and Student Class Request Service for Güakytopia
 
 export interface StudentNotification {
   id: string;

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   Sparkles, 
   ArrowRight, 
@@ -16,7 +16,13 @@ import {
   Star,
   Users,
   Smartphone,
-  Banknote
+  Banknote,
+  Gamepad2,
+  Headphones,
+  Trophy,
+  Rocket,
+  Target,
+  MessageSquare
 } from 'lucide-react';
 import { AudienceTheme } from '../types';
 import { MODULES_INFO } from '../data/curriculumData';
@@ -31,6 +37,57 @@ interface LandingHeroProps {
   onOpenPricingModal?: () => void;
 }
 
+const JUNIOR_WORLDS = [
+  {
+    world: 1,
+    name: 'Neon Starter Park',
+    subtitle: 'Rookie Explorer • Nivel 1 & 2',
+    tagline: 'Pierde la pena y suelta la lengua 🌲',
+    description: 'Aprende a presentarte, contar tus hobbies, describir a tus streamers favoritos y hablar sin miedo a equivocarte.',
+    badge: '🌲 Parque Novato',
+    color: 'from-emerald-500/10 to-teal-500/10 border-emerald-300 text-emerald-950',
+    headerBg: 'bg-emerald-500 text-white',
+    topics: ['Presentaciones y gustos', 'Hobbies, gaming y música', 'Preguntas cotidianas sin trabarse'],
+    meta: 'Desbloquea: Insignia Rookie ⭐'
+  },
+  {
+    world: 2,
+    name: 'Cyber Gamer Zone',
+    subtitle: 'Pro Player • Nivel 3 & 4',
+    tagline: 'Discord, Twitch & Multiplayer Slang ⚡',
+    description: 'Comunícate en partidas multijugador, entiende jerga nativa de gaming (clutch, no cap, nerf, buff) y coordina estrategias con amigos.',
+    badge: '⚡ Zona Gamer',
+    color: 'from-sky-500/10 to-indigo-500/10 border-sky-300 text-sky-950',
+    headerBg: 'bg-sky-500 text-white',
+    topics: ['Slang de Discord y chats', 'Estrategias de Minecraft & Roblox', 'Narrar partidas en tiempo real'],
+    meta: 'Desbloquea: Insignia Squad Leader 🎧'
+  },
+  {
+    world: 3,
+    name: 'Creator Stage',
+    subtitle: 'Content Master • Nivel 5 & 6',
+    tagline: 'YouTube, TikTok & Storytelling 🎬',
+    description: 'Crea contenido, haz reviews de películas y series en inglés, expresa opiniones con argumentos y narra historias épicas.',
+    badge: '🎬 Escenario Creador',
+    color: 'from-amber-500/10 to-orange-500/10 border-amber-300 text-amber-950',
+    headerBg: 'bg-amber-500 text-white',
+    topics: ['Reviews de películas y juegos', 'Debates divertidos y argumentos', 'Storytelling y podcasts cortos'],
+    meta: 'Desbloquea: Insignia Pro Creator 🎙️'
+  },
+  {
+    world: 4,
+    name: 'Galaxy Legend',
+    subtitle: 'World Champion • Nivel 7 & 8',
+    tagline: 'Fluidez Total & Pensamiento Directo 👑',
+    description: 'Habla fluidamente sin traducir en la mente. Prepárate para viajar, certificarte internacionalmente o estudiar en cualquier lugar del planeta.',
+    badge: '👑 Leyenda Galáctica',
+    color: 'from-purple-500/10 to-indigo-500/10 border-purple-300 text-purple-950',
+    headerBg: 'bg-purple-600 text-white',
+    topics: ['Fluidez conversacional 100%', 'Entrevistas y debates avanzados', 'Certificaciones internacionales'],
+    meta: 'Desbloquea: Trofeo Galaxy Legend 🚀'
+  }
+];
+
 export const LandingHero: React.FC<LandingHeroProps> = ({
   audienceTheme,
   onStartRegistration,
@@ -42,90 +99,216 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
 }) => {
   const isKids = audienceTheme === 'kids';
 
+  // Interactive Live Slang Mini-Challenge State (for exciting kids in live demo)
+  const [slangAnswer, setSlangAnswer] = useState<number | null>(null);
+  const [slangCelebration, setSlangCelebration] = useState(false);
+
+  const handleSelectSlangAnswer = (index: number) => {
+    setSlangAnswer(index);
+    if (index === 1) {
+      setSlangCelebration(true);
+    }
+  };
+
   return (
-    <div className="space-y-12 sm:space-y-16 animate-fadeIn pb-12">
+    <div className={`space-y-12 sm:space-y-16 animate-fadeIn pb-12 ${isKids ? 'font-fredoka' : ''}`}>
       
       {/* 1. HERO BANNER */}
       <section className={`relative overflow-hidden rounded-3xl p-6 sm:p-12 text-white shadow-xl transition-all ${
         isKids
-          ? 'bg-gradient-to-br from-[#2EC4B6] via-[#243447] to-[#18232F]'
+          ? 'bg-gradient-to-br from-indigo-950 via-purple-900 to-slate-900 border-2 border-purple-400/40 shadow-2xl'
           : 'bg-gradient-to-br from-[#243447] via-[#1a2736] to-[#0f1720] border border-slate-700/80'
       }`}>
-        {/* Subtle decorative glow */}
-        <div className="absolute top-0 right-0 -mr-20 -mt-20 w-80 h-80 rounded-full bg-[#2EC4B6]/15 blur-3xl pointer-events-none" />
+        {/* Glows and particles */}
+        <div className="absolute top-0 right-0 -mr-20 -mt-20 w-80 h-80 rounded-full bg-purple-500/20 blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 rounded-full bg-cyan-400/15 blur-3xl pointer-events-none" />
 
         <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-8">
           <div className="max-w-2xl space-y-6 flex-1">
           
           <div className="flex flex-wrap items-center gap-2">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider bg-white/10 backdrop-blur-md border border-white/20 text-[#FFD166]">
-              <Sparkles className="w-3.5 h-3.5 text-[#FF6B4A]" />
-              <span>GÜAKYTOPIA • OPEN THE WORLD</span>
+            <div className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-black uppercase tracking-wider ${
+              isKids 
+                ? 'bg-gradient-to-r from-purple-500 to-indigo-500 text-amber-300 border border-purple-300/40 shadow-xs'
+                : 'bg-white/10 backdrop-blur-md border border-white/20 text-[#FFD166]'
+            }`}>
+              <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+              <span>{isKids ? '🕹️ GÜAKYTOPIA JUNIOR 12+ • ARCADE EDITION' : 'GÜAKYTOPIA • OPEN THE WORLD'}</span>
             </div>
-            <span className="text-xs text-slate-300 font-medium hidden sm:inline">
-              Start where you are. Keep going.
+            <span className="text-xs text-purple-200 font-bold hidden sm:inline">
+              {isKids ? '⚡ Sube de nivel en inglés jugando y conversando' : 'Start where you are. Keep going.'}
             </span>
           </div>
 
           <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-tight">
             {isKids ? (
-              <>Aprende Inglés <span className="text-[#FFD166] underline decoration-[#FF6B4A]">con Curiosidad y Confianza</span> junto a Güaky 🎈</>
+              <>
+                ¡Sube de Nivel tu Inglés como un <span className="text-amber-300 underline decoration-pink-500 decoration-wavy">Pro Gamer</span>! ⚡🎮
+              </>
             ) : (
               <>Bienvenido a Tu <span className="text-[#2EC4B6]">Universo del Inglés</span>. Abrir el Mundo.</>
             )}
           </h1>
 
           <p className="text-sm sm:text-lg text-slate-200 leading-relaxed font-normal">
-            Una experiencia digital de aprendizaje: estructurada, flexible, humana y con personalidad.
-            12 niveles progresivos, micro-bloques sin fatiga cognitiva, laboratorio de conversación oral y clases con tutores.
+            {isKids ? (
+              'Cero memorizaciones aburridas ni reglas de los años 90. Aprende a hablar con fluidez sobre lo que a ti te apasiona: gaming, Twitch, series, anime, creadores de contenido y cultura global con mentores que te escuchan.'
+            ) : (
+              'Una experiencia digital de aprendizaje: estructurada, flexible, humana y con personalidad. 12 niveles progresivos, micro-bloques sin fatiga cognitiva, laboratorio de conversación oral y clases con tutores.'
+            )}
           </p>
 
           {/* Core Feature Badges */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2">
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-3 border border-white/10 text-xs">
-              <span className="block font-bold text-[#FFD166]">Micro-Chunking ⏱️</span>
-              <span className="text-slate-200 text-[11px]">3 sesiones por unidad, cero fatiga cognitiva</span>
+          {isKids ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2">
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-3 border border-purple-400/30 text-xs">
+                <span className="block font-black text-amber-300 text-sm">🔥 Racha & XP</span>
+                <span className="text-purple-100 text-[11px]">Gana insignias, gemas y cofres semanales</span>
+              </div>
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-3 border border-purple-400/30 text-xs">
+                <span className="block font-black text-cyan-300 text-sm">🎧 Squad Voice</span>
+                <span className="text-purple-100 text-[11px]">Sesiones 1 a 1 y Dúos con tus mentores</span>
+              </div>
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-3 border border-purple-400/30 text-xs col-span-2 sm:col-span-1">
+                <span className="block font-black text-emerald-300 text-sm">🗺️ 4 Mundos Épicos</span>
+                <span className="text-purple-100 text-[11px]">De Rookie Explorer a Galaxy Legend</span>
+              </div>
             </div>
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-3 border border-white/10 text-xs">
-              <span className="block font-bold text-[#2EC4B6]">Güakytalkie 📻</span>
-              <span className="text-slate-200 text-[11px]">Speaking real para soltar la lengua</span>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2">
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-3 border border-white/10 text-xs">
+                <span className="block font-bold text-[#FFD166]">Micro-Chunking ⏱️</span>
+                <span className="text-slate-200 text-[11px]">3 sesiones por unidad, cero fatiga cognitiva</span>
+              </div>
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-3 border border-white/10 text-xs">
+                <span className="block font-bold text-[#2EC4B6]">Güakytalkie 📻</span>
+                <span className="text-slate-200 text-[11px]">Speaking real para soltar la lengua</span>
+              </div>
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-3 border border-white/10 text-xs col-span-2 sm:col-span-1">
+                <span className="block font-bold text-[#FF6B4A]">The Flock Community 🪶</span>
+                <span className="text-slate-200 text-[11px]">Retos, insignias, XP y avance mutuo</span>
+              </div>
             </div>
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-3 border border-white/10 text-xs col-span-2 sm:col-span-1">
-              <span className="block font-bold text-[#FF6B4A]">The Flock Community 🪶</span>
-              <span className="text-slate-200 text-[11px]">Retos, insignias, XP y avance mutuo</span>
+          )}
+
+          {/* INTERACTIVE MINI SLANG QUEST (Only in Junior mode, for live demo engagement) */}
+          {isKids && (
+            <div className="bg-slate-900/80 border-2 border-amber-400/60 rounded-2xl p-4 space-y-3 backdrop-blur-md shadow-lg">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-black text-amber-300 flex items-center gap-1.5 uppercase tracking-wide">
+                  <Gamepad2 className="w-4 h-4 text-amber-400 animate-bounce" />
+                  Mini-Misión en Vivo: ¿Qué significa este Slang?
+                </span>
+                <span className="bg-amber-400/20 text-amber-300 text-[11px] font-black px-2 py-0.5 rounded-full border border-amber-400/30">
+                  +25 XP
+                </span>
+              </div>
+
+              <p className="text-xs sm:text-sm text-slate-200 font-medium">
+                Tu amigo en Discord te escribe en plena partida: <strong className="text-cyan-300">"Bro, that move was pure GOAT!"</strong> ¿Qué te quiso decir?
+              </p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1">
+                <button
+                  onClick={() => handleSelectSlangAnswer(0)}
+                  className={`text-left p-2.5 rounded-xl border text-xs font-bold transition-all ${
+                    slangAnswer === 0 
+                      ? 'bg-red-500/20 border-red-400 text-red-200' 
+                      : 'bg-white/5 border-white/15 hover:bg-white/10 text-slate-300'
+                  }`}
+                >
+                  <span>A) "Que tu jugada fue una cabra" 🐐</span>
+                </button>
+                <button
+                  onClick={() => handleSelectSlangAnswer(1)}
+                  className={`text-left p-2.5 rounded-xl border text-xs font-black transition-all ${
+                    slangAnswer === 1 
+                      ? 'bg-emerald-500/30 border-emerald-400 text-emerald-200 ring-2 ring-emerald-400' 
+                      : 'bg-white/5 border-white/15 hover:bg-white/10 text-slate-300'
+                  }`}
+                >
+                  <span>B) "¡El Mejor de Todos los Tiempos!" ⭐</span>
+                </button>
+                <button
+                  onClick={() => handleSelectSlangAnswer(2)}
+                  className={`text-left p-2.5 rounded-xl border text-xs font-bold transition-all ${
+                    slangAnswer === 2 
+                      ? 'bg-red-500/20 border-red-400 text-red-200' 
+                      : 'bg-white/5 border-white/15 hover:bg-white/10 text-slate-300'
+                  }`}
+                >
+                  <span>C) "Que el juego se congeló" ❄️</span>
+                </button>
+              </div>
+
+              {slangCelebration && (
+                <div className="p-2.5 bg-emerald-500/20 border border-emerald-400/40 rounded-xl flex items-center justify-between text-xs text-emerald-200 font-bold animate-fadeIn">
+                  <div className="flex items-center gap-2">
+                    <span className="text-base">🎉</span>
+                    <span>¡Correcto! GOAT = <strong>Greatest Of All Time</strong>. ¡Ganaste +25 XP!</span>
+                  </div>
+                  <button
+                    onClick={onExploreGamification}
+                    className="text-[11px] underline text-amber-300 hover:text-white"
+                  >
+                    Ver en la Arena ➔
+                  </button>
+                </div>
+              )}
             </div>
-          </div>
+          )}
 
           {/* Action CTAs */}
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-4 flex-wrap">
             <button
               onClick={onStartRegistration}
-              className="px-8 py-4 bg-[#2EC4B6] hover:bg-[#259C90] text-[#18232F] rounded-2xl font-black text-sm shadow-lg transition-transform hover:scale-102 flex items-center justify-center gap-2"
+              className={`px-8 py-4 rounded-2xl font-black text-sm shadow-lg transition-transform hover:scale-102 flex items-center justify-center gap-2 ${
+                isKids 
+                  ? 'btn-game-3d btn-game-yellow text-slate-950 font-black text-base'
+                  : 'bg-[#2EC4B6] hover:bg-[#259C90] text-[#18232F]'
+              }`}
             >
-              <span>Hacer Prueba Diagnóstica (50 Preguntas)</span>
+              <span>{isKids ? '¡Comenzar Mi Misión Gratis! 🕹️' : 'Hacer Prueba Diagnóstica (50 Preguntas)'}</span>
               <ArrowRight className="w-4 h-4" />
             </button>
             {onOpenPricingModal && (
               <button
                 onClick={onOpenPricingModal}
-                className="px-6 py-4 bg-emerald-500 hover:bg-emerald-600 text-slate-950 rounded-2xl font-black text-sm shadow-lg transition-transform hover:scale-102 flex items-center justify-center gap-2"
+                className={`px-6 py-4 rounded-2xl font-black text-sm shadow-lg transition-transform hover:scale-102 flex items-center justify-center gap-2 ${
+                  isKids
+                    ? 'btn-game-3d btn-game-emerald text-white'
+                    : 'bg-emerald-500 hover:bg-emerald-600 text-slate-950'
+                }`}
               >
-                <span>💳 Ver Tarifas & Calculadora ($4.99 Promo)</span>
+                <span>{isKids ? '💳 Ver Packs de Aventura & Precios' : '💳 Ver Tarifas & Calculadora ($4.99 Promo)'}</span>
               </button>
             )}
             <button
               onClick={onExploreCalendar}
-              className="px-6 py-4 bg-white/15 hover:bg-white/20 text-white rounded-2xl font-bold text-sm backdrop-blur-md border border-white/20 transition-colors flex items-center justify-center gap-2"
+              className={`px-6 py-4 rounded-2xl font-bold text-sm backdrop-blur-md border transition-all flex items-center justify-center gap-2 ${
+                isKids
+                  ? 'btn-game-3d bg-white/20 hover:bg-white/30 text-white border-white/30'
+                  : 'bg-white/15 hover:bg-white/20 text-white border-white/20'
+              }`}
             >
               <Calendar className="w-4 h-4 text-[#FFD166]" />
-              <span>Ver Horarios & Flights</span>
+              <span>{isKids ? '📅 Misiones en Vivo & Horarios' : 'Ver Horarios & Flights'}</span>
             </button>
           </div>
 
           </div>
 
           {/* Mascot Feature Spotlight Card */}
-          <div className="shrink-0 flex flex-col items-center justify-center relative p-5 bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl shadow-xl max-w-xs text-center">
+          <div className={`shrink-0 flex flex-col items-center justify-center relative p-5 rounded-3xl shadow-xl max-w-xs text-center ${
+            isKids 
+              ? 'bg-gradient-to-b from-purple-800/40 via-indigo-900/60 to-slate-900/80 border-2 border-amber-400/40 shadow-purple-900/50'
+              : 'bg-white/10 backdrop-blur-md border border-white/20'
+          }`}>
+            {isKids && (
+              <div className="absolute -top-3 bg-amber-400 text-slate-950 font-black text-[10px] uppercase tracking-wider px-3 py-0.5 rounded-full shadow-md">
+                ⭐ Mentor Güaky Nivel 10
+              </div>
+            )}
             <div className="w-48 h-56 sm:w-56 sm:h-64 flex items-center justify-center relative drop-shadow-2xl hover:scale-105 transition-transform duration-300">
               <img 
                 src="/guaky-mascota.png" 
@@ -138,92 +321,156 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
             </div>
             <div className="mt-2 space-y-0.5">
               <span className="text-xs font-black text-[#FFD166] uppercase tracking-wider block">
-                ¡Hola, soy Güaky! 🦜
+                {isKids ? '¡Güaky Gamer & Explorer! 🦜🎧' : '¡Hola, soy Güaky! 🦜'}
               </span>
               <p className="text-[11px] text-teal-100 font-medium">
-                Tu compañero con morral listo para explorar el inglés sin miedo.
+                {isKids 
+                  ? 'Tu compañero de partidas y misiones en inglés. ¡Cero vergüenza aquí!'
+                  : 'Tu compañero con morral listo para explorar el inglés sin miedo.'}
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* 2. THE 4 MODULES PENSUM OVERVIEW */}
+      {/* 2. THE MODULES / JUNIOR WORLDS OVERVIEW */}
       <section className="space-y-6">
         <div className="text-center max-w-2xl mx-auto space-y-2">
-          <span className="text-xs font-bold uppercase tracking-wider text-[#2EC4B6] bg-[#2EC4B6]/10 px-3 py-1 rounded-full border border-[#2EC4B6]/20">
-            Currículo Estructurado • 12 Flights de Transformación
+          <span className={`text-xs font-black uppercase tracking-wider px-3 py-1 rounded-full border ${
+            isKids
+              ? 'text-purple-700 bg-purple-100 border-purple-200'
+              : 'text-[#2EC4B6] bg-[#2EC4B6]/10 border-[#2EC4B6]/20'
+          }`}>
+            {isKids ? '🗺️ MAPA DE AVENTURA • 4 MUNDOS ÉPICOS' : 'Currículo Estructurado • 12 Flights de Transformación'}
           </span>
           <h2 className="text-2xl sm:text-3xl font-black text-[#243447] tracking-tight">
-            Los 4 Módulos de Güakytopia
+            {isKids ? 'Los 4 Mundos de Aventura de Güakytopia' : 'Los 4 Módulos de Güakytopia'}
           </h2>
           <p className="text-xs sm:text-sm text-slate-500">
-            Un recorrido progresivo y organizado para saber qué aprender y hacia dónde avanzar.
+            {isKids 
+              ? 'Un recorrido diseñado como un RPG donde cada mundo desbloquea nuevas habilidades, vocabulario gamer y fluidez para hablar con el mundo.'
+              : 'Un recorrido progresivo y organizado para saber qué aprender y hacia dónde avanzar.'}
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-          {MODULES_INFO.map(m => (
-            <div
-              key={m.module}
-              className="bg-white rounded-3xl border border-slate-200/90 p-6 shadow-xs hover:shadow-md transition-all hover:border-blue-300 flex flex-col justify-between space-y-4"
-            >
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="w-9 h-9 rounded-2xl bg-blue-50 text-blue-800 font-black text-sm flex items-center justify-center">
-                    M{m.module}
-                  </span>
-                  <span className="text-[11px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">
-                    {m.hours}
-                  </span>
-                </div>
+        {isKids ? (
+          /* JUNIOR 4 WORLDS CARDS */
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+            {JUNIOR_WORLDS.map(w => (
+              <div
+                key={w.world}
+                className={`bg-white rounded-3xl border-2 p-6 shadow-xs hover:shadow-xl transition-all flex flex-col justify-between space-y-4 relative ${w.color}`}
+              >
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className={`px-2.5 py-1 rounded-xl font-black text-xs shadow-xs ${w.headerBg}`}>
+                      Mundo {w.world}
+                    </span>
+                    <span className="text-[11px] font-bold text-slate-500 bg-white/80 px-2 py-0.5 rounded-full border border-slate-200">
+                      {w.badge}
+                    </span>
+                  </div>
 
-                <div>
-                  <h3 className="font-black text-slate-900 text-lg">{m.name}</h3>
-                  <p className="text-xs font-semibold text-blue-700 mt-0.5">{m.tagline}</p>
-                </div>
+                  <div>
+                    <h3 className="font-black text-slate-900 text-lg">{w.name}</h3>
+                    <p className="text-xs font-bold text-indigo-600 mt-0.5">{w.tagline}</p>
+                    <span className="text-[10px] font-black text-slate-400 block mt-0.5 uppercase tracking-wider">{w.subtitle}</span>
+                  </div>
 
-                <p className="text-xs text-slate-500 leading-relaxed">
-                  {m.description}
-                </p>
+                  <p className="text-xs text-slate-600 leading-relaxed font-normal">
+                    {w.description}
+                  </p>
 
-                <div className="space-y-1.5 pt-2 border-t border-slate-100">
-                  <span className="text-[10px] font-bold uppercase text-slate-400">Niveles que abarca:</span>
-                  <div className="text-xs font-medium text-slate-700 bg-slate-50 p-2 rounded-xl border border-slate-100">
-                    <span className="font-bold">{m.levelsText}</span> • {m.booksText}
+                  <div className="space-y-1.5 pt-2 border-t border-slate-200/60">
+                    <span className="text-[10px] font-bold uppercase text-slate-400">Misiones clave:</span>
+                    <ul className="text-xs font-medium text-slate-700 space-y-1">
+                      {w.topics.map((t, i) => (
+                        <li key={i} className="flex items-center gap-1.5 text-[11px]">
+                          <span className="text-emerald-500">✔</span>
+                          <span>{t}</span>
+                        </li>
+                      ))}
+                    </ul>
                   </div>
                 </div>
-              </div>
 
-              <div className="pt-2 text-xs font-bold text-blue-700 flex items-center gap-1">
-                <span>{m.meta}</span>
+                <div className="pt-2 text-xs font-black text-indigo-700 flex items-center gap-1 bg-white/80 p-2 rounded-xl border border-slate-200">
+                  <span>{w.meta}</span>
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        ) : (
+          /* ADULT STANDARD MODULES */
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+            {MODULES_INFO.map(m => (
+              <div
+                key={m.module}
+                className="bg-white rounded-3xl border border-slate-200/90 p-6 shadow-xs hover:shadow-md transition-all hover:border-blue-300 flex flex-col justify-between space-y-4"
+              >
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="w-9 h-9 rounded-2xl bg-blue-50 text-blue-800 font-black text-sm flex items-center justify-center">
+                      M{m.module}
+                    </span>
+                    <span className="text-[11px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">
+                      {m.hours}
+                    </span>
+                  </div>
+
+                  <div>
+                    <h3 className="font-black text-slate-900 text-lg">{m.name}</h3>
+                    <p className="text-xs font-semibold text-blue-700 mt-0.5">{m.tagline}</p>
+                  </div>
+
+                  <p className="text-xs text-slate-500 leading-relaxed">
+                    {m.description}
+                  </p>
+
+                  <div className="space-y-1.5 pt-2 border-t border-slate-100">
+                    <span className="text-[10px] font-bold uppercase text-slate-400">Niveles que abarca:</span>
+                    <div className="text-xs font-medium text-slate-700 bg-slate-50 p-2 rounded-xl border border-slate-100">
+                      <span className="font-bold">{m.levelsText}</span> • {m.booksText}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-2 text-xs font-bold text-blue-700 flex items-center gap-1">
+                  <span>{m.meta}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </section>
 
-      {/* 3. TRANSPARENT PRICING & PLANS (EXPRESS, INTENSIVO, REGULAR, BÁSICO & PASE DIGITAL) */}
+      {/* 3. TRANSPARENT PRICING & PLANS (JUNIOR SQUAD PACKS VS ADULT FORMAL PLANS) */}
       <section className="space-y-6">
         <div className="text-center max-w-2xl mx-auto space-y-2">
-          <span className="text-xs font-bold uppercase tracking-wider text-emerald-800 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
-            Inversión Clara & Pensum Internacional
+          <span className={`text-xs font-black uppercase tracking-wider px-3 py-1 rounded-full border ${
+            isKids
+              ? 'text-amber-800 bg-amber-50 border-amber-300'
+              : 'text-emerald-800 bg-emerald-50 border-emerald-200'
+          }`}>
+            {isKids ? '⚡ PACKS DE ENTRENAMIENTO JUNIOR' : 'Inversión Clara & Pensum Internacional'}
           </span>
           <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-            Planes Diseñados Para Tu Rutina
+            {isKids ? 'Elige tu Modalidad de Juego' : 'Planes Diseñados Para Tu Rutina'}
           </h2>
           <p className="text-xs sm:text-sm text-slate-500">
-            Elige el ritmo que mejor se adapte a tus metas: desde el autoaprendizaje digital hasta la inmersión acelerada récord con el Nivel Express.
+            {isKids 
+              ? 'Desde el Pase Digital para jugar y practicar en la Arena, hasta sesiones en vivo con tu squad o tu mentor 1 a 1.'
+              : 'Elige el ritmo que mejor se adapte a tus metas: desde el autoaprendizaje digital hasta la inmersión acelerada récord con el Nivel Express.'}
           </p>
         </div>
 
-        {/* 4 Intensity Plans Grid */}
+        {/* 4 Plans Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
           
-          {/* Plan 1: Nivel Express (6 h/sem) */}
+          {/* Plan 1: Express / Battle Pass Express */}
           <div className="bg-gradient-to-b from-amber-500/10 via-white to-white rounded-3xl border-2 border-amber-400 p-5 sm:p-6 shadow-md hover:shadow-xl transition-all flex flex-col justify-between space-y-4 relative">
             <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[10px] font-black uppercase tracking-wider px-3 py-0.5 rounded-full shadow-xs whitespace-nowrap">
-              ⚡ Nivel Express • ¡4 Semanas!
+              {isKids ? '⚡ Battle Pass Express • 4 Semanas' : '⚡ Nivel Express • ¡4 Semanas!'}
             </span>
 
             <div className="space-y-3 pt-1">
@@ -235,132 +482,158 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
               </div>
 
               <div>
-                <h3 className="text-lg font-black text-slate-900">Súper Intensivo Express</h3>
-                <p className="text-xs text-slate-500">Máxima aceleración y fluidez récord</p>
+                <h3 className="text-lg font-black text-slate-900">
+                  {isKids ? 'Battle Pass Acelerado' : 'Súper Intensivo Express'}
+                </h3>
+                <p className="text-xs text-slate-500">
+                  {isKids ? 'Para subir de rango a la velocidad de la luz' : 'Máxima aceleración y fluidez récord'}
+                </p>
               </div>
 
               <div className="p-2.5 bg-amber-50/80 rounded-xl border border-amber-200/80 text-xs">
-                <span className="text-[10px] uppercase font-bold text-amber-800 block">Duración Nivel SuperGoal:</span>
+                <span className="text-[10px] uppercase font-bold text-amber-800 block">
+                  {isKids ? 'Duración de Nivel:' : 'Duración Nivel SuperGoal:'}
+                </span>
                 <strong className="text-amber-950 font-black text-sm">¡Solo 1 mes (4 semanas)!</strong>
-                <span className="text-[10px] text-slate-500 block mt-0.5">3 sesiones semanales de 120 min</span>
+                <span className="text-[10px] text-slate-500 block mt-0.5">3 sesiones semanales en vivo</span>
               </div>
 
               <ul className="space-y-1.5 text-xs text-slate-600 pt-1">
                 <li className="flex items-start gap-1.5">
                   <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
-                  <span>Ideal para viajes urgentes o entrevistas laborales inmediatas</span>
+                  <span>{isKids ? 'Inmersión total para hablar sin pena' : 'Ideal para viajes urgentes o entrevistas laborales'}</span>
                 </li>
                 <li className="flex items-start gap-1.5">
                   <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
-                  <span>Atención 1 a 1 o en Dúo de alta intensidad</span>
+                  <span>{isKids ? 'Sesiones 1 a 1 de alta energía' : 'Atención 1 a 1 o en Dúo de alta intensidad'}</span>
                 </li>
                 <li className="flex items-start gap-1.5">
                   <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
-                  <span>Feedback continuo directo por WhatsApp de La Teacher</span>
+                  <span>{isKids ? 'Feedback continuo por WhatsApp de Teacher Cokitö' : 'Feedback continuo directo por WhatsApp de La Teacher'}</span>
                 </li>
               </ul>
             </div>
 
             <button
               onClick={onStartRegistration}
-              className="w-full py-2.5 px-4 bg-amber-400 hover:bg-amber-300 text-slate-950 rounded-xl font-black text-xs shadow-md transition-transform hover:scale-102 flex items-center justify-center gap-1.5"
+              className={`w-full py-2.5 px-4 rounded-xl font-black text-xs shadow-md transition-transform hover:scale-102 flex items-center justify-center gap-1.5 ${
+                isKids 
+                  ? 'btn-game-3d btn-game-yellow text-slate-950'
+                  : 'bg-amber-400 hover:bg-amber-300 text-slate-950'
+              }`}
             >
-              <span>Elegir Nivel Express</span>
+              <span>{isKids ? 'Elegir Battle Pass' : 'Elegir Nivel Express'}</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </div>
 
-          {/* Plan 2: Intensivo (4 h/sem) */}
+          {/* Plan 2: Intensivo / Squad Dúo */}
           <div className="bg-white rounded-3xl border-2 border-slate-200 p-5 sm:p-6 shadow-xs hover:border-blue-400 transition-all flex flex-col justify-between space-y-4">
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-[11px] font-bold text-blue-800 bg-blue-50 px-2.5 py-0.5 rounded-full">
                   4 h / semana
                 </span>
-                <Clock className="w-4 h-4 text-blue-600" />
+                <Users className="w-4 h-4 text-blue-600" />
               </div>
 
               <div>
-                <h3 className="text-lg font-black text-slate-900">Plan Intensivo</h3>
-                <p className="text-xs text-slate-500">Para quienes llevan prisa y foco</p>
+                <h3 className="text-lg font-black text-slate-900">
+                  {isKids ? 'Gamer Squad (Dúo)' : 'Plan Intensivo'}
+                </h3>
+                <p className="text-xs text-slate-500">
+                  {isKids ? 'Inscríbete con tu mejor amigo o hermano' : 'Para quienes llevan prisa y foco'}
+                </p>
               </div>
 
               <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-200 text-xs">
-                <span className="text-[10px] uppercase font-bold text-slate-500 block">Duración Nivel SuperGoal:</span>
+                <span className="text-[10px] uppercase font-bold text-slate-500 block">Duración de Nivel:</span>
                 <strong className="text-slate-900 font-black text-sm">6 semanas (1.5 meses)</strong>
-                <span className="text-[10px] text-slate-500 block mt-0.5">2 sesiones de 120 min o 4 de 60 min</span>
+                <span className="text-[10px] text-slate-500 block mt-0.5">2 sesiones de 120 min</span>
               </div>
 
               <ul className="space-y-1.5 text-xs text-slate-600 pt-1">
                 <li className="flex items-start gap-1.5">
                   <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
-                  <span>Progreso acelerado con inmersión constante</span>
+                  <span>{isKids ? 'Practica conversaciones en pareja divertida' : 'Progreso acelerado con inmersión constante'}</span>
                 </li>
                 <li className="flex items-start gap-1.5">
                   <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
-                  <span>Preparación para exámenes y certificaciones</span>
+                  <span>{isKids ? 'Descuento especial por alumno al venir en Dúo' : 'Preparación para exámenes y certificaciones'}</span>
                 </li>
                 <li className="flex items-start gap-1.5">
                   <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
-                  <span>Práctica conversacional y debates activos</span>
+                  <span>{isKids ? 'Retos cooperativos en la Arena Güaky' : 'Práctica conversacional y debates activos'}</span>
                 </li>
               </ul>
             </div>
 
             <button
               onClick={onStartRegistration}
-              className="w-full py-2.5 px-4 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-bold text-xs shadow-md transition-colors"
+              className={`w-full py-2.5 px-4 rounded-xl font-bold text-xs shadow-md transition-colors ${
+                isKids
+                  ? 'btn-game-3d btn-game-teal text-slate-950 font-black'
+                  : 'bg-slate-900 hover:bg-slate-800 text-white'
+              }`}
             >
-              Elegir Intensivo
+              {isKids ? 'Unirme en Squad' : 'Elegir Intensivo'}
             </button>
           </div>
 
-          {/* Plan 3: Regular (3 h/sem) */}
-          <div className="bg-white rounded-3xl border-2 border-blue-600 p-5 sm:p-6 shadow-md relative flex flex-col justify-between space-y-4">
-            <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-blue-600 text-white text-[10px] font-black uppercase tracking-wider px-3 py-0.5 rounded-full shadow-xs whitespace-nowrap">
-              ⭐ Más Recomendado
+          {/* Plan 3: Regular / Solo Quest VIP */}
+          <div className="bg-white rounded-3xl border-2 border-purple-500 p-5 sm:p-6 shadow-md relative flex flex-col justify-between space-y-4">
+            <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-purple-600 text-white text-[10px] font-black uppercase tracking-wider px-3 py-0.5 rounded-full shadow-xs whitespace-nowrap">
+              {isKids ? '⭐ Más Popular' : '⭐ Más Recomendado'}
             </span>
 
             <div className="space-y-3 pt-1">
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-bold text-indigo-800 bg-indigo-50 px-2.5 py-0.5 rounded-full">
+                <span className="text-[11px] font-bold text-purple-800 bg-purple-50 px-2.5 py-0.5 rounded-full">
                   3 h / semana
                 </span>
-                <Star className="w-4 h-4 text-blue-600 fill-blue-600" />
+                <Star className="w-4 h-4 text-purple-600 fill-purple-600" />
               </div>
 
               <div>
-                <h3 className="text-lg font-black text-slate-900">Plan Regular</h3>
-                <p className="text-xs text-slate-500">Equilibrio perfecto de ritmo y retención</p>
+                <h3 className="text-lg font-black text-slate-900">
+                  {isKids ? 'Solo Quest VIP' : 'Plan Regular'}
+                </h3>
+                <p className="text-xs text-slate-500">
+                  {isKids ? 'Mentor dedicado solo para ti y a tu ritmo' : 'Equilibrio perfecto de ritmo y retención'}
+                </p>
               </div>
 
-              <div className="p-2.5 bg-blue-50/70 rounded-xl border border-blue-200/80 text-xs">
-                <span className="text-[10px] uppercase font-bold text-blue-800 block">Duración Nivel SuperGoal:</span>
-                <strong className="text-blue-950 font-black text-sm">8 semanas (2 meses)</strong>
-                <span className="text-[10px] text-slate-500 block mt-0.5">2 sesiones de 90 min (ej. Lun/Mié)</span>
+              <div className="p-2.5 bg-purple-50/70 rounded-xl border border-purple-200/80 text-xs">
+                <span className="text-[10px] uppercase font-bold text-purple-800 block">Duración de Nivel:</span>
+                <strong className="text-purple-950 font-black text-sm">8 semanas (2 meses)</strong>
+                <span className="text-[10px] text-slate-500 block mt-0.5">2 sesiones de 90 min</span>
               </div>
 
               <ul className="space-y-1.5 text-xs text-slate-600 pt-1">
                 <li className="flex items-start gap-1.5">
                   <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
-                  <span>La fórmula dorada: máxima retención sin sobrecarga</span>
+                  <span>{isKids ? 'Temas adaptados a tus gustos y juegos' : 'La fórmula dorada: máxima retención sin sobrecarga'}</span>
                 </li>
                 <li className="flex items-start gap-1.5">
                   <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
-                  <span>Disponible en modalidad Individual o en Parejas (Dúo)</span>
+                  <span>{isKids ? 'Confianza total para preguntar sin pena' : 'Disponible en modalidad Individual o Parejas'}</span>
                 </li>
                 <li className="flex items-start gap-1.5">
                   <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
-                  <span>Acceso permanente al Classroom y libro de trabajo</span>
+                  <span>{isKids ? 'Acceso VIP al Classroom y audios nativos' : 'Acceso permanente al Classroom y libro'}</span>
                 </li>
               </ul>
             </div>
 
             <button
               onClick={onStartRegistration}
-              className="w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-xs shadow-md transition-colors"
+              className={`w-full py-2.5 px-4 rounded-xl font-bold text-xs shadow-md transition-colors ${
+                isKids
+                  ? 'btn-game-3d btn-game-purple text-white font-black'
+                  : 'bg-blue-600 hover:bg-blue-700 text-white'
+              }`}
             >
-              Elegir Regular
+              {isKids ? 'Elegir Solo Quest' : 'Elegir Regular'}
             </button>
           </div>
 
@@ -375,71 +648,91 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
               </div>
 
               <div>
-                <h3 className="text-lg font-black text-slate-900">Súper Básico</h3>
-                <p className="text-xs text-slate-500">Constante, relajado y sin estrés</p>
+                <h3 className="text-lg font-black text-slate-900">
+                  {isKids ? 'Chill Explorer' : 'Súper Básico'}
+                </h3>
+                <p className="text-xs text-slate-500">
+                  {isKids ? 'Constante, relajado y sin tareas pesadas' : 'Constante, relajado y sin estrés'}
+                </p>
               </div>
 
               <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-200 text-xs">
-                <span className="text-[10px] uppercase font-bold text-slate-500 block">Duración Nivel SuperGoal:</span>
+                <span className="text-[10px] uppercase font-bold text-slate-500 block">Duración de Nivel:</span>
                 <strong className="text-slate-900 font-black text-sm">12 semanas (3 meses)</strong>
-                <span className="text-[10px] text-slate-500 block mt-0.5">2 sesiones de 60 min (ej. Mar/Jue)</span>
+                <span className="text-[10px] text-slate-500 block mt-0.5">2 sesiones de 60 min</span>
               </div>
 
               <ul className="space-y-1.5 text-xs text-slate-600 pt-1">
                 <li className="flex items-start gap-1.5">
                   <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
-                  <span>Diseñado para agendas muy ocupadas</span>
+                  <span>{isKids ? 'Ideal si tienes muchas clases en el colegio' : 'Diseñado para agendas muy ocupadas'}</span>
                 </li>
                 <li className="flex items-start gap-1.5">
                   <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
-                  <span>Avanza sin presión paso a paso</span>
+                  <span>{isKids ? 'Avanzas a tu propio ritmo sin agobios' : 'Avanza sin presión paso a paso'}</span>
                 </li>
                 <li className="flex items-start gap-1.5">
                   <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
-                  <span>Clases en vivo personalizadas con Teacher Cokitö</span>
+                  <span>{isKids ? 'Práctica con Teacher Cokitö' : 'Clases en vivo personalizadas con Teacher'}</span>
                 </li>
               </ul>
             </div>
 
             <button
               onClick={onStartRegistration}
-              className="w-full py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl font-bold text-xs transition-colors"
+              className={`w-full py-2.5 px-4 rounded-xl font-bold text-xs transition-colors ${
+                isKids
+                  ? 'btn-game-3d btn-game-emerald text-white font-black'
+                  : 'bg-slate-100 hover:bg-slate-200 text-slate-800'
+              }`}
             >
-              Elegir Básico
+              {isKids ? 'Elegir Chill Explorer' : 'Elegir Básico'}
             </button>
           </div>
 
         </div>
 
         {/* Highlighted Banner: Pase Digital Autónomo ($5/mes) */}
-        <div className="bg-gradient-to-r from-slate-900 via-blue-950 to-indigo-950 rounded-3xl p-6 sm:p-7 text-white border border-slate-800 shadow-lg flex flex-col md:flex-row items-center justify-between gap-6">
+        <div className={`rounded-3xl p-6 sm:p-7 text-white border shadow-lg flex flex-col md:flex-row items-center justify-between gap-6 ${
+          isKids
+            ? 'bg-gradient-to-r from-purple-900 via-indigo-900 to-slate-900 border-purple-500/40'
+            : 'bg-gradient-to-r from-slate-900 via-blue-950 to-indigo-950 border-slate-800'
+        }`}>
           <div className="space-y-2 text-center md:text-left">
             <div className="flex items-center justify-center md:justify-start gap-2">
-              <span className="text-xs font-bold uppercase tracking-wider bg-amber-400/20 text-amber-300 px-3 py-1 rounded-full border border-amber-400/30 inline-flex items-center gap-1.5">
+              <span className="text-xs font-black uppercase tracking-wider bg-amber-400/20 text-amber-300 px-3 py-1 rounded-full border border-amber-400/30 inline-flex items-center gap-1.5">
                 <Smartphone className="w-3.5 h-3.5" />
-                Autoaprendizaje Autónomo
+                {isKids ? '🎮 Pase Arcade Autónomo' : 'Autoaprendizaje Autónomo'}
               </span>
-              <span className="text-xs text-blue-200">Sin clases en vivo</span>
+              <span className="text-xs text-blue-200">{isKids ? 'Solo minijuegos y práctica digital' : 'Sin clases en vivo'}</span>
             </div>
             <h3 className="text-xl sm:text-2xl font-black tracking-tight">
-              ¿Prefieres estudiar a tu propio ritmo? Pase Digital Cokitö
+              {isKids 
+                ? '¿Quieres practicar a tu propio ritmo? Pase Digital Arcade'
+                : '¿Prefieres estudiar a tu propio ritmo? Pase Digital Cokitö'}
             </h3>
             <p className="text-xs sm:text-sm text-blue-100 max-w-2xl leading-relaxed">
-              Accede a los <strong>12 niveles completos</strong> de libros oficiales (SuperGoal y MegaGoal), audios nativos, quizzes autocorregibles del Cyber Owl y retos diarios con racha por solo <strong>$5 al mes</strong>.
+              {isKids
+                ? 'Accede a los 12 niveles con audios nativos, quizzes interactivos de Güaky, desafíos diarios y retos de racha por solo $4.99 al mes.'
+                : 'Accede a los 12 niveles completos de libros oficiales (SuperGoal y MegaGoal), audios nativos, quizzes autocorregibles de Güaky y retos diarios con racha por solo $4.99 al mes.'}
             </p>
           </div>
 
           <div className="flex flex-col items-center sm:items-end gap-2.5 shrink-0">
             <div className="flex items-center gap-3">
               <div className="text-center sm:text-right">
-                <span className="text-3xl font-black text-white">$5</span>
+                <span className="text-3xl font-black text-amber-300">$4.99</span>
                 <span className="text-[11px] text-blue-200 block">/ mes</span>
               </div>
               <button
                 onClick={onOpenPaymentModal || onStartRegistration}
-                className="px-6 py-3.5 bg-amber-400 hover:bg-amber-300 text-slate-950 rounded-2xl font-black text-xs sm:text-sm shadow-md transition-transform hover:scale-102 whitespace-nowrap"
+                className={`px-6 py-3.5 rounded-2xl font-black text-xs sm:text-sm shadow-md transition-transform hover:scale-102 whitespace-nowrap ${
+                  isKids
+                    ? 'btn-game-3d btn-game-yellow text-slate-950'
+                    : 'bg-amber-400 hover:bg-amber-300 text-slate-950'
+                }`}
               >
-                Comenzar con Pase Digital
+                {isKids ? '¡Activar Pase Arcade!' : 'Comenzar con Pase Digital'}
               </button>
             </div>
 
@@ -490,42 +783,58 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
       {/* 4. METHODOLOGY & GROWTH MINDSET PILLARS */}
       <section className="bg-white rounded-3xl border border-slate-200 p-8 space-y-6">
         <div className="text-center space-y-1">
-          <span className="text-[10px] font-black uppercase tracking-wider text-[#2EC4B6] bg-[#2EC4B6]/10 px-2.5 py-0.5 rounded-full">
-            Growth Mindset • Principios de Güakytopia
+          <span className={`text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full ${
+            isKids ? 'text-purple-700 bg-purple-100' : 'text-[#2EC4B6] bg-[#2EC4B6]/10'
+          }`}>
+            {isKids ? '🎮 REGLAS DEL JUEGO • GÜAKYTOPIA JUNIOR' : 'Growth Mindset • Principios de Güakytopia'}
           </span>
           <h3 className="font-black text-[#243447] text-lg sm:text-xl">
-            Progreso sobre Perfección. Práctica sobre Miedo.
+            {isKids 
+              ? 'No pierdes vidas al equivocarte: ganas Experiencia (XP) 🚀' 
+              : 'Progreso sobre Perfección. Práctica sobre Miedo.'}
           </h3>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-center">
           <div className="space-y-2">
-            <div className="w-12 h-12 bg-[#2EC4B6]/15 text-[#2EC4B6] rounded-2xl flex items-center justify-center mx-auto text-xl">
-              🌱
+            <div className="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto text-xl shadow-xs">
+              {isKids ? '🕹️' : '🌱'}
             </div>
-            <h4 className="font-black text-[#243447] text-sm">Curiosidad sobre Vergüenza</h4>
+            <h4 className="font-black text-[#243447] text-sm">
+              {isKids ? 'Cero Vergüenza ni Exámenes Aburridos' : 'Curiosidad sobre Vergüenza'}
+            </h4>
             <p className="text-xs text-slate-500 leading-relaxed">
-              Tu punto de partida no determina hasta dónde puedes llegar. Equivocarse es avanzar, descubrir y aprender.
+              {isKids 
+                ? 'Aquí nadie se burla ni te juzga. Hablamos en confianza como si estuviéramos en Discord jugando con amigos.'
+                : 'Tu punto de partida no determina hasta dónde puedes llegar. Equivocarse es avanzar, descubrir y aprender.'}
             </p>
           </div>
 
           <div className="space-y-2">
-            <div className="w-12 h-12 bg-[#FFD166]/25 text-[#FF9248] rounded-2xl flex items-center justify-center mx-auto text-xl">
-              🪽
+            <div className="w-12 h-12 bg-amber-100 text-amber-600 rounded-2xl flex items-center justify-center mx-auto text-xl shadow-xs">
+              {isKids ? '🏆' : '🪽'}
             </div>
-            <h4 className="font-black text-[#243447] text-sm">Autonomía & Estructura</h4>
+            <h4 className="font-black text-[#243447] text-sm">
+              {isKids ? 'Insignias, Niveles y Rachas' : 'Autonomía & Estructura'}
+            </h4>
             <p className="text-xs text-slate-500 leading-relaxed">
-              Avanza a tu propio ritmo por los 12 Flights internacionales o acelera con clases y acompañamiento de tutores.
+              {isKids
+                ? 'Cada reto superado te premia con gemas, sube tu nivel y te da acceso a mundos más épicos.'
+                : 'Avanza a tu propio ritmo por los 12 Flights internacionales o acelera con clases y acompañamiento de tutores.'}
             </p>
           </div>
 
           <div className="space-y-2">
-            <div className="w-12 h-12 bg-[#FF6B4A]/15 text-[#FF6B4A] rounded-2xl flex items-center justify-center mx-auto text-xl">
-              🚀
+            <div className="w-12 h-12 bg-purple-100 text-purple-600 rounded-2xl flex items-center justify-center mx-auto text-xl shadow-xs">
+              {isKids ? '🎧' : '🚀'}
             </div>
-            <h4 className="font-black text-[#243447] text-sm">Tu Nivel de Hoy no es para Siempre</h4>
+            <h4 className="font-black text-[#243447] text-sm">
+              {isKids ? 'Mentores Jóvenes y Cercanos' : 'Tu Nivel de Hoy no es para Siempre'}
+            </h4>
             <p className="text-xs text-slate-500 leading-relaxed">
-              Nunca etiquetamos. La práctica constante y el hábito diario desarrollan cualquier habilidad.
+              {isKids
+                ? 'Profesores que entienden tu mundo: hablan de tus streamers favoritos, música, series y videojuegos.'
+                : 'Nunca etiquetamos. La práctica constante y el hábito diario desarrollan cualquier habilidad.'}
             </p>
           </div>
         </div>

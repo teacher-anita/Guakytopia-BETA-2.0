@@ -11,11 +11,20 @@ import {
   HelpCircle,
   ArrowRight,
   ShieldAlert,
-  Volume2
+  Volume2,
+  Gamepad2,
+  Search,
+  Users,
+  GraduationCap,
+  Gift,
+  Clock3,
+  UserPlus
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { Student, AudienceTheme } from '../types';
 import { ArenaMiniGames } from './ArenaMiniGames';
+import { WheresGuakyGame } from './WheresGuakyGame';
+import { GamerAccountModal } from './GamerAccountModal';
 
 interface GamificationHubProps {
   currentStudent: Student | null;
@@ -24,6 +33,8 @@ interface GamificationHubProps {
   activeRole: 'student' | 'teacher';
   audienceTheme: AudienceTheme;
   canSyncArenaLives: boolean;
+  onOpenPricingModal?: () => void;
+  onRegisterGamer?: (gamerData: { name: string; username: string; email: string; pin: string }) => void;
 }
 
 interface DailyQuest {
@@ -43,9 +54,15 @@ export const GamificationHub: React.FC<GamificationHubProps> = ({
   onAwardXp,
   activeRole,
   audienceTheme,
-  canSyncArenaLives
+  canSyncArenaLives,
+  onOpenPricingModal,
+  onRegisterGamer
 }) => {
   const isKids = audienceTheme === 'kids';
+  const [arcadeSubTab, setArcadeSubTab] = useState<'wheres_guaky' | 'daily_quests' | 'arena_games'>('wheres_guaky');
+  const [leaderboardFilter, setLeaderboardFilter] = useState<'general' | 'students'>('general');
+  const [isGamerModalOpen, setIsGamerModalOpen] = useState(false);
+  const [pendingGamerXp, setPendingGamerXp] = useState(50);
 
   // 3 Daily Quests (Micro-desafíos diarios)
   const [quests, setQuests] = useState<DailyQuest[]>([
@@ -117,8 +134,15 @@ export const GamificationHub: React.FC<GamificationHubProps> = ({
     setAnsweredState('idle');
   };
 
-  // Sort students for leaderboard
-  const leaderboard = [...students].sort((a, b) => b.xp - a.xp);
+  // 1. General Leaderboard: Everyone (Gamers + Students)
+  const generalLeaderboard = [...students].sort((a, b) => b.xp - a.xp);
+
+  // 2. Students Leaderboard: Only active students with enrolled campus status or Digital Pass
+  const studentsLeaderboard = students
+    .filter(s => s.accountType === 'student' || s.status === 'enrolled' || s.isDigitalPass)
+    .sort((a, b) => b.xp - a.xp);
+
+  const activeLeaderboard = leaderboardFilter === 'general' ? generalLeaderboard : studentsLeaderboard;
 
   return (
     <div className="max-w-6xl mx-auto py-6 px-4 space-y-8 animate-fadeIn">
@@ -165,8 +189,64 @@ export const GamificationHub: React.FC<GamificationHubProps> = ({
         </div>
       </div>
 
-      {/* Main Grid: Daily Quests + Leaderboard */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      {/* ARCADE SUB-NAV SELECTOR */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+        <button
+          onClick={() => setArcadeSubTab('wheres_guaky')}
+          className={`px-4 py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-2 shrink-0 border ${
+            arcadeSubTab === 'wheres_guaky'
+              ? isKids
+                ? 'bg-gradient-to-r from-amber-400 to-orange-500 text-slate-950 border-amber-300 shadow-md font-black scale-102'
+                : 'bg-teal-600 text-white border-teal-500 shadow-md font-black scale-102'
+              : 'bg-white hover:bg-slate-50 text-slate-700 border-slate-200'
+          }`}
+        >
+          <Search className="w-4 h-4 text-amber-500" />
+          <span>🔍 Where&apos;s Güaky? (Nuevo)</span>
+          <span className="text-[10px] bg-amber-400 text-slate-950 font-black px-1.5 py-0.2 rounded-full">XP</span>
+        </button>
+
+        <button
+          onClick={() => setArcadeSubTab('daily_quests')}
+          className={`px-4 py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-2 shrink-0 border ${
+            arcadeSubTab === 'daily_quests'
+              ? isKids
+                ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white border-purple-400 shadow-md font-black scale-102'
+                : 'bg-indigo-600 text-white border-indigo-500 shadow-md font-black scale-102'
+              : 'bg-white hover:bg-slate-50 text-slate-700 border-slate-200'
+          }`}
+        >
+          <Zap className="w-4 h-4 text-amber-400" />
+          <span>⚡ Misiones Diarias & Liga</span>
+        </button>
+
+        <button
+          onClick={() => setArcadeSubTab('arena_games')}
+          className={`px-4 py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-2 shrink-0 border ${
+            arcadeSubTab === 'arena_games'
+              ? isKids
+                ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 border-emerald-300 shadow-md font-black scale-102'
+                : 'bg-slate-900 text-white border-slate-700 shadow-md font-black scale-102'
+              : 'bg-white hover:bg-slate-50 text-slate-700 border-slate-200'
+          }`}
+        >
+          <Gamepad2 className="w-4 h-4 text-emerald-400" />
+          <span>🎮 Arena de Juegos (Sopa, Scrabble, Ahorcado)</span>
+        </button>
+      </div>
+
+      {/* SUB-VIEW 1: WHERE'S GÜAKY? */}
+      {arcadeSubTab === 'wheres_guaky' && (
+        <WheresGuakyGame
+          currentStudent={currentStudent}
+          audienceTheme={audienceTheme}
+          onAwardXp={onAwardXp}
+        />
+      )}
+
+      {/* SUB-VIEW 2: DAILY QUESTS + LEADERBOARD */}
+      {arcadeSubTab === 'daily_quests' && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         
         {/* Left Column: Daily Quests */}
         <div className="lg:col-span-2 space-y-4">
@@ -296,10 +376,13 @@ export const GamificationHub: React.FC<GamificationHubProps> = ({
           </div>
         </div>
 
-      </div>
+        </div>
+      )}
 
-      {/* Arena Arcade: shared lives, word search, Scrabble Mix and Hangman */}
-      <ArenaMiniGames currentStudent={currentStudent} onAwardXp={onAwardXp} canSyncCloud={canSyncArenaLives} />
+      {/* SUB-VIEW 3: ARENA MINI GAMES */}
+      {arcadeSubTab === 'arena_games' && (
+        <ArenaMiniGames currentStudent={currentStudent} onAwardXp={onAwardXp} canSyncCloud={canSyncArenaLives} />
+      )}
 
       {/* Quest Modal */}
       {activeQuest && (

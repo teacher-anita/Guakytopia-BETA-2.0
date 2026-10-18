@@ -360,7 +360,7 @@ ${session.workbookPages ? `📝 2. HOMEWORK / WORKBOOK (Required assignment):
 🕹️ 3. INTERACTIVE UNIT QUIZ:
 • Log into the platform and take the Unit Quiz to earn +50 XP for your Cokitö streak!
 
-🦉 SMART OWL CULTURE NOTE:
+🦜 GÜAKY CULTURE NOTE:
 ${unit.owlCulture.culturalStory}
 
 💡 TIP COKITÖ: ${unit.tipCokito}`;
@@ -892,16 +892,16 @@ ${unit.owlCulture.culturalStory}
                 </div>
               </div>
 
-              {/* 3. SMART OWL TRIVIA & CULTURE CORNER (CYBER-OWL) */}
-              <div className="p-5 sm:p-6 bg-gradient-to-r from-indigo-950 via-slate-900 to-indigo-900 text-white border-b border-indigo-900/60">
+              {/* 3. GÜAKY TRIVIA & CULTURE CORNER */}
+              <div className="p-5 sm:p-6 bg-gradient-to-r from-teal-950 via-slate-900 to-indigo-950 text-white border-b border-indigo-900/60">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-3">
                   <div className="flex items-center gap-2.5">
-                    <div className="w-10 h-10 rounded-2xl bg-amber-400/20 text-amber-300 border border-amber-400/30 flex items-center justify-center text-xl shadow-md">
-                      🦉🤖
+                    <div className="w-10 h-10 rounded-2xl bg-teal-400/20 text-teal-300 border border-teal-400/30 flex items-center justify-center text-xl shadow-md">
+                      🦜⚡
                     </div>
                     <div>
                       <span className="text-[10px] font-bold uppercase tracking-wider text-amber-300 block">
-                        Cokitö Smart Owl Trivia
+                        Güaky Cultural Trivia
                       </span>
                       <h4 className="text-sm sm:text-base font-black text-white">
                         {unit.owlCulture.owlTitle}

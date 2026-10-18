@@ -133,7 +133,7 @@ export const PATHWAY_LEVELS: PathwayLevel[] = [
         // Workbook (SG01-WB-U01): 13JNZQ1NpbLF-DodPPkAnHVaMaPqkImmw
         workbookPdfUrl: 'https://drive.google.com/file/d/13JNZQ1NpbLF-DodPPkAnHVaMaPqkImmw/view?usp=drive_link',
         owlCulture: {
-          owlTitle: 'Cyber Owl Trivia: Greetings Around the World',
+          owlTitle: 'Güaky Trivia: Greetings Around the World',
           topic: 'Handshakes, Bows & The Anglo-Saxon Rule',
           didYouKnow: 'In English-speaking countries, people generally do NOT kiss on both cheeks when meeting someone for the first time. A firm, confident handshake with direct eye contact is the standard of polite respect.',
           culturalStory: 'In British and North American business etiquette, using "Ms." (pronounced /mɪz/) is the most respectful and neutral title for adult women because it does not assume whether she is married or single.',
@@ -195,7 +195,7 @@ export const PATHWAY_LEVELS: PathwayLevel[] = [
           },
           {
             id: 3,
-            question: 'Choose the correct form of the verb Be: "We _____ students in Teacher Cokitö\'s academy."',
+            question: 'Choose the correct form of the verb Be: "We _____ students in Güakytopia."',
             options: ['am', 'is', 'are', 'be'],
             correctIndex: 2,
             explanation: 'The pronoun "We" is plural and conjugates with "are".'
@@ -227,7 +227,7 @@ export const PATHWAY_LEVELS: PathwayLevel[] = [
         tipCokito: 'Master the Golden Rule of Time: Use ON for specific days and dates (on Monday, on May 4th), and use IN for months and years (in May, in 2026).',
         googleFormUrl: 'https://docs.google.com/forms/d/e/1FAIpQLSc-unit2-sg1/viewform',
         owlCulture: {
-          owlTitle: 'Cyber Owl Trivia: The Gods of the Calendar',
+          owlTitle: 'Güaky Trivia: The Gods of the Calendar',
           topic: 'Why is Wednesday named after an ancient god?',
           didYouKnow: 'The days of the week in English originate from Norse and Roman mythology! Tuesday comes from Tiw (Norse god of war), Wednesday from Woden/Odin, Thursday from Thor (god of thunder), and Friday from Frigg (goddess of love).',
           culturalStory: 'In the United States and Canada, the week on calendars begins on SUNDAY, whereas in the United Kingdom, Europe, and Latin America, the calendar begins on MONDAY. Always check international schedules carefully!',
@@ -326,7 +326,7 @@ export const PATHWAY_LEVELS: PathwayLevel[] = [
         tipCokito: 'Remember: THIS and THESE are for items close to you (here), while THAT and THOSE are for items far away (there)!',
         googleFormUrl: 'https://docs.google.com/forms/d/e/1FAIpQLSc-unit3-sg1/viewform',
         owlCulture: {
-          owlTitle: 'Cyber Owl Trivia: High-Tech Souvenirs',
+          owlTitle: 'Güaky Trivia: High-Tech Souvenirs',
           topic: 'What travels in our pockets across continents?',
           didYouKnow: 'The word "souvenir" comes directly from the French verb meaning "to remember".',
           culturalStory: 'In modern airports and hotels across the US and UK, electronic wallets and contactless pay have almost entirely replaced cash.',
@@ -393,7 +393,7 @@ export const PATHWAY_LEVELS: PathwayLevel[] = [
         tipCokito: 'Always capitalize countries and nationalities in English! Write "Mexican", "Venezuelan", "Japanese", never in lowercase.',
         googleFormUrl: 'https://docs.google.com/forms/d/e/1FAIpQLSc-unit4-sg1/viewform',
         owlCulture: {
-          owlTitle: 'Cyber Owl Trivia: The Global Passport',
+          owlTitle: 'Güaky Trivia: The Global Passport',
           topic: 'How international greeting etiquettes vary',
           didYouKnow: 'English is an official language in over 50 countries and spoken by over 1.5 billion people worldwide.',
           culturalStory: 'In international summits, saying "Where are you based?" is often preferred to "Where are you from?" for global nomads.',
@@ -462,7 +462,7 @@ export const PATHWAY_LEVELS: PathwayLevel[] = [
         tipCokito: 'This Expansion Pack is our first major milestone! Consolidate everything from Units 1 to 4 before proceeding to Unit 5.',
         googleFormUrl: 'https://docs.google.com/forms/d/e/1FAIpQLSe-bossfight-1/viewform',
         owlCulture: {
-          owlTitle: 'Cyber Owl Trivia: The Milestone Celebration',
+          owlTitle: 'Güaky Trivia: The Milestone Celebration',
           topic: 'Celebrating language milestones',
           didYouKnow: 'Mastering the first 4 units gives you 250+ active words and covers 70% of beginner conversational situations!',
           culturalStory: 'In language academies worldwide, completing Module 1 milestones unlocks conversational badges.',
@@ -525,7 +525,7 @@ export const PATHWAY_LEVELS: PathwayLevel[] = [
         tipCokito: 'Watch out: "He has" and "She has", but "I have", "You have", "They have". Do not say "He haves"!',
         googleFormUrl: 'https://docs.google.com/forms/d/e/1FAIpQLSc-unit5-sg1/viewform',
         owlCulture: {
-          owlTitle: 'Cyber Owl Trivia: Family Terms Worldwide',
+          owlTitle: 'Güaky Trivia: Family Terms Worldwide',
           topic: 'How family structures are described in English',
           didYouKnow: 'English uses the term "in-laws" for family acquired by marriage (mother-in-law, brother-in-law).',
           culturalStory: 'In North America and the UK, calling someone by their first name after adolescence is common, but courtesy titles remain respectful for elders.',
@@ -592,7 +592,7 @@ export const PATHWAY_LEVELS: PathwayLevel[] = [
         tipCokito: 'Use "There is" for one singular item (There is a garden) and "There are" for two or more (There are three bedrooms).',
         googleFormUrl: 'https://docs.google.com/forms/d/e/1FAIpQLSc-unit6-sg1/viewform',
         owlCulture: {
-          owlTitle: 'Cyber Owl Trivia: Architecture Around the World',
+          owlTitle: 'Güaky Trivia: Architecture Around the World',
           topic: 'How homes reflect local climates and traditions',
           didYouKnow: 'The traditional Japanese home uses sliding doors (fusuma) to transform space dynamically.',
           culturalStory: 'In modern cities, micro-apartments have made multifunction furniture popular.',
@@ -659,7 +659,7 @@ export const PATHWAY_LEVELS: PathwayLevel[] = [
         tipCokito: 'For directions, use the base imperative: "Turn left", "Go straight", "Cross the street". Never add -ing or to!',
         googleFormUrl: 'https://docs.google.com/forms/d/e/1FAIpQLSc-unit7-sg1/viewform',
         owlCulture: {
-          owlTitle: 'Cyber Owl Trivia: The 15-Minute City',
+          owlTitle: 'Güaky Trivia: The 15-Minute City',
           topic: 'Urban design where daily needs are within walking distance',
           didYouKnow: 'The oldest known city maps date back over 4,000 years in ancient Mesopotamia.',
           culturalStory: 'In London and New York, asking someone for directions is easy if you begin politely with "Excuse me, could you tell me where... is?"',
@@ -726,7 +726,7 @@ export const PATHWAY_LEVELS: PathwayLevel[] = [
         tipCokito: 'Present Continuous is for actions happening RIGHT NOW! Remember the formula: Subject + Be (am/is/are) + Verb-ing.',
         googleFormUrl: 'https://docs.google.com/forms/d/e/1FAIpQLSc-unit8-sg1/viewform',
         owlCulture: {
-          owlTitle: 'Cyber Owl Trivia: The World In Motion',
+          owlTitle: 'Güaky Trivia: The World In Motion',
           topic: 'Time zones and simultaneous human activities',
           didYouKnow: 'While someone is eating breakfast in New York at 8:00 AM, someone in Tokyo is sleeping at 10:00 PM!',
           culturalStory: 'In English casual conversation, greeting someone with "What are you doing?" often just means "What\'s up?".',
@@ -795,7 +795,7 @@ export const PATHWAY_LEVELS: PathwayLevel[] = [
         tipCokito: 'Congratulations on reaching the final Expansion Pack of Level 1! Review all 8 units before taking your graduation certification exam.',
         googleFormUrl: 'https://docs.google.com/forms/d/e/1FAIpQLSe-bossfight-2/viewform',
         owlCulture: {
-          owlTitle: 'Cyber Owl Trivia: Celebrating Level 1 Mastery',
+          owlTitle: 'Güaky Trivia: Celebrating Level 1 Mastery',
           topic: 'From absolute beginner to confident basic speaker (A1 CEFR)',
           didYouKnow: 'Reaching Level 1 completion proves you can communicate basic needs, introduce yourself and family, navigate a city, and talk about everyday items.',
           culturalStory: 'In the international CEFR framework, completing A1 is the foundation for all spontaneous speech.',
@@ -886,7 +886,7 @@ export const PATHWAY_LEVELS: PathwayLevel[] = [
         tipCokito: 'Watch the 3rd person singular in Present Simple! He/She/It verbs must take an -s or -es (He cooks, She teaches, He flies). But in questions with DOES, the verb returns to its base form!',
         googleFormUrl: 'https://docs.google.com/forms/d/e/1FAIpQLSc-unit1-sg2/viewform',
         owlCulture: {
-          owlTitle: 'Cyber Owl Trivia: The World\'s Most Unusual Dream Jobs',
+          owlTitle: 'Güaky Trivia: The World\'s Most Unusual Dream Jobs',
           topic: 'Did you know people get paid to slide down waterparks?',
           didYouKnow: 'There are real professional jobs called "Water Slide Tester", "Golf Ball Diver" (retrieving lost golf balls from lake hazards), and "Professional Sleeper" (testing luxury hotel beds and mattresses).',
           culturalStory: 'In the US and UK, asking "What do you do?" is one of the most common icebreaker questions at social gatherings. Native speakers usually answer with their role plus company/industry: "I\'m a software engineer at a tech startup."',
@@ -1007,7 +1007,7 @@ export const PATHWAY_LEVELS: PathwayLevel[] = [
         tipCokito: 'Distinguish habits from current actions! "I live in Miami" is a permanent routine (Simple Present). "I am staying at the Grand Hotel this week" is a temporary situation happening right now (Present Progressive).',
         googleFormUrl: 'https://docs.google.com/forms/d/e/1FAIpQLSc-unit1-sg3/viewform',
         owlCulture: {
-          owlTitle: 'Cyber Owl Trivia: Vacation Culture & The Art of Tipping',
+          owlTitle: 'Güaky Trivia: Vacation Culture & The Art of Tipping',
           topic: 'Why do North Americans say "vacation" and the British say "holiday"?',
           didYouKnow: 'In the United States and Canada, taking time off work or school is called a "vacation". In the UK, Australia, and New Zealand, it is almost always called "going on holiday"!',
           culturalStory: 'In the United States and Canada, tipping at hotels and restaurants is customary and expected (usually 15% to 20%), whereas in countries like Japan or Iceland, tipping can be considered unusual or even impolite.',
@@ -1123,7 +1123,7 @@ export const PATHWAY_LEVELS: PathwayLevel[] = [
         studentBookPdfUrl: 'https://drive.google.com/drive/folders/1mJOxkclFXZ6cSRouNVXgt15j-Y4AVB9a?usp=drive_link',
         workbookPdfUrl: 'https://drive.google.com/drive/folders/1mJOxkclFXZ6cSRouNVXgt15j-Y4AVB9a?usp=drive_link',
         owlCulture: {
-          owlTitle: 'Cyber Owl Trivia: Music Festivals & Cultural Gatherings',
+          owlTitle: 'Güaky Trivia: Music Festivals & Cultural Gatherings',
           topic: 'How live music experiences differ across global cultures',
           didYouKnow: 'Woodstock in 1969 had over 400,000 attendees and became a defining cultural moment for youth language in America!',
           culturalStory: 'When talking about concerts in English, native speakers frequently say "The atmosphere was electric" or "They brought the house down".',
@@ -1229,7 +1229,7 @@ export const PATHWAY_LEVELS: PathwayLevel[] = [
         tipCokito: 'Use Simple Past for completed past events with a specific time (in 1957). Use Present Perfect for experiences with no specific time or events that continue into the present.',
         googleFormUrl: 'https://docs.google.com/forms/d/e/1FAIpQLSc-unit1-mg1/viewform',
         owlCulture: {
-          owlTitle: 'Cyber Owl Trivia: The Satellite That Started the Space Age',
+          owlTitle: 'Güaky Trivia: The Satellite That Started the Space Age',
           topic: 'How Sputnik 1 changed global telecommunications forever',
           didYouKnow: 'On October 4, 1957, the Soviet Union launched Sputnik 1, the first artificial satellite in history. It was the size of a beach ball and beeped signals for 21 days!',
           culturalStory: 'Between 1892 and 1954, over 12 million immigrants entered the United States through Ellis Island in New York Harbor, seeking new opportunities and freedom.',
@@ -1300,7 +1300,7 @@ export const PATHWAY_LEVELS: PathwayLevel[] = [
         ]
       }
     ]
-  }
+  },
 
   // 6. LEVEL V: SuperGoal 5 (Intermediate B1)
   {
@@ -1327,9 +1327,9 @@ export const PATHWAY_LEVELS: PathwayLevel[] = [
         tipCokito: 'Use SINCE for the starting point in time (since 2018), and FOR for the duration of time (for 5 years).',
         googleFormUrl: '',
         owlCulture: {
-          owlTitle: 'Cyber Owl Trivia: How Time Flies',
+          owlTitle: 'Güaky Trivia: How Time Flies',
           topic: 'Duration expressions across history',
-          didYouKnow: 'The phrase 'Time is money' was first popularized by Benjamin Franklin in 1748.',
+          didYouKnow: "The phrase 'Time is money' was first popularized by Benjamin Franklin in 1748.",
           culturalStory: 'In British conversations, speaking of life experiences frequently alternates between Present Perfect and Past Simple.',
           inOnAtRule: 'Use SINCE yesterday, FOR three hours.'
         },
@@ -1406,9 +1406,9 @@ export const PATHWAY_LEVELS: PathwayLevel[] = [
         tipCokito: 'Use HAD BETTER when there is a negative consequence if the advice is not followed (e.g. "You had better study or you will fail").',
         googleFormUrl: '',
         owlCulture: {
-          owlTitle: 'Cyber Owl Trivia: The Global Teen Voice',
+          owlTitle: 'Güaky Trivia: The Global Teen Voice',
           topic: 'How youth cultures communicate globally',
-          didYouKnow: 'The word 'teenager' first appeared in print in Popular Science in 1941.',
+          didYouKnow: "The word 'teenager' first appeared in print in Popular Science in 1941.",
           culturalStory: 'In international high schools, counseling on study habits emphasizes time management and balance.',
           inOnAtRule: 'Use "ON social media", "IN the afternoon".'
         },
@@ -1476,7 +1476,7 @@ export const PATHWAY_LEVELS: PathwayLevel[] = [
     units: [
       {
         unitNumber: 1,
-        title: 'You've Got Mail!',
+        title: "You've Got Mail!",
         bookTitle: 'MegaGoal 2',
         sbPages: 'Pages 6 to 19',
         wbPages: 'Pages 1 to 10',
@@ -1485,7 +1485,7 @@ export const PATHWAY_LEVELS: PathwayLevel[] = [
         tipCokito: 'Remember: In the Passive Voice, the object of the active sentence becomes the subject: "Alexander Bell invented the telephone" -> "The telephone was invented by Alexander Bell".',
         googleFormUrl: '',
         owlCulture: {
-          owlTitle: 'Cyber Owl Trivia: The First Email in History',
+          owlTitle: 'Güaky Trivia: The First Email in History',
           topic: 'How Ray Tomlinson sent the first @ in 1971',
           didYouKnow: 'Ray Tomlinson invented email in 1971 and chose the @ symbol because it meant "at" the host computer!',
           culturalStory: 'In business etiquette, email signatures convey seniority, verified credentials, and corporate tone.',
@@ -1569,8 +1569,8 @@ export const PATHWAY_LEVELS: PathwayLevel[] = [
         tipCokito: 'Use auxiliary DO/DID for dramatic emphasis: "I DO understand your point!" or "She DID call yesterday!"',
         googleFormUrl: '',
         owlCulture: {
-          owlTitle: 'Cyber Owl Trivia: Artificial Intelligence Milestones',
-          topic: 'From Turing's test to generative neural nets',
+          owlTitle: 'Güaky Trivia: Artificial Intelligence Milestones',
+          topic: "From Turing's test to generative neural nets",
           didYouKnow: 'Alan Turing proposed the imitation game in 1950 to evaluate if a machine could exhibit intelligent behavior.',
           culturalStory: 'In modern tech conferences in Silicon Valley and London, speaking persuasively requires conditional hedging.',
           inOnAtRule: 'Use "AT the vanguard", "IN the algorithm".'
@@ -1639,7 +1639,7 @@ export const PATHWAY_LEVELS: PathwayLevel[] = [
     units: [
       {
         unitNumber: 1,
-        title: 'There's No Place Like Home',
+        title: "There's No Place Like Home",
         bookTitle: 'MegaGoal 4',
         sbPages: 'Pages 6 to 19',
         wbPages: 'Pages 1 to 10',
@@ -1648,9 +1648,9 @@ export const PATHWAY_LEVELS: PathwayLevel[] = [
         tipCokito: 'Inversion happens when a negative word starts the sentence: "Never have I seen such beauty" instead of "I have never seen".',
         googleFormUrl: '',
         owlCulture: {
-          owlTitle: 'Cyber Owl Trivia: The Global Concept of Home',
+          owlTitle: 'Güaky Trivia: The Global Concept of Home',
           topic: 'Untranslatable concepts of home across languages',
-          didYouKnow: 'The Welsh word 'Hiraeth' and Portuguese 'Saudade' describe profound longing for a home that may no longer exist.',
+          didYouKnow: "The Welsh word 'Hiraeth' and Portuguese 'Saudade' describe profound longing for a home that may no longer exist.",
           culturalStory: 'In high-level C1 academic discourse, cleft sentences allow speakers to place surgical emphasis on key concepts.',
           inOnAtRule: 'Use "AT home in the world", "IN the heart of the community".'
         },
@@ -1727,7 +1727,7 @@ export const PATHWAY_LEVELS: PathwayLevel[] = [
         tipCokito: 'Use Participle Clauses to make your English concise and elegant: "Having completed the trial, the researchers published the study" instead of "After they had completed...".',
         googleFormUrl: '',
         owlCulture: {
-          owlTitle: 'Cyber Owl Trivia: Synergy in Science and Nature',
+          owlTitle: 'Güaky Trivia: Synergy in Science and Nature',
           topic: 'How mutualistic bonds shape ecosystems and business',
           didYouKnow: 'The Human Genome Project succeeded ahead of schedule because 20 international labs collaborated openly.',
           culturalStory: 'In international multilateral summits, speaking with precision requires mastery of participle clauses.',
@@ -1821,7 +1821,7 @@ export const PATHWAY_LEVELS: PathwayLevel[] = [
         tipCokito: 'Use "Should have + Past Participle" for regret/criticism ("I should have known"), and "Could have / Might have" for past possibilities that did not happen.',
         googleFormUrl: '',
         owlCulture: {
-          owlTitle: 'Cyber Owl Trivia: Serendipity from Errors',
+          owlTitle: 'Güaky Trivia: Serendipity from Errors',
           topic: 'How penicillin, pacemakers, and Post-it notes were born from blunders',
           didYouKnow: 'Alexander Fleming discovered penicillin in 1928 because he accidentally left a petri dish uncovered before vacation!',
           culturalStory: 'In native English idioms, saying "To learn the hard way" and "Every cloud has a silver lining" encapsulate philosophical resilience.',
@@ -1833,7 +1833,7 @@ export const PATHWAY_LEVELS: PathwayLevel[] = [
             sessionName: 'Session A: Crisis Management & Past Modals',
             itemsRange: 'Items 1 to 4',
             items: [
-              { number: 1, title: 'Listen & Discuss: Fateful Decisions in History', description: 'Examining NASA's Challenger review and maritime navigation errors.' },
+              { number: 1, title: 'Listen & Discuss: Fateful Decisions in History', description: "Examining NASA's Challenger review and maritime navigation errors." },
               { number: 2, title: 'Pair Work: Speculating About Alternatives', description: 'Debating: "What could they have done differently to avert the outcome?"' },
               { number: 3, title: 'Grammar Focus: Past Modals (should have, would have, might have)', description: 'Expressing nuanced regret, counterfactual reasoning, and deduction.' },
               { number: 4, title: 'Language in Context: Corporate Post-Mortem', description: 'Conducting a blame-free blameless retrospective analysis.' }

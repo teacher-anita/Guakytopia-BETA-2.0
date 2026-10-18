@@ -145,7 +145,7 @@ export const PricingCalculatorModal: React.FC<PricingCalculatorModalProps> = ({
                   Acceso Total al Nido Digital Autónomo
                 </h3>
                 <p className="text-xs text-slate-600 max-w-md leading-relaxed">
-                  Todos los 12 niveles de libros oficiales (Super Goal & Mega Goal), quizzes automáticos con el Cyber Owl, audios nativos y retos diarios.
+                  Todos los 12 niveles de libros oficiales (Super Goal & Mega Goal), quizzes automáticos con Güaky, audios nativos y retos diarios.
                 </p>
                 <div className="flex items-center gap-2 pt-1 text-[11px] text-slate-500">
                   <span>Precio estándar:</span>

@@ -78,12 +78,12 @@ const REGISTRATION_PLANS: CustomPlanInfo[] = [
     priceNumber: 4.99,
     period: '/ mes',
     hoursNote: 'A tu propio ritmo (Sin horario fijo)',
-    description: 'Acceso completo e ilimitado a los 12 niveles de la plataforma, audios nativos, quizzes del Cyber Owl y mini-juegos de la Arena. Precio regular $7/mes ("el 7 es el número de Dios"), promo especial por lanzamiento.',
+    description: 'Acceso completo e ilimitado a los 12 niveles de la plataforma, audios nativos, quizzes de Güaky y mini-juegos de la Arena. Precio regular $7/mes ("el 7 es el número de Dios"), promo especial por lanzamiento.',
     isSelfPaced: true,
     features: [
       'Acceso a todos los niveles (SuperGoal y MegaGoal)',
       'Quizzes interactivos de fin de unidad (+50 XP)',
-      'Smart Owl Trivia de cultura general y etiqueta',
+      'Güaky Trivia de cultura general y etiqueta',
       'Sin clases en vivo con teacher (100% autogestionado)'
     ]
   },
@@ -1362,7 +1362,7 @@ export const RegistrationFlow: React.FC<RegistrationFlowProps> = ({
               <span className="text-emerald-400 text-sm font-bold">💡</span>
               <p>
                 {selectedPlanId === 'digital_5'
-                  ? 'Con tu pago de $5 USD desbloqueas inmediatamente los 12 niveles, audios oficiales, libros y quizzes con Cyber Owl.'
+                  ? 'Con tu pago de $5 USD desbloqueas inmediatamente los 12 niveles, audios oficiales, libros y quizzes con Güaky.'
                   : selectedGroupSize === 'individual'
                   ? 'Marca tus horarios preferidos abajo. En el siguiente paso reportarás tu pago móvil de $5 USD (o la totalidad) para que la Directora Waky active tu acceso.'
                   : 'Para ingresar hoy a la plataforma y apartar tu puesto, solo abonas la reserva de $5 USD (o en Bs). Este monto se descontará 100% de tu mensualidad cuando la Directora Waky confirme y conforme tu grupo definitivo.'}
@@ -1483,7 +1483,7 @@ export const RegistrationFlow: React.FC<RegistrationFlowProps> = ({
               <Smartphone className="w-5 h-5 text-amber-600 shrink-0" />
               <div>
                 <strong className="block font-bold">Modalidad 100% Asincrónica:</strong>
-                <span>No necesitas agendar clases en vivo. Podrás ingresar a la plataforma, resolver los retos del Cyber Owl y avanzar a cualquier hora del día o de la noche.</span>
+                <span>No necesitas agendar clases en vivo. Podrás ingresar a la plataforma, resolver los retos de Güaky y avanzar a cualquier hora del día o de la noche.</span>
               </div>
             </div>
           )}

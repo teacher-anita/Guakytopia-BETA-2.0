@@ -42,7 +42,7 @@ export const GuakyChatbot: React.FC<GuakyChatbotProps> = ({
     {
       id: 'welcome',
       role: 'assistant',
-      text: `¡Hola! 🦜 Soy **Güaky**, el guacamayo asistente oficial de **Güakytopia**. ¡Bienvenido a nuestra bandada de exploradores del inglés!
+      text: `¡Hola! 🦜 Soy **Güaky**, tu compañero de aventura en **Güakytopia**. ¡Bienvenido a nuestra bandada de exploradores del inglés!
 
 ¿En qué te puedo orientar hoy? Puedes preguntarme sobre:
 • La **Membresía Campus de $4.99/mes** (promo de entrada).
@@ -163,7 +163,7 @@ export const GuakyChatbot: React.FC<GuakyChatbotProps> = ({
             />
           </div>
           <div className="text-left hidden sm:block">
-            <p className="text-xs font-black leading-none text-white">Güaky Asistente</p>
+            <p className="text-xs font-black leading-none text-white">Talk to Güaky 🦜</p>
             <p className="text-[10px] text-teal-100 leading-tight">Pregúntame lo que sea</p>
           </div>
           <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse" />

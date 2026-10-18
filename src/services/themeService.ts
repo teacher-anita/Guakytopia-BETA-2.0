@@ -1,4 +1,4 @@
-// Theme & Appearance Engine for Coquitos Academy (Neurodivergent & Sports Personalization)
+// Theme & Appearance Engine for Güakytopia (Neurodivergent & Sports Personalization)
 
 export interface ThemeConfig {
   id: string;

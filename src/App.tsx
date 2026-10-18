@@ -620,9 +620,32 @@ export default function App() {
   };
 
   return (
-    <div className={`min-h-screen flex flex-col font-sans transition-colors duration-300 ${
-      audienceTheme === 'kids' ? 'bg-sky-50/50 text-slate-800' : 'bg-slate-50 text-slate-900'
+    <div className={`min-h-screen flex flex-col transition-colors duration-300 ${
+      audienceTheme === 'kids' 
+        ? 'bg-gradient-to-b from-indigo-50/70 via-purple-50/40 to-sky-50/60 text-slate-800' 
+        : 'bg-slate-50 text-slate-900 font-sans'
     }`}>
+      {/* Junior Mode Floating Gamer Notification Banner */}
+      {audienceTheme === 'kids' && (
+        <aside aria-label="Aviso modo Junior" className="bg-gradient-to-r from-purple-600 via-indigo-600 to-sky-500 text-white px-3 py-1.5 text-xs font-black shadow-inner flex items-center justify-between overflow-hidden relative">
+          <div className="flex items-center gap-2 max-w-7xl mx-auto w-full justify-between">
+            <div className="flex items-center gap-2 truncate">
+              <span className="bg-amber-400 text-slate-950 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider animate-pulse-glow shrink-0">
+                🕹️ JUNIOR ARCADE 12+
+              </span>
+              <span className="truncate text-purple-100 font-bold text-[11px] sm:text-xs">
+                ¡Mundos interactivos, gaming slang y profesores que hablan tu mismo idioma! 🎧
+              </span>
+            </div>
+            <button
+              onClick={() => setAudienceTheme('adults')}
+              className="text-[10px] sm:text-xs text-white/80 hover:text-white underline decoration-white/40 shrink-0 font-medium ml-2"
+            >
+              Cambiar a Adult 🎓
+            </button>
+          </div>
+        </aside>
+      )}
       
       {/* Top Navbar */}
       <Header

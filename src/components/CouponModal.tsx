@@ -183,7 +183,7 @@ export const CouponModal: React.FC<CouponModalProps> = ({
         ) : (
           <form onSubmit={handleRedeem} className="p-5 sm:p-6 space-y-3.5">
             <p className="text-xs text-slate-600 leading-relaxed bg-amber-50/70 p-3 rounded-2xl border border-amber-200/60">
-              Si recibiste una cortesía especial, beca institucional o pase de invitación de <strong>Güakytopia</strong> (Coquitos Academy), completa tus datos para crear tu usuario y contraseña de acceso.
+              Si recibiste una cortesía especial, beca institucional o pase de invitación de <strong>Güakytopia</strong>, completa tus datos para crear tu usuario y contraseña de acceso.
             </p>
 
             <div className="space-y-3">

@@ -304,12 +304,12 @@ Como "Cokitö", el cerebro pedagógico institucional de Güakytopia, dame una re
       } else {
         // Fallback intelligent insight
         setCustomAiAdvice(
-          `¡Hoo-hoo! 🦉 Cokitö evaluó a ${student.name}: Para su nivel ${matchedLevel?.levelName || 'actual'}, recomendamos sesiones de conversación aplicadas a su ámbito (${student.schoolOrProfession || 'personal'}) con retroalimentación fonética inmediata. Mantén su racha activa para consolidar el hábito semanal.`
+          `¡Hola! 🦜 Güaky evaluó a ${student.name}: Para su nivel ${matchedLevel?.levelName || 'actual'}, recomendamos sesiones de conversación aplicadas a su ámbito (${student.schoolOrProfession || 'personal'}) con retroalimentación fonética inmediata. Mantén su racha activa para consolidar el hábito semanal.`
         );
       }
     } catch {
       setCustomAiAdvice(
-        `Recomendación de Cokitö: ${student.name} avanza a paso firme. Sugerimos priorizar dinámicas situacionales en vivo y sesiones de 15 minutos de listening con Cyber Owl para afianzar vocabulario antes de la siguiente evaluación.`
+        `Recomendación de Teacher Cokitö: ${student.name} avanza a paso firme. Sugerimos priorizar dinámicas situacionales en vivo y sesiones de 15 minutos de listening con Güaky para afianzar vocabulario antes de la siguiente evaluación.`
       );
     } finally {
       setAiGenerating(false);

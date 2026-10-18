@@ -207,7 +207,7 @@ export const INITIAL_COUPONS: CouponItem[] = [
     categoryLabel: 'Testers de Calidad',
     benefitType: 'tester_ticket',
     title: 'Tester #1 • Membresía Solo Web App ($5/mes)',
-    description: 'Simula al usuario de la Membresía Solo Web App de $5/mes (100% asincrónica con Cyber Owl).',
+    description: 'Simula al usuario de la Membresía Solo Web App de $5/mes (100% asincrónica con Güaky).',
     maxUses: 3,
     currentUses: 1,
     isActive: true,

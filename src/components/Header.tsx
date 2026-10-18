@@ -125,31 +125,33 @@ export const Header: React.FC<HeaderProps> = ({
                 <span className="hidden sm:inline">Beca / Código</span>
               </button>
 
-              {/* AUDIENCE THEME TOGGLE: Junior 12+ vs Adult */}
-              <div className="hidden sm:flex bg-slate-100 p-0.5 rounded-xl items-center text-xs font-bold border border-slate-200/80">
+              {/* AUDIENCE THEME TOGGLE: Junior 12+ vs Adult (Available on Mobile & Desktop) */}
+              <div className="flex bg-slate-100 p-0.5 rounded-xl items-center text-xs font-bold border border-slate-200/90 shadow-2xs">
                 <button
                   onClick={() => onAudienceChange('adults')}
-                  className={`flex items-center gap-1 px-2.5 py-1 rounded-lg transition-all ${
+                  className={`flex items-center gap-1 px-2 sm:px-2.5 py-1 rounded-lg transition-all ${
                     !isKids
                       ? 'bg-[#243447] text-white shadow-xs'
                       : 'text-slate-600 hover:text-slate-900'
                   }`}
-                  title="Audiencia Adult"
+                  title="Modo Adulto (Currículo Profesional)"
                 >
                   <GraduationCap className="w-3.5 h-3.5" />
-                  <span>Adult</span>
+                  <span className="hidden sm:inline">Adult</span>
+                  <span className="sm:hidden text-[10px]">18+</span>
                 </button>
                 <button
                   onClick={() => onAudienceChange('kids')}
-                  className={`flex items-center gap-1 px-2.5 py-1 rounded-lg transition-all ${
+                  className={`flex items-center gap-1 px-2 sm:px-2.5 py-1 rounded-lg transition-all ${
                     isKids
-                      ? 'bg-[#2EC4B6] text-white shadow-xs'
-                      : 'text-slate-600 hover:text-slate-900'
+                      ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-xs animate-pulse-glow font-black'
+                      : 'text-slate-600 hover:text-purple-700'
                   }`}
-                  title="Audiencia Junior 12+"
+                  title="Modo Junior 12+ (Arcade, Desafíos & Aventura)"
                 >
-                  <Sparkles className="w-3.5 h-3.5" />
-                  <span>Junior 12+</span>
+                  <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                  <span className="hidden sm:inline">Junior 12+ 🚀</span>
+                  <span className="sm:hidden text-[10px] font-black">Jr 🚀</span>
                 </button>
               </div>
 
@@ -237,58 +239,66 @@ export const Header: React.FC<HeaderProps> = ({
               
               {/* --- ZONA IZQUIERDA: ACCESO LIBRE (SIN CANDADOS) --- */}
 
-              {/* 1. Home */}
+              {/* 1. Home / Aventura */}
               <button
                 onClick={() => onTabChange('landing')}
                 className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 ${
                   activeTab === 'landing'
-                    ? 'bg-white text-[#2EC4B6] shadow-xs font-bold'
+                    ? isKids 
+                      ? 'bg-purple-600 text-white shadow-xs font-black' 
+                      : 'bg-white text-[#2EC4B6] shadow-xs font-bold'
                     : 'hover:text-slate-900'
                 }`}
               >
                 <span className="text-sm">🏠</span>
-                <span>Home</span>
+                <span>{isKids ? 'Aventura' : 'Home'}</span>
               </button>
 
-              {/* 2. Inscribirme (Solo visible si NO está inscrito/logueado como alumno) */}
+              {/* 2. Inscribirme / Unirme (Solo visible si NO está inscrito/logueado como alumno) */}
               {!isEnrolled && !isStudentLoggedIn && (
                 <button
                   onClick={() => onTabChange('register')}
                   className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 ${
                     activeTab === 'register'
-                      ? 'bg-white text-[#2EC4B6] shadow-xs font-bold'
+                      ? isKids
+                        ? 'bg-gradient-to-r from-amber-400 to-orange-500 text-slate-950 shadow-xs font-black'
+                        : 'bg-white text-[#2EC4B6] shadow-xs font-bold'
                       : 'hover:text-slate-900'
                   }`}
                 >
                   <span className="text-sm">✍️</span>
-                  <span>Inscribirme</span>
+                  <span>{isKids ? 'Unirme al Squad' : 'Inscribirme'}</span>
                 </button>
               )}
 
-              {/* 3. Agenda */}
+              {/* 3. Agenda / Misiones en Vivo */}
               <button
                 onClick={() => onTabChange('calendar')}
                 className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 ${
                   activeTab === 'calendar'
-                    ? 'bg-white text-[#243447] shadow-xs font-bold'
+                    ? isKids
+                      ? 'bg-sky-500 text-white shadow-xs font-black'
+                      : 'bg-white text-[#243447] shadow-xs font-bold'
                     : 'hover:text-slate-900'
                 }`}
               >
                 <span className="text-sm">📅</span>
-                <span>Agenda</span>
+                <span>{isKids ? 'Misiones en Vivo' : 'Agenda'}</span>
               </button>
 
-              {/* 4. Arena (Con emoticón de palmera verde donde aterrizan las guacamayas) */}
+              {/* 4. Arena / Arcade */}
               <button
                 onClick={() => onTabChange('duolingo')}
                 className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 ${
                   activeTab === 'duolingo'
-                    ? 'bg-white text-emerald-600 shadow-xs font-bold'
+                    ? isKids
+                      ? 'bg-emerald-500 text-white shadow-xs font-black'
+                      : 'bg-white text-emerald-600 shadow-xs font-bold'
                     : 'hover:text-slate-900'
                 }`}
               >
-                <span className="text-sm">🌴</span>
-                <span>Arena</span>
+                <span className="text-sm">{isKids ? '🎮' : '🌴'}</span>
+                <span>{isKids ? 'Arcade & XP' : 'Arena'}</span>
               </button>
 
               {/* Divisor visual sutil */}
@@ -296,17 +306,19 @@ export const Header: React.FC<HeaderProps> = ({
 
               {/* --- ZONA DERECHA: REGISTRADOS / CANDADOS A LA DERECHA --- */}
 
-              {/* 5. Hub (Donde está el progreso y dónde estamos parados) */}
+              {/* 5. Hub / Mapa Mundos */}
               <button
                 onClick={() => onTabChange('pathway')}
                 className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 ${
                   activeTab === 'pathway'
-                    ? 'bg-white text-[#243447] shadow-xs font-bold'
+                    ? isKids
+                      ? 'bg-indigo-600 text-white shadow-xs font-black'
+                      : 'bg-white text-[#243447] shadow-xs font-bold'
                     : 'hover:text-slate-900'
                 }`}
               >
                 <span className="text-sm">🧭</span>
-                <span>Hub</span>
+                <span>{isKids ? 'Mapa Mundos' : 'Hub'}</span>
                 {!isEnrolled && (
                   <Lock className="w-3.5 h-3.5 text-amber-500 shrink-0 ml-0.5" />
                 )}
@@ -375,66 +387,84 @@ export const Header: React.FC<HeaderProps> = ({
       <nav className="fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200/90 shadow-2xl px-1 py-1 flex md:hidden items-center justify-around pb-safe">
         <div className="w-full max-w-lg mx-auto flex items-center justify-around">
           
-          {/* 1. Home */}
+          {/* 1. Home / Aventura */}
           <button
             onClick={() => onTabChange('landing')}
             className={`flex flex-col items-center justify-center py-1 px-1 rounded-xl transition-all flex-1 min-w-0 max-w-[54px] ${
               activeTab === 'landing'
-                ? 'text-[#2EC4B6] font-bold bg-[#2EC4B6]/10 scale-102'
+                ? isKids
+                  ? 'text-purple-600 font-black bg-purple-50 scale-105'
+                  : 'text-[#2EC4B6] font-bold bg-[#2EC4B6]/10 scale-102'
                 : 'text-slate-500 hover:text-slate-800'
             }`}
           >
             <span className="text-base">🏠</span>
-            <span className="text-[9px] leading-tight truncate w-full text-center mt-0.5 font-bold">Home</span>
+            <span className="text-[9px] leading-tight truncate w-full text-center mt-0.5 font-bold">
+              {isKids ? 'Aventura' : 'Home'}
+            </span>
           </button>
 
-          {/* 2. Inscribirme (Solo si no está inscrito/alumno logueado) */}
+          {/* 2. Inscribirme / Unirme (Solo si no está inscrito/alumno logueado) */}
           {!isEnrolled && !isStudentLoggedIn && (
             <button
               onClick={() => onTabChange('register')}
               className={`flex flex-col items-center justify-center py-1 px-1 rounded-xl transition-all flex-1 min-w-0 max-w-[54px] ${
                 activeTab === 'register'
-                  ? 'text-[#2EC4B6] font-bold bg-[#2EC4B6]/10 scale-102'
+                  ? isKids
+                    ? 'text-amber-700 font-black bg-amber-50 scale-105'
+                    : 'text-[#2EC4B6] font-bold bg-[#2EC4B6]/10 scale-102'
                   : 'text-slate-500 hover:text-slate-800'
               }`}
             >
               <span className="text-base">✍️</span>
-              <span className="text-[9px] leading-tight truncate w-full text-center mt-0.5">Inscribir</span>
+              <span className="text-[9px] leading-tight truncate w-full text-center mt-0.5">
+                {isKids ? 'Squad' : 'Inscribir'}
+              </span>
             </button>
           )}
 
-          {/* 3. Agenda */}
+          {/* 3. Agenda / Misiones */}
           <button
             onClick={() => onTabChange('calendar')}
             className={`flex flex-col items-center justify-center py-1 px-1 rounded-xl transition-all flex-1 min-w-0 max-w-[54px] ${
               activeTab === 'calendar'
-                ? 'text-[#243447] font-bold bg-slate-100 scale-102'
+                ? isKids
+                  ? 'text-sky-600 font-black bg-sky-50 scale-105'
+                  : 'text-[#243447] font-bold bg-slate-100 scale-102'
                 : 'text-slate-500 hover:text-slate-800'
             }`}
           >
             <span className="text-base">📅</span>
-            <span className="text-[9px] leading-tight truncate w-full text-center mt-0.5">Agenda</span>
+            <span className="text-[9px] leading-tight truncate w-full text-center mt-0.5">
+              {isKids ? 'Misiones' : 'Agenda'}
+            </span>
           </button>
 
-          {/* 4. Arena */}
+          {/* 4. Arena / Arcade */}
           <button
             onClick={() => onTabChange('duolingo')}
             className={`flex flex-col items-center justify-center py-1 px-1 rounded-xl transition-all flex-1 min-w-0 max-w-[54px] ${
               activeTab === 'duolingo'
-                ? 'text-emerald-600 font-bold bg-emerald-50 scale-102'
+                ? isKids
+                  ? 'text-emerald-700 font-black bg-emerald-50 scale-105'
+                  : 'text-emerald-600 font-bold bg-emerald-50 scale-102'
                 : 'text-slate-500 hover:text-slate-800'
             }`}
           >
-            <span className="text-base">🌴</span>
-            <span className="text-[9px] leading-tight truncate w-full text-center mt-0.5">Arena</span>
+            <span className="text-base">{isKids ? '🎮' : '🌴'}</span>
+            <span className="text-[9px] leading-tight truncate w-full text-center mt-0.5">
+              {isKids ? 'Arcade' : 'Arena'}
+            </span>
           </button>
 
-          {/* 5. Hub */}
+          {/* 5. Hub / Mundos */}
           <button
             onClick={() => onTabChange('pathway')}
             className={`flex flex-col items-center justify-center py-1 px-1 rounded-xl transition-all flex-1 min-w-0 max-w-[54px] relative ${
               activeTab === 'pathway'
-                ? 'text-[#243447] font-bold bg-slate-100 scale-102'
+                ? isKids
+                  ? 'text-indigo-600 font-black bg-indigo-50 scale-105'
+                  : 'text-[#243447] font-bold bg-slate-100 scale-102'
                 : 'text-slate-500 hover:text-slate-800'
             }`}
           >
@@ -446,7 +476,9 @@ export const Header: React.FC<HeaderProps> = ({
                 </span>
               )}
             </div>
-            <span className="text-[9px] leading-tight truncate w-full text-center mt-0.5">Hub</span>
+            <span className="text-[9px] leading-tight truncate w-full text-center mt-0.5">
+              {isKids ? 'Mundos' : 'Hub'}
+            </span>
           </button>
 
           {/* 6. Classroom */}

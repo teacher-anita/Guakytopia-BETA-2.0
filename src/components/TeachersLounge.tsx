@@ -244,7 +244,7 @@ export const TeachersLounge: React.FC<TeachersLoungeProps> = ({
           <div ref={chatContainerRef} className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
             <div className="text-center">
               <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 bg-white border border-slate-200 px-3 py-1 rounded-full shadow-2xs">
-                ☕ Canal del Equipo de Teachers • Coquitos Academy
+                ☕ Canal del Equipo de Teachers • Güakytopia
               </span>
             </div>
 
@@ -514,7 +514,7 @@ export const TeachersLounge: React.FC<TeachersLoungeProps> = ({
                       </div>
                       {student.phone && (
                         <a
-                          href={`https://wa.me/${student.phone.replace(/\D/g, '')}?text=${encodeURIComponent(`¡Hola ${student.name}! Te saluda el equipo de Coquitos Academy. Vemos que estás explorando tu pase de cortesía de 24 horas. ¿Tienes alguna duda con tu nivel o tus clases?`)}`}
+                          href={`https://wa.me/${student.phone.replace(/\D/g, '')}?text=${encodeURIComponent(`¡Hola ${student.name}! Te saluda el equipo de Güakytopia. Vemos que estás explorando tu pase de cortesía de 24 horas. ¿Tienes alguna duda con tu nivel o tus clases?`)}`}
                           target="_blank"
                           rel="noreferrer"
                           className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-[10px] flex items-center gap-1 shadow-2xs"

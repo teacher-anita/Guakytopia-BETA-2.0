@@ -439,7 +439,7 @@ export const LanguageLab: React.FC<LanguageLabProps> = ({
                 onClick={onStartRegistration}
                 className="w-full sm:w-auto px-6 py-4 bg-white/15 hover:bg-white/25 text-white border border-white/20 rounded-2xl font-bold text-sm transition-colors flex items-center justify-center gap-2"
               >
-                <span>Afiliarme en Cokitö Academy</span>
+                <span>Afiliarme a Güakytopia</span>
               </button>
             )}
           </div>

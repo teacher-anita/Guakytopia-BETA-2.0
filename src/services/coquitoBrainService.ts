@@ -136,7 +136,7 @@ export function analyzeStudentWithCokitö(student: Student): CokitöCognitiveAna
       : 'Presentar fórmulas gramaticales claras seguidas de práctica guiada de causa-efecto.',
     student.isDigitalPass
       ? 'Sugerirle metas semanales de unidades para que aproveche al máximo el Pase Digital autónomo.'
-      : 'Verificar que practique con la Cyber Owl entre clases en vivo para afianzar el speaking.',
+      : 'Verificar que practique con Güaky entre clases en vivo para afianzar el speaking.',
     `Meta del alumno: "${student.learningGoal || 'Fluidez comunicativa'}". Vincular los ejemplos de clase a su ámbito.`
   ];
 
