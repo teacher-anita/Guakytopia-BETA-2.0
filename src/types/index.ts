@@ -106,8 +106,6 @@ export interface Student {
   
   // Package & Registration
   plan: PlanIntensity;
-  /** 'gamer' = Free arcade account to save game XP; 'student' = Enrolled student with campus access */
-  accountType?: 'gamer' | 'student';
   /** True for the self-paced $5 Digital Pass; no live schedule is required. */
   isDigitalPass?: boolean;
   /** Coupon applied during registration, when known. */

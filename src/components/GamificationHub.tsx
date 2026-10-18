@@ -13,18 +13,12 @@ import {
   ShieldAlert,
   Volume2,
   Gamepad2,
-  Search,
-  Users,
-  GraduationCap,
-  Gift,
-  Clock3,
-  UserPlus
+  Search
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { Student, AudienceTheme } from '../types';
 import { ArenaMiniGames } from './ArenaMiniGames';
 import { WheresGuakyGame } from './WheresGuakyGame';
-import { GamerAccountModal } from './GamerAccountModal';
 
 interface GamificationHubProps {
   currentStudent: Student | null;
@@ -33,8 +27,6 @@ interface GamificationHubProps {
   activeRole: 'student' | 'teacher';
   audienceTheme: AudienceTheme;
   canSyncArenaLives: boolean;
-  onOpenPricingModal?: () => void;
-  onRegisterGamer?: (gamerData: { name: string; username: string; email: string; pin: string }) => void;
 }
 
 interface DailyQuest {
@@ -54,15 +46,10 @@ export const GamificationHub: React.FC<GamificationHubProps> = ({
   onAwardXp,
   activeRole,
   audienceTheme,
-  canSyncArenaLives,
-  onOpenPricingModal,
-  onRegisterGamer
+  canSyncArenaLives
 }) => {
   const isKids = audienceTheme === 'kids';
   const [arcadeSubTab, setArcadeSubTab] = useState<'wheres_guaky' | 'daily_quests' | 'arena_games'>('wheres_guaky');
-  const [leaderboardFilter, setLeaderboardFilter] = useState<'general' | 'students'>('general');
-  const [isGamerModalOpen, setIsGamerModalOpen] = useState(false);
-  const [pendingGamerXp, setPendingGamerXp] = useState(50);
 
   // 3 Daily Quests (Micro-desafíos diarios)
   const [quests, setQuests] = useState<DailyQuest[]>([
@@ -134,15 +121,8 @@ export const GamificationHub: React.FC<GamificationHubProps> = ({
     setAnsweredState('idle');
   };
 
-  // 1. General Leaderboard: Everyone (Gamers + Students)
-  const generalLeaderboard = [...students].sort((a, b) => b.xp - a.xp);
-
-  // 2. Students Leaderboard: Only active students with enrolled campus status or Digital Pass
-  const studentsLeaderboard = students
-    .filter(s => s.accountType === 'student' || s.status === 'enrolled' || s.isDigitalPass)
-    .sort((a, b) => b.xp - a.xp);
-
-  const activeLeaderboard = leaderboardFilter === 'general' ? generalLeaderboard : studentsLeaderboard;
+  // Sort students for leaderboard
+  const leaderboard = [...students].sort((a, b) => b.xp - a.xp);
 
   return (
     <div className="max-w-6xl mx-auto py-6 px-4 space-y-8 animate-fadeIn">

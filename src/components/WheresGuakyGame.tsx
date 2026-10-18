@@ -28,8 +28,6 @@ interface WheresGuakyGameProps {
   currentStudent: Student | null;
   audienceTheme: AudienceTheme;
   onAwardXp: (studentId: string, amount: number) => void;
-  onOpenGamerModal?: (pendingXp: number) => void;
-  onOpenPricingModal?: () => void;
 }
 
 export interface HiddenTarget {
@@ -443,9 +441,7 @@ const WORLD_TOUR_SCENES: WorldTourScene[] = [
 export const WheresGuakyGame: React.FC<WheresGuakyGameProps> = ({
   currentStudent,
   audienceTheme,
-  onAwardXp,
-  onOpenGamerModal,
-  onOpenPricingModal
+  onAwardXp
 }) => {
   const isKids = audienceTheme === 'kids';
   const [activeSceneIndex, setActiveSceneIndex] = useState(0);
@@ -1046,32 +1042,19 @@ export const WheresGuakyGame: React.FC<WheresGuakyGameProps> = ({
                 </div>
               </div>
 
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
-                {/* Free account prompt if playing as guest */}
-                {(!currentStudent || currentStudent.id === 'guest') && (
-                  <button
-                    onClick={() => onOpenGamerModal?.(scene.xpReward)}
-                    className="px-4 py-2.5 bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-slate-950 font-black rounded-xl text-xs transition-transform hover:scale-105 shadow-md flex items-center justify-center gap-1.5"
-                  >
-                    <span>Guardar Puntos Gratis 💾</span>
-                  </button>
-                )}
-
-                {/* Digital Pass Upsell */}
-                {(!currentStudent || !currentStudent.isDigitalPass) && (
-                  <button
-                    onClick={() => onOpenPricingModal?.()}
-                    className="px-3.5 py-2.5 bg-purple-600/90 hover:bg-purple-600 text-white font-bold rounded-xl text-xs transition-colors flex items-center justify-center gap-1 border border-purple-400/40"
-                  >
-                    <span>Pase Digital $4.99 🚀</span>
-                  </button>
-                )}
-
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <button
+                  onClick={handleStartMission}
+                  className="px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-bold transition-colors flex-1 sm:flex-initial"
+                >
+                  <RotateCcw className="w-3.5 h-3.5 inline mr-1" />
+                  Repetir
+                </button>
                 <button
                   onClick={handleNextCity}
-                  className="px-6 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black rounded-xl text-xs transition-transform hover:scale-105 shadow-md flex items-center justify-center gap-1.5"
+                  className="px-6 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black rounded-xl text-xs transition-transform hover:scale-105 shadow-md flex items-center justify-center gap-1.5 flex-1 sm:flex-initial"
                 >
-                  <span>Siguiente Ciudad</span>
+                  <span>Viajar a la Siguiente Ciudad</span>
                   <ChevronRight className="w-4 h-4" />
                 </button>
               </div>
