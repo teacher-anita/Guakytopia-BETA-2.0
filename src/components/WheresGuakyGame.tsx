@@ -229,16 +229,331 @@ const WORLD_TOUR_SCENES: WorldTourScene[] = [
     ]
   },
 
-  // 4. LONDON, UNITED KINGDOM (Heathrow International Lounge)
+  // 4. MIAMI, USA (Ocean Drive & South Beach)
+  {
+    id: 'miami',
+    levelNumber: 4,
+    cityName: 'Miami',
+    countryName: 'USA',
+    countryFlag: '🇺🇸',
+    title: 'Ocean Drive & South Beach • Miami',
+    difficulty: 'Easy',
+    xpReward: 65,
+    timeLimitSeconds: 55,
+    imageUrl: '/src/assets/images/wheres_guaky_miami_1792442954620.jpg',
+    storyContext: 'Patines, arquitectura Art Deco color pastel, palmeras meciéndose con la brisa marina y arena dorada. Güaky disfruta del sol de Florida junto al grupo de estudio de inglés frente al mar.',
+    learningFocus: 'Unit 1 Vacation & Nature: Sunglasses, Smoothie Stand, Lifeguard Tower, Flamingos.',
+    targets: [
+      {
+        id: 'guaky',
+        name: 'Güaky with Sunglasses',
+        nameSpanish: 'Güaky con Lentes de Sol',
+        icon: '🦜',
+        isMainMascot: true,
+        xPercent: 61.5,
+        yPercent: 56.5,
+        hitRadiusPercent: 6.5,
+        clueEnglish: '“I am on the sunny beach holding dark sunglasses next to the English study group reading on their towel!”',
+        clueSpanish: 'Güaky está en la playa sosteniendo lentes de sol junto al grupo de estudio con toallas a rayas.'
+      },
+      {
+        id: 'smoothie_cart',
+        name: 'Coconut Smoothie Stand',
+        nameSpanish: 'Puesto de Coconut Smoothie',
+        icon: '🥥',
+        xPercent: 47.5,
+        yPercent: 81.5,
+        hitRadiusPercent: 6.5,
+        clueEnglish: '“Look at the bottom edge for the blue and white striped booth that says \'Coconut Smoothie\'!”',
+        clueSpanish: 'En el borde inferior, el puesto de rayas azules y blancas que dice \'Coconut Smoothie\'.'
+      },
+      {
+        id: 'lifeguard_tower',
+        name: 'Art Deco Lifeguard Tower',
+        nameSpanish: 'Caseta de Salvavidas Art Deco',
+        icon: '🛟',
+        xPercent: 83.0,
+        yPercent: 27.5,
+        hitRadiusPercent: 6.5,
+        clueEnglish: '“On the golden sands facing the turquoise ocean, locate the purple and neon green lifeguard house!”',
+        clueSpanish: 'En la arena dorada frente al mar turquesa, la caseta de salvavidas morada y verde neón.'
+      },
+      {
+        id: 'pink_flamingos',
+        name: 'Pink Flamingos Pool',
+        nameSpanish: 'Flamencos Rosados',
+        icon: '🦩',
+        xPercent: 95.0,
+        yPercent: 64.5,
+        hitRadiusPercent: 6.5,
+        clueEnglish: '“In the lower-right lagoon, find the two bright pink flamingos standing on one leg!”',
+        clueSpanish: 'En la pequeña laguna abajo a la derecha, los dos flamencos rosados sobre una pata.'
+      }
+    ]
+  },
+
+  // 5. TORONTO, CANADA (CN Tower & Rogers Centre)
+  {
+    id: 'toronto',
+    levelNumber: 5,
+    cityName: 'Toronto',
+    countryName: 'Canada',
+    countryFlag: '🇨🇦',
+    title: 'CN Tower & Autumn Tramways • Toronto',
+    difficulty: 'Medium',
+    xpReward: 70,
+    timeLimitSeconds: 55,
+    imageUrl: '/src/assets/images/wheres_guaky_toronto_1792442969319.jpg',
+    storyContext: 'Hojas rojas de arce canadiense, tranvías rojos cruzando las calles, la gran torre CN rozando las nubes y pistas de patinaje sobre hielo. Güaky explora Ontario con su guía turística en inglés.',
+    learningFocus: 'Unit 1 City Life & Transport: Red Streetcar, Ice Skating Rink, Rogers Dome, Maple Syrup.',
+    targets: [
+      {
+        id: 'guaky',
+        name: 'Güaky with Toronto Guide',
+        nameSpanish: 'Güaky con su Guía de Toronto',
+        icon: '🦜',
+        isMainMascot: true,
+        xPercent: 70.0,
+        yPercent: 61.5,
+        hitRadiusPercent: 6.5,
+        clueEnglish: '“I am standing on the maple stone pedestal next to the pancake stall, reading my blue \'Toronto Guide\'!”',
+        clueSpanish: 'Güaky está sobre el pedestal de piedra junto al puesto de pancakes con su guía azul de Toronto.'
+      },
+      {
+        id: 'streetcar',
+        name: 'Red & White Toronto Streetcar',
+        nameSpanish: 'Tranvía Rojo y Blanco',
+        icon: '🚋',
+        xPercent: 27.0,
+        yPercent: 74.0,
+        hitRadiusPercent: 6.5,
+        clueEnglish: '“Look on the street tracks in the lower-left for the iconic red and white Toronto transit streetcar!”',
+        clueSpanish: 'En las vías del tranvía abajo a la izquierda, el clásico tranvía rojo y blanco de Toronto.'
+      },
+      {
+        id: 'ice_rink',
+        name: 'Outdoor Ice Skating Rink',
+        nameSpanish: 'Pista de Patinaje sobre Hielo',
+        icon: '⛸️',
+        xPercent: 91.0,
+        yPercent: 50.0,
+        hitRadiusPercent: 6.5,
+        clueEnglish: '“On the right side of the plaza, find the frozen oval rink where Canadian skaters are gliding on ice!”',
+        clueSpanish: 'Al lado derecho de la plaza, la pista de hielo donde los patinadores se deslizan con patines.'
+      },
+      {
+        id: 'rogers_dome',
+        name: 'Rogers Centre Stadium Dome',
+        nameSpanish: 'Cúpula del Estadio Rogers',
+        icon: '🏟️',
+        xPercent: 33.5,
+        yPercent: 22.0,
+        hitRadiusPercent: 6.5,
+        clueEnglish: '“Look at the giant circular white sports arena with the retractable dome roof next to the CN Tower!”',
+        clueSpanish: 'El gran estadio blanco circular con techo retráctil junto a la torre CN.'
+      }
+    ]
+  },
+
+  // 6. CIUDAD DE MÉXICO, MEXICO (Bellas Artes & Zócalo)
+  {
+    id: 'mexico_city',
+    levelNumber: 6,
+    cityName: 'Ciudad de México',
+    countryName: 'Mexico',
+    countryFlag: '🇲🇽',
+    title: 'Palacio de Bellas Artes & Mariachis • CDMX',
+    difficulty: 'Medium',
+    xpReward: 70,
+    timeLimitSeconds: 55,
+    imageUrl: '/src/assets/images/wheres_guaky_mexico_1792442984260.jpg',
+    storyContext: 'Música de mariachi en vivo, trompetas, puestos de tacos al pastor y churros calientes, bailarinas de vestidos multicolores y escarabajos verdes. Güaky practica saludos bilingües con su mini sombrero.',
+    learningFocus: 'Unit 1 Conversational Greetings: Hello Flashcard, Mariachi Band, Green Beetle Taxi, Art Dome.',
+    targets: [
+      {
+        id: 'guaky',
+        name: 'Güaky with Mini Sombrero',
+        nameSpanish: 'Güaky con Mini Sombrero',
+        icon: '🦜',
+        isMainMascot: true,
+        xPercent: 77.5,
+        yPercent: 71.5,
+        hitRadiusPercent: 6.5,
+        clueEnglish: '“I am sitting proudly on the ornate stone bench, wearing a tiny Mexican sombrero and holding a \'Hello\' card!”',
+        clueSpanish: 'Güaky está sentado en el banco de piedra tallada con un mini sombrero y una tarjeta de \'Hello\'.'
+      },
+      {
+        id: 'bellas_artes',
+        name: 'Bellas Artes Rainbow Dome',
+        nameSpanish: 'Cúpula de Bellas Artes',
+        icon: '🏛️',
+        xPercent: 80.5,
+        yPercent: 18.0,
+        hitRadiusPercent: 6.5,
+        clueEnglish: '“Look in the upper-right corner for the magnificent golden-yellow art dome of the Palacio de Bellas Artes!”',
+        clueSpanish: 'Arriba a la derecha, la cúpula amarilla y arcoíris del Palacio de Bellas Artes.'
+      },
+      {
+        id: 'mariachis',
+        name: 'Mariachi Brass Band',
+        nameSpanish: 'Grupo de Mariachis',
+        icon: '🎺',
+        xPercent: 35.0,
+        yPercent: 88.0,
+        hitRadiusPercent: 6.5,
+        clueEnglish: '“At the bottom of the plaza, find the musicians in black and gold charro suits playing guitars and trumpets!”',
+        clueSpanish: 'Abajo al centro, los músicos mariachis con trajes negros bordados tocando trompetas y guitarras.'
+      },
+      {
+        id: 'green_beetle',
+        name: 'Vintage Green Beetle Taxi',
+        nameSpanish: 'Taxi Escarabajo Verde',
+        icon: '🚖',
+        xPercent: 10.5,
+        yPercent: 72.0,
+        hitRadiusPercent: 6.5,
+        clueEnglish: '“On the street on the lower-left, locate the classic green and white vintage VW Beetle taxi cab!”',
+        clueSpanish: 'En la calle abajo a la izquierda, el clásico taxi escarabajo verde y blanco.'
+      }
+    ]
+  },
+
+  // 7. BOGOTÁ, COLOMBIA (La Candelaria & Monserrate)
+  {
+    id: 'bogota',
+    levelNumber: 7,
+    cityName: 'Bogotá',
+    countryName: 'Colombia',
+    countryFlag: '🇨🇴',
+    title: 'Plaza de Bolívar & Monserrate • Bogotá',
+    difficulty: 'Medium',
+    xpReward: 75,
+    timeLimitSeconds: 50,
+    imageUrl: '/src/assets/images/wheres_guaky_bogota_1792443008104.jpg',
+    storyContext: 'Adoquines coloniales de La Candelaria, ciclistas de la Ciclovía, autobuses TransMilenio, café de tinto caliente en termos y el cerro de Monserrate entre la niebla. Güaky repasa su diccionario de inglés.',
+    learningFocus: 'Unit 1 Study Essentials: English Dictionary, TransMilenio Bus, Wooden Chiva, Mountain Sanctuary.',
+    targets: [
+      {
+        id: 'guaky',
+        name: 'Güaky with English Dictionary',
+        nameSpanish: 'Güaky con Diccionario & Tinto',
+        icon: '🦜',
+        isMainMascot: true,
+        xPercent: 86.5,
+        yPercent: 74.0,
+        hitRadiusPercent: 6.5,
+        clueEnglish: '“I am next to the colorful graffiti mural, holding an English Dictionary and sipping hot Colombian tinto coffee!”',
+        clueSpanish: 'Güaky está junto al mural de grafiti colorido sosteniendo su diccionario verde de inglés y una taza de café caliente.'
+      },
+      {
+        id: 'transmilenio',
+        name: 'Red TransMilenio Bus',
+        nameSpanish: 'Autobús Rojo TransMilenio',
+        icon: '🚍',
+        xPercent: 27.5,
+        yPercent: 51.0,
+        hitRadiusPercent: 6.5,
+        clueEnglish: '“Find the long red articulated public bus driving across the cobblestone street on the left!”',
+        clueSpanish: 'El autobús rojo articulado de dos vagones transitando por la calle empedrada a la izquierda.'
+      },
+      {
+        id: 'chiva_bus',
+        name: 'Traditional Wooden Chiva Bus',
+        nameSpanish: 'Chiva Tradicional de Colores',
+        icon: '🚌',
+        xPercent: 72.0,
+        yPercent: 61.0,
+        hitRadiusPercent: 6.5,
+        clueEnglish: '“Look in the right square for the open-sided rustic bus with colorful wooden rails carrying happy tourists!”',
+        clueSpanish: 'En la plaza a la derecha, la chiva colombiana pintada de colores vivos con turistas en el techo.'
+      },
+      {
+        id: 'monserrate',
+        name: 'Monserrate Mountain Sanctuary',
+        nameSpanish: 'Santuario de Monserrate',
+        icon: '⛰️',
+        xPercent: 43.5,
+        yPercent: 6.5,
+        hitRadiusPercent: 6.5,
+        clueEnglish: '“High up on top of the misty green mountain in the clouds, locate the white colonial church sanctuary!”',
+        clueSpanish: 'En la cima de la montaña verde entre las nubes, la blanca iglesia del Santuario de Monserrate.'
+      }
+    ]
+  },
+
+  // 8. PANAMÁ CITY, PANAMÁ (Canal de Panamá & Casco Viejo)
+  {
+    id: 'panama',
+    levelNumber: 8,
+    cityName: 'Panamá City',
+    countryName: 'Panama',
+    countryFlag: '🇵🇦',
+    title: 'Canal de Panamá & Miraflores • Panamá',
+    difficulty: 'Medium',
+    xpReward: 75,
+    timeLimitSeconds: 50,
+    imageUrl: '/src/assets/images/wheres_guaky_panama_1792443023866.jpg',
+    storyContext: 'El imponente Canal de Panamá con sus esclusas de agua, barcos de carga transitando los océanos, el moderno horizonte de rascacielos y carritos de raspados. Güaky aprende vocabulario marítimo con binoculares.',
+    learningFocus: 'Unit 1 Maritime & World Trade: Binoculars, Cargo Container Ship, Raspaos Cart, Spiral Tower.',
+    targets: [
+      {
+        id: 'guaky',
+        name: 'Güaky with Binoculars',
+        nameSpanish: 'Güaky con Binoculares',
+        icon: '🦜',
+        isMainMascot: true,
+        xPercent: 82.5,
+        yPercent: 74.5,
+        hitRadiusPercent: 6.5,
+        clueEnglish: '“I am on the wooden pier railing, looking through black binoculars with my Ship Captain\'s English notebook!”',
+        clueSpanish: 'Güaky está en la baranda del muelle de madera mirando con binoculares y su libreta de capitán.'
+      },
+      {
+        id: 'cargo_ship',
+        name: 'Panama Canal Cargo Ship',
+        nameSpanish: 'Buque de Carga en las Esclusas',
+        icon: '🚢',
+        xPercent: 41.5,
+        yPercent: 40.0,
+        hitRadiusPercent: 6.5,
+        clueEnglish: '“In the middle of the canal water lock, find the giant blue cargo ship loaded with colorful shipping containers!”',
+        clueSpanish: 'En el canal de esclusas al centro, el gran barco azul cargado de contenedores de mercancía.'
+      },
+      {
+        id: 'raspaos_cart',
+        name: 'Raspaos Shaved Ice Cart',
+        nameSpanish: 'Carrito de Raspados (Raspaos)',
+        icon: '🍧',
+        xPercent: 5.5,
+        yPercent: 71.0,
+        hitRadiusPercent: 6.5,
+        clueEnglish: '“On the walkway on the far left, look for the vendor cart with glass bottles of colored syrup labeled \'Raspaos\'!”',
+        clueSpanish: 'A la extrema izquierda, el carrito de raspados de hielo con botellas de jarabes de colores.'
+      },
+      {
+        id: 'spiral_tower',
+        name: 'F&F Spiral Skyscraper',
+        nameSpanish: 'Torre Espiral de Panamá',
+        icon: '🏙️',
+        xPercent: 28.0,
+        yPercent: 15.0,
+        hitRadiusPercent: 6.5,
+        clueEnglish: '“Across the bay in the skyscraper skyline, locate the famous twisting spiral high-rise building!”',
+        clueSpanish: 'Al otro lado de la bahía en el horizonte de rascacielos, la torre en espiral retorcida (Torre F&F).'
+      }
+    ]
+  },
+
+  // 9. LONDON, UNITED KINGDOM (Heathrow International Lounge)
   {
     id: 'london',
-    levelNumber: 4,
+    levelNumber: 9,
     cityName: 'London',
     countryName: 'United Kingdom',
     countryFlag: '🇬🇧',
     title: 'Heathrow Airport Terminal 5 • London',
-    difficulty: 'Easy',
-    xpReward: 55,
+    difficulty: 'Medium',
+    xpReward: 80,
     timeLimitSeconds: 50,
     imageUrl: '/src/assets/images/wheres_guaky_london_1792355962298.jpg',
     storyContext: 'Una concurrida terminal de vuelos internacionales con pasajeros de todo el planeta, autobuses rojos londinenses de juguete, tiendas Duty Free y pilotos de aviación comercial.',
@@ -281,17 +596,17 @@ const WORLD_TOUR_SCENES: WorldTourScene[] = [
     ]
   },
 
-  // 5. PARIS, FRANCE (Montmartre & The Seine)
+  // 10. PARIS, FRANCE (Montmartre & The Seine)
   {
     id: 'paris',
-    levelNumber: 5,
+    levelNumber: 10,
     cityName: 'Paris',
     countryName: 'France',
     countryFlag: '🇫🇷',
     title: 'The Seine & Montmartre Painters • Paris',
     difficulty: 'Medium',
-    xpReward: 70,
-    timeLimitSeconds: 55,
+    xpReward: 80,
+    timeLimitSeconds: 50,
     imageUrl: '/src/assets/images/wheres_guaky_paris_1792356384748.jpg',
     storyContext: 'El río Sena con sus barcos turísticos, la Torre Eiffel recortada contra las nubes, cafés con toldos de rayas y pintores con boinas en los adoquines de París. Güaky posa para un retrato al óleo.',
     learningFocus: 'Unit 1 Descriptive English: Artist Easel, Accordion, Eiffel Tower.',
@@ -333,17 +648,17 @@ const WORLD_TOUR_SCENES: WorldTourScene[] = [
     ]
   },
 
-  // 6. ROME, ITALY (Colosseum Plaza)
+  // 11. ROME, ITALY (Colosseum Plaza)
   {
     id: 'rome',
-    levelNumber: 6,
+    levelNumber: 11,
     cityName: 'Rome',
     countryName: 'Italy',
     countryFlag: '🇮🇹',
     title: 'Colosseum Plaza & Trevi Waters • Rome',
     difficulty: 'Hard',
-    xpReward: 75,
-    timeLimitSeconds: 50,
+    xpReward: 85,
+    timeLimitSeconds: 45,
     imageUrl: '/src/assets/images/wheres_guaky_rome_1792356398788.jpg',
     storyContext: 'Gladiadores romanos tomándose selfies con smartphones, motos Vespa zumbando en las plazas de adoquines, fuentes barrocas y hornos de pizza crujiente frente al majestuoso Coliseo.',
     learningFocus: 'Unit 1 Culture & Objects: Gelato Cone, Roman Column, Roman Helmet.',
@@ -385,17 +700,206 @@ const WORLD_TOUR_SCENES: WorldTourScene[] = [
     ]
   },
 
-  // 7. GÜAKYTOPIA CENTRAL CAMPUS (El Gran Campus Internacional)
+  // 12. MADRID, SPAIN (Gran Vía & El Retiro)
+  {
+    id: 'madrid',
+    levelNumber: 12,
+    cityName: 'Madrid',
+    countryName: 'Spain',
+    countryFlag: '🇪🇸',
+    title: 'Gran Vía & El Retiro • Madrid',
+    difficulty: 'Hard',
+    xpReward: 85,
+    timeLimitSeconds: 45,
+    imageUrl: '/src/assets/images/wheres_guaky_madrid_1792443040435.jpg',
+    storyContext: 'La emblemática Gran Vía madrileña con el edificio Metrópolis, terrazas con chocolate con churros, el estanque de El Retiro y aficionados de fútbol. Güaky sostiene la llave dorada del conocimiento bilingüe.',
+    learningFocus: 'Unit 1 Architecture & Key: Golden Key, Metropolis Dome, City Tour Bus, Rowing Boats.',
+    targets: [
+      {
+        id: 'guaky',
+        name: 'Güaky on Terrace Balustrade',
+        nameSpanish: 'Güaky en la Baranda de la Terraza',
+        icon: '🦜',
+        isMainMascot: true,
+        xPercent: 79.5,
+        yPercent: 39.5,
+        hitRadiusPercent: 6.5,
+        clueEnglish: '“I am perched on the classical stone balustrade of the terrace café, holding a golden key and my Bilingual card!”',
+        clueSpanish: 'Güaky está posado en la baranda de piedra del balcón del café con su tarjeta bilingüe y una llave dorada.'
+      },
+      {
+        id: 'metropolis',
+        name: 'Metropolis Building Winged Statue',
+        nameSpanish: 'Cúpula del Edificio Metrópolis',
+        icon: '🏛️',
+        xPercent: 44.5,
+        yPercent: 15.0,
+        hitRadiusPercent: 6.5,
+        clueEnglish: '“Look high above Gran Vía at the famous classical black dome topped with the golden winged statue!”',
+        clueSpanish: 'En lo alto de la Gran Vía, la famosa cúpula negra con la estatua de la victoria alada (Edificio Metrópolis).'
+      },
+      {
+        id: 'city_tour_bus',
+        name: 'Red City Tour Double Decker',
+        nameSpanish: 'Autobús Turístico de Dos Pisos',
+        icon: '🚍',
+        xPercent: 63.5,
+        yPercent: 58.5,
+        hitRadiusPercent: 6.5,
+        clueEnglish: '“Driving down the center street, find the big red open-top tour bus with tourists waving from the upper deck!”',
+        clueSpanish: 'En la calle principal, el autobús rojo de dos pisos con turistas en el piso superior.'
+      },
+      {
+        id: 'retiro_lake',
+        name: 'El Retiro Park Rowing Boats',
+        nameSpanish: 'Barquitas del Estanque de El Retiro',
+        icon: '🛶',
+        xPercent: 81.5,
+        yPercent: 16.0,
+        hitRadiusPercent: 6.5,
+        clueEnglish: '“In the peaceful park background on the upper right, locate the small blue rowboats gliding across the pond!”',
+        clueSpanish: 'En el parque arriba a la derecha, las barcas de remos azules en el estanque del Palacio de Cristal.'
+      }
+    ]
+  },
+
+  // 13. VALENCIA, SPAIN (Ciudad de las Artes y las Ciencias)
+  {
+    id: 'valencia',
+    levelNumber: 13,
+    cityName: 'Valencia',
+    countryName: 'Spain',
+    countryFlag: '🇪🇸',
+    title: 'Ciudad de las Artes & Paella • Valencia',
+    difficulty: 'Hard',
+    xpReward: 90,
+    timeLimitSeconds: 45,
+    imageUrl: '/src/assets/images/wheres_guaky_valencia_1792443056744.jpg',
+    storyContext: 'El futurista complejo blanco de la Ciudad de las Artes y las Ciencias, los huertos de naranjos valencianos, las Fallas y la gran paella cocinada a leña. Güaky aprende ciencias y fotosíntesis en inglés.',
+    learningFocus: 'Unit 1 Science & Food: Wooden Spoon, Giant Paella, Arts & Sciences Dome, Orange Groves.',
+    targets: [
+      {
+        id: 'guaky',
+        name: 'Güaky with Wooden Paella Spoon',
+        nameSpanish: 'Güaky con Cuchara de Madera',
+        icon: '🦜',
+        isMainMascot: true,
+        xPercent: 49.5,
+        yPercent: 52.5,
+        hitRadiusPercent: 6.5,
+        clueEnglish: '“I am right in the middle between the pool and the orange trees, holding a giant wooden paella spoon!”',
+        clueSpanish: 'Güaky está en el centro entre la piscina y los naranjos, sosteniendo una gran cuchara de madera de paella.'
+      },
+      {
+        id: 'giant_paella',
+        name: 'Giant Wood-Fired Paella Pan',
+        nameSpanish: 'Gran Paella a Fuego de Leña',
+        icon: '🥘',
+        xPercent: 15.0,
+        yPercent: 77.0,
+        hitRadiusPercent: 6.5,
+        clueEnglish: '“In the lower-left corner, find the huge round black paella pan bubbling over real wood flames with the chefs!”',
+        clueSpanish: 'Abajo a la izquierda, la gran paella valenciana sobre fuego de leña con los cocineros con gorros blancos.'
+      },
+      {
+        id: 'arts_sciences',
+        name: 'City of Arts & Sciences Curved Dome',
+        nameSpanish: 'Cúpula Hemisfèric / Ciencias',
+        icon: '🔬',
+        xPercent: 29.0,
+        yPercent: 26.0,
+        hitRadiusPercent: 6.5,
+        clueEnglish: '“Look at the futuristic white curved building rising over the turquoise reflecting pool!”',
+        clueSpanish: 'El futurista edificio blanco con forma de ojo sobre las aguas turquesas del lago artificial.'
+      },
+      {
+        id: 'orange_groves',
+        name: 'Sun-Ripened Orange Tree',
+        nameSpanish: 'Árbol de Naranjas de Valencia',
+        icon: '🍊',
+        xPercent: 74.0,
+        yPercent: 52.0,
+        hitRadiusPercent: 6.5,
+        clueEnglish: '“In the green park orchard, find the tree heavy with bright, ripe Valencian oranges!”',
+        clueSpanish: 'En el huerto del parque, el árbol cargado de naranjas redondas y brillantes.'
+      }
+    ]
+  },
+
+  // 14. BARCELONA, SPAIN (Sagrada Família & Park Güell)
+  {
+    id: 'barcelona',
+    levelNumber: 14,
+    cityName: 'Barcelona',
+    countryName: 'Spain',
+    countryFlag: '🇪🇸',
+    title: 'Sagrada Família & Park Güell • Barcelona',
+    difficulty: 'Hard',
+    xpReward: 95,
+    timeLimitSeconds: 40,
+    imageUrl: '/src/assets/images/wheres_guaky_barcelona_1792443072919.jpg',
+    storyContext: 'Las torres de la Sagrada Família de Gaudí, los mosaicos del Park Güell con la salamandra de colores, artistas callejeros y la afición del Barça. Güaky comparte tarjetas de conversación en inglés.',
+    learningFocus: 'Unit 1 Advanced Cultural Exchange: Mosaic Salamander, Sagrada Família, Barça Fans, Practice Card.',
+    targets: [
+      {
+        id: 'guaky',
+        name: 'Güaky on the Mosaic Wall',
+        nameSpanish: 'Güaky en el Mosaico de Gaudí',
+        icon: '🦜',
+        isMainMascot: true,
+        xPercent: 52.5,
+        yPercent: 69.5,
+        hitRadiusPercent: 6.5,
+        clueEnglish: '“I am perched on the colorful Gaudí mosaic wall holding my English Practice Card, waving at the crowd!”',
+        clueSpanish: 'Güaky está posado en el banco ondulado de mosaicos de colores sosteniendo su tarjeta de práctica de inglés.'
+      },
+      {
+        id: 'sagrada_familia',
+        name: 'Sagrada Família Cathedral Towers',
+        nameSpanish: 'Torres de la Sagrada Família',
+        icon: '⛪',
+        xPercent: 52.0,
+        yPercent: 20.0,
+        hitRadiusPercent: 6.5,
+        clueEnglish: '“In the center skyline, gaze up at the stone towers and cranes of Gaudí\'s famous basilica!”',
+        clueSpanish: 'En el centro del cielo, las majestuosas torres de piedra tallada de la Sagrada Família.'
+      },
+      {
+        id: 'mosaic_lizard',
+        name: 'El Drac Mosaic Salamander',
+        nameSpanish: 'Salamandra de Mosaico (El Drac)',
+        icon: '🦎',
+        xPercent: 26.0,
+        yPercent: 89.0,
+        hitRadiusPercent: 6.5,
+        clueEnglish: '“At the bottom left fountain, find the famous multicolored mosaic salamander dragon sitting on stone!”',
+        clueSpanish: 'En la fuente abajo a la izquierda, la famosa salamandra de mosaico de colores (El Drac de Park Güell).'
+      },
+      {
+        id: 'fc_barcelona',
+        name: 'Barça Soccer Squad Fans',
+        nameSpanish: 'Afición del Barça (Fútbol)',
+        icon: '⚽',
+        xPercent: 83.5,
+        yPercent: 60.0,
+        hitRadiusPercent: 6.5,
+        clueEnglish: '“On the right boulevard, find the cheerful kids in blue-and-red striped football jerseys cheering \'Barça!\'!”',
+        clueSpanish: 'En el paseo a la derecha, los aficionados con camisetas blaugrana a rayas celebrando un gol.'
+      }
+    ]
+  },
+
+  // 15. GÜAKYTOPIA CENTRAL CAMPUS (El Gran Campus Internacional - Nivel Final)
   {
     id: 'campus_central',
-    levelNumber: 7,
+    levelNumber: 15,
     cityName: 'Güakytopia',
     countryName: 'Global Campus',
     countryFlag: '🌴',
     title: 'The Great Campus Courtyard & Library • Güakytopia',
     difficulty: 'Hard',
-    xpReward: 80,
-    timeLimitSeconds: 45,
+    xpReward: 100,
+    timeLimitSeconds: 40,
     imageUrl: '/src/assets/images/wheres_guaky_campus_1792355974486.jpg',
     storyContext: 'El corazón académico de Güakytopia: cientos de alumnos practicando debates en inglés, puestos de café Campus Brew, partidas de ajedrez en la grama y ceremonias de grado bajo las palmeras reales.',
     learningFocus: 'Unit 1 Mastery: Study Squad, Royal Palm, Stone Archway.',

@@ -340,6 +340,7 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
   const [prepaidDateInput, setPrepaidDateInput] = useState<string>('2026-10-20');
   const [prepaidTimeInput, setPrepaidTimeInput] = useState<string>('05:00 PM');
   const [generatedBookedSessions, setGeneratedBookedSessions] = useState<any[]>([]);
+  const [blockSavedNotice, setBlockSavedNotice] = useState<string | null>(null);
 
   const handleOpenAssignClasses = (student: Student, preferredSchedule?: string, preferredTeacher?: string) => {
     setAssigningClassesStudent(student);
@@ -426,6 +427,29 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
       const updated = [...assignSlotsList, slotStr];
       setAssignSlotsList(updated);
       setCustomScheduleText(updated.join(' • '));
+
+      // AUTO-PERSIST IMMEDIATELY: Ensure this block is saved in the student profile right now!
+      if (assigningClassesStudent) {
+        const teacherObj = teachers.find(t => t.id === assignTeacherId) || {
+          id: assignTeacherId,
+          name: assignTeacherId === 'teacher_cokito' ? 'Teacher Cokitö' : assignTeacherId === 'teacher_andrea' ? 'Teacher Andrea' : 'Teacher Carlos'
+        };
+        const autoSavedStudent: Student = {
+          ...assigningClassesStudent,
+          teacherId: teacherObj.id,
+          teacherName: teacherObj.name,
+          assignedSlots: updated,
+          levelId: assignLevelId,
+          currentUnit: assignUnit,
+          status: 'enrolled',
+          notes: `${assigningClassesStudent.notes || ''} | Horario asignado [${slotStr}] por Rectoría el ${new Date().toLocaleDateString('es-VE')}`
+        };
+        onUpdateStudent(autoSavedStudent);
+        setSelectedDetailStudent(autoSavedStudent);
+        setAssigningClassesStudent(autoSavedStudent);
+        setBlockSavedNotice(`✅ ¡Bloque "${slotStr}" guardado y asignado con éxito!`);
+        setTimeout(() => setBlockSavedNotice(null), 4000);
+      }
     }
   };
 
@@ -433,6 +457,18 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
     const updated = assignSlotsList.filter(s => s !== slotToRemove);
     setAssignSlotsList(updated);
     setCustomScheduleText(updated.length > 0 ? updated.join(' • ') : '');
+
+    if (assigningClassesStudent) {
+      const autoSavedStudent: Student = {
+        ...assigningClassesStudent,
+        assignedSlots: updated
+      };
+      onUpdateStudent(autoSavedStudent);
+      setSelectedDetailStudent(autoSavedStudent);
+      setAssigningClassesStudent(autoSavedStudent);
+      setBlockSavedNotice(`🗑️ Bloque removido del perfil de ${assigningClassesStudent.name}`);
+      setTimeout(() => setBlockSavedNotice(null), 3000);
+    }
   };
 
   const handleGenerateFullMonthClasses = () => {
@@ -449,6 +485,20 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
     const teacherName = teachers.find(t => t.id === assignTeacherId)?.name || 'Teacher Cokitö';
     const sessions = convertToBookedSessions(generated, teacherName, assignTeacherId);
     setGeneratedBookedSessions(sessions);
+
+    if (assigningClassesStudent) {
+      const autoSavedStudent: Student = {
+        ...assigningClassesStudent,
+        assignedSlots: slotLabels,
+        bookedSessions: sessions,
+        status: 'enrolled'
+      };
+      onUpdateStudent(autoSavedStudent);
+      setSelectedDetailStudent(autoSavedStudent);
+      setAssigningClassesStudent(autoSavedStudent);
+      setBlockSavedNotice(`✅ ${slotLabels.length} clases del mes generadas y guardadas`);
+      setTimeout(() => setBlockSavedNotice(null), 4000);
+    }
   };
 
   const handleAddPrepaidDatedClass = () => {
@@ -483,7 +533,22 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
         meetLink: assignMeetLink,
         notes: `Sesión puntual prepagada seleccionada para ${prepaidDateInput}`
       };
-      setGeneratedBookedSessions(prev => [...prev, newPrepaidSession]);
+      const updatedSessions = [...generatedBookedSessions, newPrepaidSession];
+      setGeneratedBookedSessions(updatedSessions);
+
+      if (assigningClassesStudent) {
+        const autoSavedStudent: Student = {
+          ...assigningClassesStudent,
+          assignedSlots: updated,
+          bookedSessions: [...(assigningClassesStudent.bookedSessions || []), newPrepaidSession],
+          status: 'enrolled'
+        };
+        onUpdateStudent(autoSavedStudent);
+        setSelectedDetailStudent(autoSavedStudent);
+        setAssigningClassesStudent(autoSavedStudent);
+        setBlockSavedNotice(`✅ Clase prepagada "${slotLabel}" agregada y guardada`);
+        setTimeout(() => setBlockSavedNotice(null), 4000);
+      }
     }
   };
 
@@ -513,6 +578,7 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
     };
 
     onUpdateStudent(updatedStudent);
+    setSelectedDetailStudent(updatedStudent);
 
     // Save student notification to inbox
     addStudentNotification({
@@ -4731,21 +4797,34 @@ export const PrincipalDashboard: React.FC<PrincipalDashboardProps> = ({
                   </div>
                 </div>
 
-                <div className="pt-2 flex items-center justify-between border-t border-slate-200">
-                  <div className="text-[11px] font-bold text-emerald-800 bg-emerald-100/70 px-3 py-1 rounded-xl flex items-center gap-1.5">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 border-t border-slate-200">
+                  <div className="text-[11px] font-bold text-emerald-800 bg-emerald-100/70 px-3 py-1.5 rounded-xl flex items-center gap-1.5">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
                     <span>Bloque: {assignDays.join(' / ')} {assignStartTime} a {assignEndTime}</span>
                   </div>
                   <button
                     type="button"
                     onClick={handleAddCurrentBlockToList}
-                    className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition-colors flex items-center gap-1"
+                    className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition-all shadow-md flex items-center justify-center gap-1.5"
                   >
-                    <Plus className="w-3.5 h-3.5 text-amber-400" />
-                    <span>Agregar este bloque</span>
+                    <Plus className="w-4 h-4 text-amber-400" />
+                    <span>Agregar & Guardar este bloque</span>
                   </button>
                 </div>
               </div>
+
+              {/* Instant Auto-Save Notice */}
+              {blockSavedNotice && (
+                <div className="p-3 bg-emerald-50 border border-emerald-300 text-emerald-900 rounded-2xl text-xs font-bold flex items-center justify-between animate-fadeIn shadow-xs">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <span>{blockSavedNotice}</span>
+                  </div>
+                  <span className="text-[10px] uppercase tracking-wider bg-emerald-200 text-emerald-900 px-2 py-0.5 rounded-lg shrink-0">
+                    Guardado en Perfil
+                  </span>
+                </div>
+              )}
 
               {/* 4. LISTA DE BLOQUES ASIGNADOS AL ALUMNO */}
               <div>

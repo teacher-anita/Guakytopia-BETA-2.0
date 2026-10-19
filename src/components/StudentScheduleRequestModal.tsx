@@ -91,10 +91,14 @@ export const StudentScheduleRequestModal: React.FC<StudentScheduleRequestModalPr
 
       // 4. Update student model notes and pending slot state
       if (onUpdateStudent) {
+        const currentAssigned = student.assignedSlots || [];
         const updatedStudent: Student = {
           ...student,
           preferredTimeSlot: slotText,
-          notes: `${student.notes || ''} | Solicitó horario [${slotText}] con ${preferredTeacher} el ${new Date().toLocaleDateString('es-VE')}`
+          assignedSlots: student.status === 'enrolled'
+            ? Array.from(new Set([...currentAssigned, slotText]))
+            : currentAssigned,
+          notes: `${student.notes || ''} | Solicitó / seleccionó horario [${slotText}] con ${preferredTeacher} el ${new Date().toLocaleDateString('es-VE')}`
         };
         onUpdateStudent(updatedStudent);
       }

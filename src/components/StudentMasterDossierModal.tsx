@@ -31,7 +31,8 @@ import {
   RefreshCw,
   Trash2,
   Lock,
-  Copy
+  Copy,
+  Plus
 } from 'lucide-react';
 import { Student, EnglishLevel } from '../types';
 import { CouponItem } from '../data/couponsData';
@@ -85,6 +86,49 @@ export const StudentMasterDossierModal: React.FC<StudentMasterDossierModalProps>
   const [customUsernameInput, setCustomUsernameInput] = useState<string>(student.username || student.email.split('@')[0] || '');
   const [customPasswordInput, setCustomPasswordInput] = useState<string>(student.customPassword || student.password || student.temporaryPassword || 'ingles2026');
   const [credSuccessMsg, setCredSuccessMsg] = useState<string | null>(null);
+
+  // Inline fast schedule manager state
+  const [isAddingInlineSlot, setIsAddingInlineSlot] = useState(false);
+  const [inlineDay, setInlineDay] = useState('Sábado');
+  const [inlineStartTime, setInlineStartTime] = useState('10:00 AM');
+  const [inlineEndTime, setInlineEndTime] = useState('12:00 PM');
+  const [inlineFrequency, setInlineFrequency] = useState('Todos los Sábados');
+  const [inlineTeacher, setInlineTeacher] = useState(student.teacherName || 'Teacher Cokitö');
+  const [inlineSaveNotice, setInlineSaveNotice] = useState<string | null>(null);
+
+  const handleSaveInlineSlot = () => {
+    const dayPrefix = inlineDay.startsWith('Todos los') ? inlineDay : `Todos los ${inlineDay}s`;
+    const slotStr = `${dayPrefix} de ${inlineStartTime} a ${inlineEndTime} (${inlineFrequency})`;
+    const currentSlots = student.assignedSlots || [];
+    if (currentSlots.includes(slotStr)) {
+      setInlineSaveNotice('⚠️ Este horario ya se encuentra asignado a la alumna.');
+      setTimeout(() => setInlineSaveNotice(null), 3000);
+      return;
+    }
+    const updatedSlots = [...currentSlots, slotStr];
+    const updated: Student = {
+      ...student,
+      assignedSlots: updatedSlots,
+      teacherName: inlineTeacher,
+      status: 'enrolled',
+      notes: `${student.notes || ''} | Horario agregado [${slotStr}] directamente por Rectoría el ${new Date().toLocaleDateString('es-VE')}`
+    };
+    onUpdateStudent(updated);
+    setInlineSaveNotice('✅ ¡Horario asignado y guardado con éxito!');
+    setIsAddingInlineSlot(false);
+    setTimeout(() => setInlineSaveNotice(null), 4000);
+  };
+
+  const handleRemoveAssignedSlot = (slotToRemove: string) => {
+    const updatedSlots = (student.assignedSlots || []).filter(s => s !== slotToRemove);
+    const updated: Student = {
+      ...student,
+      assignedSlots: updatedSlots
+    };
+    onUpdateStudent(updated);
+    setInlineSaveNotice('🗑️ Horario eliminado del perfil.');
+    setTimeout(() => setInlineSaveNotice(null), 3000);
+  };
 
   // Pending items tracking
   const [pendingItems, setPendingItems] = useState<string[]>(student.pendingUnitItems || []);
@@ -1196,6 +1240,7 @@ Como "Cokitö", el cerebro pedagógico institucional de Güakytopia, dame una re
                   <span className="text-xs font-bold text-slate-700 block">
                     Horarios de Clase en Vivo Activos:
                   </span>
+                  {/* Scheduled Slots List with direct actions */}
                   {hasClasses ? (
                     <div className="space-y-2">
                       {student.assignedSlots.map((slot, index) => (
@@ -1204,16 +1249,169 @@ Como "Cokitö", el cerebro pedagógico institucional de Güakytopia, dame una re
                           className="p-3 rounded-2xl bg-indigo-50/70 border border-indigo-200 flex items-center justify-between text-xs font-semibold text-indigo-950"
                         >
                           <div className="flex items-center gap-2">
-                            <Clock className="w-4 h-4 text-indigo-600" />
+                            <Clock className="w-4 h-4 text-indigo-600 shrink-0" />
                             <span>{formatSlotLabel(slot)}</span>
                           </div>
-                          <span className="text-[10px] uppercase font-bold text-indigo-700 bg-indigo-100 px-2 py-0.5 rounded-lg">
-                            Horario Fijo
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] uppercase font-bold text-indigo-700 bg-indigo-100 px-2 py-0.5 rounded-lg">
+                              Horario Fijo
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveAssignedSlot(slot)}
+                              className="p-1 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-lg transition-colors"
+                              title="Eliminar este horario de clase"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
                         </div>
                       ))}
                     </div>
                   ) : null}
+
+                  {/* Inline Fast Add Schedule Form */}
+                  {isAddingInlineSlot ? (
+                    <div className="p-4 bg-amber-50/70 rounded-2xl border border-amber-300 space-y-3 animate-fadeIn">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-black text-amber-950 flex items-center gap-1.5">
+                          <Calendar className="w-3.5 h-3.5 text-amber-600" />
+                          <span>Agregar Nuevo Horario a {student.name}</span>
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setIsAddingInlineSlot(false)}
+                          className="text-slate-400 hover:text-slate-700 text-xs font-bold"
+                        >
+                          ✕ Cerrar
+                        </button>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
+                        <div>
+                          <label className="text-[10px] font-bold text-slate-600 uppercase block mb-1">Día de Clase:</label>
+                          <select
+                            value={inlineDay}
+                            onChange={e => setInlineDay(e.target.value)}
+                            className="w-full p-2 bg-white border border-slate-300 rounded-xl font-bold text-slate-800 text-xs"
+                          >
+                            <option value="Sábado">Sábado</option>
+                            <option value="Lunes">Lunes</option>
+                            <option value="Martes">Martes</option>
+                            <option value="Miércoles">Miércoles</option>
+                            <option value="Jueves">Jueves</option>
+                            <option value="Viernes">Viernes</option>
+                            <option value="Domingo">Domingo</option>
+                            <option value="Lunes y Miércoles">Lunes y Miércoles</option>
+                            <option value="Martes y Jueves">Martes y Jueves</option>
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="text-[10px] font-bold text-slate-600 uppercase block mb-1">Teacher / Mentor:</label>
+                          <select
+                            value={inlineTeacher}
+                            onChange={e => setInlineTeacher(e.target.value)}
+                            className="w-full p-2 bg-white border border-slate-300 rounded-xl font-bold text-slate-800 text-xs"
+                          >
+                            <option value="Teacher Cokitö">Teacher Cokitö</option>
+                            <option value="Teacher Andrea">Teacher Andrea</option>
+                            <option value="Teacher Carlos">Teacher Carlos</option>
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="text-[10px] font-bold text-slate-600 uppercase block mb-1">Hora Inicio:</label>
+                          <select
+                            value={inlineStartTime}
+                            onChange={e => setInlineStartTime(e.target.value)}
+                            className="w-full p-2 bg-white border border-slate-300 rounded-xl font-bold text-slate-800 text-xs"
+                          >
+                            <option value="08:00 AM">8:00 AM</option>
+                            <option value="09:00 AM">9:00 AM</option>
+                            <option value="10:00 AM">10:00 AM</option>
+                            <option value="11:00 AM">11:00 AM</option>
+                            <option value="02:00 PM">2:00 PM</option>
+                            <option value="03:00 PM">3:00 PM</option>
+                            <option value="04:00 PM">4:00 PM</option>
+                            <option value="05:00 PM">5:00 PM</option>
+                            <option value="06:00 PM">6:00 PM</option>
+                            <option value="07:00 PM">7:00 PM</option>
+                            <option value="08:00 PM">8:00 PM</option>
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="text-[10px] font-bold text-slate-600 uppercase block mb-1">Hora Fin:</label>
+                          <select
+                            value={inlineEndTime}
+                            onChange={e => setInlineEndTime(e.target.value)}
+                            className="w-full p-2 bg-white border border-slate-300 rounded-xl font-bold text-slate-800 text-xs"
+                          >
+                            <option value="09:00 AM">9:00 AM</option>
+                            <option value="10:00 AM">10:00 AM</option>
+                            <option value="11:00 AM">11:00 AM</option>
+                            <option value="12:00 PM">12:00 PM</option>
+                            <option value="01:00 PM">1:00 PM</option>
+                            <option value="03:00 PM">3:00 PM</option>
+                            <option value="04:00 PM">4:00 PM</option>
+                            <option value="05:00 PM">5:00 PM</option>
+                            <option value="06:00 PM">6:00 PM</option>
+                            <option value="07:00 PM">7:00 PM</option>
+                            <option value="08:00 PM">8:00 PM</option>
+                            <option value="09:00 PM">9:00 PM</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div className="pt-2 flex items-center justify-between border-t border-amber-200">
+                        <span className="text-[11px] font-bold text-amber-900">
+                          Bloque: {inlineDay} de {inlineStartTime} a {inlineEndTime}
+                        </span>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setIsAddingInlineSlot(false)}
+                            className="px-3 py-1.5 text-slate-600 hover:text-slate-900 font-bold text-xs"
+                          >
+                            Cancelar
+                          </button>
+                          <button
+                            type="button"
+                            onClick={handleSaveInlineSlot}
+                            className="px-4 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition-all shadow-sm flex items-center gap-1.5"
+                          >
+                            <CheckCircle2 className="w-3.5 h-3.5 text-amber-400" />
+                            <span>Guardar Horario en Agenda</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="pt-1">
+                      <button
+                        type="button"
+                        onClick={() => setIsAddingInlineSlot(true)}
+                        className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5 border border-slate-200"
+                      >
+                        <Plus className="w-3.5 h-3.5 text-slate-700" />
+                        <span>➕ Asignar / Agregar Horario Rápido</span>
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Inline Save Notice */}
+                  {inlineSaveNotice && (
+                    <div className="p-3 bg-emerald-50 border border-emerald-300 text-emerald-900 rounded-2xl text-xs font-bold flex items-center justify-between animate-fadeIn shadow-xs">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                        <span>{inlineSaveNotice}</span>
+                      </div>
+                      <span className="text-[10px] uppercase tracking-wider bg-emerald-200 text-emerald-900 px-2 py-0.5 rounded-lg shrink-0">
+                        Guardado
+                      </span>
+                    </div>
+                  )}
 
                   {student.bookedSessions && student.bookedSessions.length > 0 && (
                     <div className="space-y-2 pt-2">

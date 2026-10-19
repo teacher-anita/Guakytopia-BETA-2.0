@@ -29,6 +29,7 @@ import { generateEmailTemplate, sendGmailEmail } from '../services/gmailNotifier
 import { StudentScheduleRequestModal } from './StudentScheduleRequestModal';
 import { MonthScheduleView } from './MonthScheduleView';
 import { PrepaidSessionBookingModal } from './PrepaidSessionBookingModal';
+import { formatSlotLabel } from '../utils/scheduleFormatter';
 
 interface CalendarViewProps {
   slots: ScheduleSlot[];
@@ -541,7 +542,25 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
       {/* 2.2 STUDENT OFFICIAL ASSIGNED SCHEDULE CARD */}
       {effectiveStudent && activeRole === 'student' && (() => {
         const studentSlots = slots.filter(s => s.status === 'booked' && (s.studentId === effectiveStudent.id || (s.studentName && s.studentName.toLowerCase().includes(effectiveStudent.name.toLowerCase()))));
-        if (studentSlots.length === 0 && (!effectiveStudent.assignedSlots || effectiveStudent.assignedSlots.length === 0)) return null;
+        const assignedList = effectiveStudent.assignedSlots || [];
+        if (studentSlots.length === 0 && assignedList.length === 0) return null;
+
+        // Build unified display items ensuring any assignedSlot is displayed with full detail
+        const displayItems = assignedList.length > 0
+          ? assignedList.map((slot, idx) => ({
+              id: `assigned_${idx}`,
+              title: formatSlotLabel(slot),
+              subtitle: 'Horario Oficial Confirmado',
+              teacher: effectiveStudent.teacherName || 'Teacher Cokitö (Head Teacher)',
+              meetLink: (effectiveStudent as any).meetLink || 'https://meet.google.com/eng-waky-class'
+            }))
+          : studentSlots.map(slot => ({
+              id: slot.id,
+              title: `${slot.day} • ${slot.startTime} a ${slot.endTime}`,
+              subtitle: slot.levelId || 'Clase en Vivo',
+              teacher: slot.teacherName || 'Teacher Cokitö (Head Teacher)',
+              meetLink: slot.meetLink || 'https://meet.google.com/eng-waky-class'
+            }));
 
         return (
           <div className="bg-gradient-to-r from-teal-900 via-emerald-950 to-slate-900 rounded-3xl p-5 text-white border-2 border-emerald-400/40 shadow-xl space-y-3">
@@ -565,16 +584,16 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 pt-1">
-              {studentSlots.map(slot => (
-                <div key={slot.id} className="bg-white/10 rounded-2xl p-3 border border-white/15 flex items-center justify-between gap-2">
+              {displayItems.map(item => (
+                <div key={item.id} className="bg-white/10 rounded-2xl p-3 border border-white/15 flex items-center justify-between gap-2">
                   <div>
-                    <strong className="text-sm font-black text-amber-300 block">{slot.day}</strong>
-                    <span className="text-xs text-slate-200">{slot.startTime} a {slot.endTime}</span>
-                    <span className="text-[10px] text-emerald-300 block font-medium">Teacher Cokitö (Head Teacher)</span>
+                    <strong className="text-sm font-black text-amber-300 block">{item.title}</strong>
+                    <span className="text-xs text-slate-200">{item.subtitle}</span>
+                    <span className="text-[10px] text-emerald-300 block font-medium">{item.teacher}</span>
                   </div>
-                  {slot.meetLink && (
+                  {item.meetLink && (
                     <a
-                      href={slot.meetLink}
+                      href={item.meetLink}
                       target="_blank"
                       rel="noreferrer"
                       className="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black rounded-xl text-[11px] shadow-sm flex items-center gap-1 shrink-0"
