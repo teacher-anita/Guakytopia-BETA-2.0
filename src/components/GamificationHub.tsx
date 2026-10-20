@@ -202,7 +202,7 @@ export const GamificationHub: React.FC<GamificationHubProps> = ({
           }`}
         >
           <Search className="w-4 h-4 text-amber-500" />
-          <span>🔍 Where&apos;s Güaky? (Nuevo)</span>
+          <span>🔍 ¿Dónde está Guaky? • Where&apos;s Guaky?</span>
           <span className="text-[10px] bg-amber-400 text-slate-950 font-black px-1.5 py-0.2 rounded-full">XP</span>
         </button>
 
@@ -331,7 +331,7 @@ export const GamificationHub: React.FC<GamificationHubProps> = ({
             </div>
 
             <div className="divide-y divide-slate-100">
-              {leaderboard.map((st, idx) => {
+              {activeLeaderboard.map((st, idx) => {
                 const isCurrent = currentStudent?.id === st.id;
                 let rankBadge = `${idx + 1}`;
                 let rankStyle = 'text-slate-500';

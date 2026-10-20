@@ -10,8 +10,10 @@ dotenv.config();
 const app = express();
 app.use(express.json());
 
-// Serve static audio files
+// Serve static assets and media files
+app.use('/images', express.static(path.join(process.cwd(), 'public/images')));
 app.use('/audio', express.static(path.join(process.cwd(), 'public/audio')));
+app.use(express.static(path.join(process.cwd(), 'public')));
 
 const apiKey = process.env.GEMINI_API_KEY || '';
 const ai = new GoogleGenAI({

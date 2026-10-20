@@ -14,6 +14,9 @@ import {
   ZoomIn,
   ZoomOut,
   Maximize2,
+  Minimize2,
+  Loader2,
+  Move,
   MapPin,
   Lock,
   Compass,
@@ -84,7 +87,7 @@ const WORLD_TOUR_SCENES: WorldTourScene[] = [
     difficulty: 'Easy',
     xpReward: 50,
     timeLimitSeconds: 60,
-    imageUrl: '/src/assets/images/wheres_guaky_caracas_1792356372195.jpg',
+    imageUrl: '/images/wheres_guaky/wheres_guaky_caracas_1792356372195.jpg',
     storyContext: '¡Bienvenidos al valle de Caracas! Frente al majestuoso Ávila y el teleférico, la gente disfruta de arepas, empanadas, salsa y dominó en el parque. Güaky acompaña a dos estudiantes recién graduadas de inglés.',
     learningFocus: 'Unit 1 Vocabulary: Greetings, Graduation Cap, Mango Cart, Flag.',
     targets: [
@@ -136,7 +139,7 @@ const WORLD_TOUR_SCENES: WorldTourScene[] = [
     difficulty: 'Medium',
     xpReward: 60,
     timeLimitSeconds: 60,
-    imageUrl: '/src/assets/images/wheres_guaky_nyc_1792356345839.jpg',
+    imageUrl: '/images/wheres_guaky/wheres_guaky_nyc_1792356345839.jpg',
     storyContext: 'Luces de neón de Broadway, taxis amarillos tocando corneta y puestos de hot dogs en Times Square. Güaky está aprendiendo las palabras de útiles escolares en pleno corazón de Manhattan.',
     learningFocus: 'Unit 1 Supplies: Big Red Pencil, English Backpack, Yellow Taxi.',
     targets: [
@@ -188,7 +191,7 @@ const WORLD_TOUR_SCENES: WorldTourScene[] = [
     difficulty: 'Medium',
     xpReward: 65,
     timeLimitSeconds: 55,
-    imageUrl: '/src/assets/images/wheres_guaky_sf_1792356358190.jpg',
+    imageUrl: '/images/wheres_guaky/wheres_guaky_sf_1792356358190.jpg',
     storyContext: 'Empinadas colinas victorianas, el majestuoso Golden Gate entre la niebla marina, leones marinos tomando el sol en el muelle y tranvías históricos cruzando la bahía.',
     learningFocus: 'Unit 1 Places & Transport: Cable Car, English Dictionary, Sea Lions.',
     targets: [
@@ -240,7 +243,7 @@ const WORLD_TOUR_SCENES: WorldTourScene[] = [
     difficulty: 'Easy',
     xpReward: 65,
     timeLimitSeconds: 55,
-    imageUrl: '/src/assets/images/wheres_guaky_miami_1792442954620.jpg',
+    imageUrl: '/images/wheres_guaky/wheres_guaky_miami_1792442954620.jpg',
     storyContext: 'Patines, arquitectura Art Deco color pastel, palmeras meciéndose con la brisa marina y arena dorada. Güaky disfruta del sol de Florida junto al grupo de estudio de inglés frente al mar.',
     learningFocus: 'Unit 1 Vacation & Nature: Sunglasses, Smoothie Stand, Lifeguard Tower, Flamingos.',
     targets: [
@@ -303,7 +306,7 @@ const WORLD_TOUR_SCENES: WorldTourScene[] = [
     difficulty: 'Medium',
     xpReward: 70,
     timeLimitSeconds: 55,
-    imageUrl: '/src/assets/images/wheres_guaky_toronto_1792442969319.jpg',
+    imageUrl: '/images/wheres_guaky/wheres_guaky_toronto_1792442969319.jpg',
     storyContext: 'Hojas rojas de arce canadiense, tranvías rojos cruzando las calles, la gran torre CN rozando las nubes y pistas de patinaje sobre hielo. Güaky explora Ontario con su guía turística en inglés.',
     learningFocus: 'Unit 1 City Life & Transport: Red Streetcar, Ice Skating Rink, Rogers Dome, Maple Syrup.',
     targets: [
@@ -366,7 +369,7 @@ const WORLD_TOUR_SCENES: WorldTourScene[] = [
     difficulty: 'Medium',
     xpReward: 70,
     timeLimitSeconds: 55,
-    imageUrl: '/src/assets/images/wheres_guaky_mexico_1792442984260.jpg',
+    imageUrl: '/images/wheres_guaky/wheres_guaky_mexico_1792442984260.jpg',
     storyContext: 'Música de mariachi en vivo, trompetas, puestos de tacos al pastor y churros calientes, bailarinas de vestidos multicolores y escarabajos verdes. Güaky practica saludos bilingües con su mini sombrero.',
     learningFocus: 'Unit 1 Conversational Greetings: Hello Flashcard, Mariachi Band, Green Beetle Taxi, Art Dome.',
     targets: [
@@ -429,7 +432,7 @@ const WORLD_TOUR_SCENES: WorldTourScene[] = [
     difficulty: 'Medium',
     xpReward: 75,
     timeLimitSeconds: 50,
-    imageUrl: '/src/assets/images/wheres_guaky_bogota_1792443008104.jpg',
+    imageUrl: '/images/wheres_guaky/wheres_guaky_bogota_1792443008104.jpg',
     storyContext: 'Adoquines coloniales de La Candelaria, ciclistas de la Ciclovía, autobuses TransMilenio, café de tinto caliente en termos y el cerro de Monserrate entre la niebla. Güaky repasa su diccionario de inglés.',
     learningFocus: 'Unit 1 Study Essentials: English Dictionary, TransMilenio Bus, Wooden Chiva, Mountain Sanctuary.',
     targets: [
@@ -492,7 +495,7 @@ const WORLD_TOUR_SCENES: WorldTourScene[] = [
     difficulty: 'Medium',
     xpReward: 75,
     timeLimitSeconds: 50,
-    imageUrl: '/src/assets/images/wheres_guaky_panama_1792443023866.jpg',
+    imageUrl: '/images/wheres_guaky/wheres_guaky_panama_1792443023866.jpg',
     storyContext: 'El imponente Canal de Panamá con sus esclusas de agua, barcos de carga transitando los océanos, el moderno horizonte de rascacielos y carritos de raspados. Güaky aprende vocabulario marítimo con binoculares.',
     learningFocus: 'Unit 1 Maritime & World Trade: Binoculars, Cargo Container Ship, Raspaos Cart, Spiral Tower.',
     targets: [
@@ -555,7 +558,7 @@ const WORLD_TOUR_SCENES: WorldTourScene[] = [
     difficulty: 'Medium',
     xpReward: 80,
     timeLimitSeconds: 50,
-    imageUrl: '/src/assets/images/wheres_guaky_london_1792355962298.jpg',
+    imageUrl: '/images/wheres_guaky/wheres_guaky_london_1792355962298.jpg',
     storyContext: 'Una concurrida terminal de vuelos internacionales con pasajeros de todo el planeta, autobuses rojos londinenses de juguete, tiendas Duty Free y pilotos de aviación comercial.',
     learningFocus: 'Unit 1 Travel & Countries: World Map, Double Decker Bus, Departure Board.',
     targets: [
@@ -607,7 +610,7 @@ const WORLD_TOUR_SCENES: WorldTourScene[] = [
     difficulty: 'Medium',
     xpReward: 80,
     timeLimitSeconds: 50,
-    imageUrl: '/src/assets/images/wheres_guaky_paris_1792356384748.jpg',
+    imageUrl: '/images/wheres_guaky/wheres_guaky_paris_1792356384748.jpg',
     storyContext: 'El río Sena con sus barcos turísticos, la Torre Eiffel recortada contra las nubes, cafés con toldos de rayas y pintores con boinas en los adoquines de París. Güaky posa para un retrato al óleo.',
     learningFocus: 'Unit 1 Descriptive English: Artist Easel, Accordion, Eiffel Tower.',
     targets: [
@@ -659,7 +662,7 @@ const WORLD_TOUR_SCENES: WorldTourScene[] = [
     difficulty: 'Hard',
     xpReward: 85,
     timeLimitSeconds: 45,
-    imageUrl: '/src/assets/images/wheres_guaky_rome_1792356398788.jpg',
+    imageUrl: '/images/wheres_guaky/wheres_guaky_rome_1792356398788.jpg',
     storyContext: 'Gladiadores romanos tomándose selfies con smartphones, motos Vespa zumbando en las plazas de adoquines, fuentes barrocas y hornos de pizza crujiente frente al majestuoso Coliseo.',
     learningFocus: 'Unit 1 Culture & Objects: Gelato Cone, Roman Column, Roman Helmet.',
     targets: [
@@ -711,7 +714,7 @@ const WORLD_TOUR_SCENES: WorldTourScene[] = [
     difficulty: 'Hard',
     xpReward: 85,
     timeLimitSeconds: 45,
-    imageUrl: '/src/assets/images/wheres_guaky_madrid_1792443040435.jpg',
+    imageUrl: '/images/wheres_guaky/wheres_guaky_madrid_1792443040435.jpg',
     storyContext: 'La emblemática Gran Vía madrileña con el edificio Metrópolis, terrazas con chocolate con churros, el estanque de El Retiro y aficionados de fútbol. Güaky sostiene la llave dorada del conocimiento bilingüe.',
     learningFocus: 'Unit 1 Architecture & Key: Golden Key, Metropolis Dome, City Tour Bus, Rowing Boats.',
     targets: [
@@ -774,7 +777,7 @@ const WORLD_TOUR_SCENES: WorldTourScene[] = [
     difficulty: 'Hard',
     xpReward: 90,
     timeLimitSeconds: 45,
-    imageUrl: '/src/assets/images/wheres_guaky_valencia_1792443056744.jpg',
+    imageUrl: '/images/wheres_guaky/wheres_guaky_valencia_1792443056744.jpg',
     storyContext: 'El futurista complejo blanco de la Ciudad de las Artes y las Ciencias, los huertos de naranjos valencianos, las Fallas y la gran paella cocinada a leña. Güaky aprende ciencias y fotosíntesis en inglés.',
     learningFocus: 'Unit 1 Science & Food: Wooden Spoon, Giant Paella, Arts & Sciences Dome, Orange Groves.',
     targets: [
@@ -837,7 +840,7 @@ const WORLD_TOUR_SCENES: WorldTourScene[] = [
     difficulty: 'Hard',
     xpReward: 95,
     timeLimitSeconds: 40,
-    imageUrl: '/src/assets/images/wheres_guaky_barcelona_1792443072919.jpg',
+    imageUrl: '/images/wheres_guaky/wheres_guaky_barcelona_1792443072919.jpg',
     storyContext: 'Las torres de la Sagrada Família de Gaudí, los mosaicos del Park Güell con la salamandra de colores, artistas callejeros y la afición del Barça. Güaky comparte tarjetas de conversación en inglés.',
     learningFocus: 'Unit 1 Advanced Cultural Exchange: Mosaic Salamander, Sagrada Família, Barça Fans, Practice Card.',
     targets: [
@@ -900,7 +903,7 @@ const WORLD_TOUR_SCENES: WorldTourScene[] = [
     difficulty: 'Hard',
     xpReward: 100,
     timeLimitSeconds: 40,
-    imageUrl: '/src/assets/images/wheres_guaky_campus_1792355974486.jpg',
+    imageUrl: '/images/wheres_guaky/wheres_guaky_campus_1792355974486.jpg',
     storyContext: 'El corazón académico de Güakytopia: cientos de alumnos practicando debates en inglés, puestos de café Campus Brew, partidas de ajedrez en la grama y ceremonias de grado bajo las palmeras reales.',
     learningFocus: 'Unit 1 Mastery: Study Squad, Royal Palm, Stone Archway.',
     targets: [
@@ -955,6 +958,9 @@ export const WheresGuakyGame: React.FC<WheresGuakyGameProps> = ({
   const [secondsRemaining, setSecondsRemaining] = useState(60);
   const [clickedCoords, setClickedCoords] = useState<{ x: number; y: number } | null>(null);
   const [clickFeedback, setClickFeedback] = useState<'miss' | 'hit' | null>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isImageLoading, setIsImageLoading] = useState(true);
+  const [isPanning, setIsPanning] = useState(false);
 
   // Targets found in the current scene session: { targetId: true }
   const [foundTargetsInScene, setFoundTargetsInScene] = useState<Record<string, boolean>>({});
@@ -983,6 +989,25 @@ export const WheresGuakyGame: React.FC<WheresGuakyGameProps> = ({
   const activeTarget = scene.targets[selectedTargetIndex] || scene.targets[0];
   const timerRef = useRef<number | null>(null);
   const boardRef = useRef<HTMLDivElement>(null);
+  const boardContainerRef = useRef<HTMLDivElement>(null);
+  const dragStartRef = useRef<{ x: number; y: number; scrollLeft: number; scrollTop: number } | null>(null);
+  const hasMovedRef = useRef<boolean>(false);
+
+  // Reset loading whenever active scene changes
+  useEffect(() => {
+    setIsImageLoading(true);
+  }, [activeSceneIndex]);
+
+  // Escape key exits fullscreen
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isFullscreen) {
+        setIsFullscreen(false);
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [isFullscreen]);
 
   // Audio synthesis
   const playSfx = (type: 'win' | 'miss' | 'hit_object' | 'start') => {
@@ -1054,6 +1079,34 @@ export const WheresGuakyGame: React.FC<WheresGuakyGameProps> = ({
     };
   }, [gameStatus]);
 
+  const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (zoomLevel <= 1 || !boardContainerRef.current) return;
+    dragStartRef.current = {
+      x: e.clientX,
+      y: e.clientY,
+      scrollLeft: boardContainerRef.current.scrollLeft,
+      scrollTop: boardContainerRef.current.scrollTop
+    };
+    hasMovedRef.current = false;
+    setIsPanning(true);
+  };
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!isPanning || !dragStartRef.current || !boardContainerRef.current) return;
+    const dx = e.clientX - dragStartRef.current.x;
+    const dy = e.clientY - dragStartRef.current.y;
+    if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
+      hasMovedRef.current = true;
+      boardContainerRef.current.scrollLeft = dragStartRef.current.scrollLeft - dx;
+      boardContainerRef.current.scrollTop = dragStartRef.current.scrollTop - dy;
+    }
+  };
+
+  const handleMouseUp = () => {
+    setIsPanning(false);
+    dragStartRef.current = null;
+  };
+
   const handleStartMission = () => {
     setSecondsRemaining(scene.timeLimitSeconds);
     setGameStatus('searching');
@@ -1063,9 +1116,19 @@ export const WheresGuakyGame: React.FC<WheresGuakyGameProps> = ({
     setFoundTargetsInScene({});
     setSelectedTargetIndex(0);
     playSfx('start');
+
+    // Smoothly scroll the interactive board into view so the user has the full playing area visible
+    setTimeout(() => {
+      boardContainerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 150);
   };
 
   const handleBoardClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    // If the user was dragging/panning the board, do not register as a missed target click
+    if (hasMovedRef.current) {
+      hasMovedRef.current = false;
+      return;
+    }
     if (gameStatus !== 'searching' || !boardRef.current) return;
 
     const rect = boardRef.current.getBoundingClientRect();
@@ -1179,7 +1242,7 @@ export const WheresGuakyGame: React.FC<WheresGuakyGameProps> = ({
             <div className="flex flex-wrap items-center gap-2">
               <span className="text-[11px] font-black uppercase tracking-wider bg-white/15 px-3 py-1 rounded-full border border-white/20 flex items-center gap-1.5">
                 <Compass className="w-3.5 h-3.5 text-amber-300" />
-                World Tour Edition • Where&apos;s Waldo &amp; Güaky
+                World Tour Edition • ¿Dónde está Guaky? • Where&apos;s Guaky?
               </span>
               <span className="text-[11px] font-bold text-emerald-300 bg-emerald-500/20 px-2.5 py-0.5 rounded-full border border-emerald-400/30">
                 {totalCompletedScenes} de {WORLD_TOUR_SCENES.length} Ciudades Desbloqueadas
@@ -1187,13 +1250,13 @@ export const WheresGuakyGame: React.FC<WheresGuakyGameProps> = ({
             </div>
 
             <h2 className="text-2xl sm:text-4xl font-black tracking-tight text-white flex items-center gap-2.5">
-              <span>Where&apos;s Güaky: World Tour</span>
+              <span>¿Dónde está Guaky? (Where&apos;s Guaky: World Tour)</span>
               <span className="text-3xl animate-bounce">🌍🦜</span>
             </h2>
 
             <p className="text-xs sm:text-sm text-slate-200 leading-relaxed font-medium">
-              Viaja por las grandes metrópolis del mundo resolviendo misiones de vocabulario en ilustraciones gigantes estilo <em>Where&apos;s Waldo</em>.
-              Encuentra a <strong>Güaky</strong> y los <strong>objetos de vocabulario</strong> escondidos entre cientos de personajes.
+              Viaja por las grandes metrópolis del mundo resolviendo misiones de vocabulario en ilustraciones gigantes estilo <em>Where&apos;s Waldo / ¿Dónde está Wally?</em>.
+              Encuentra a <strong>Guaky</strong> y los <strong>objetos de vocabulario</strong> escondidos entre cientos de personajes.
             </p>
           </div>
 
@@ -1202,7 +1265,7 @@ export const WheresGuakyGame: React.FC<WheresGuakyGameProps> = ({
             <div className="w-14 h-14 rounded-2xl bg-white p-1 border-2 border-amber-400 shadow-md shrink-0 flex items-center justify-center overflow-hidden">
               <img 
                 src="/guaky-mascota.png" 
-                alt="Güaky Oficial" 
+                alt="Guaky Oficial" 
                 className="w-full h-full object-contain"
                 referrerPolicy="no-referrer"
               />
@@ -1292,26 +1355,41 @@ export const WheresGuakyGame: React.FC<WheresGuakyGameProps> = ({
       </div>
 
       {/* 3. MAIN INTERACTIVE BOARD CONTAINER */}
-      <div className="bg-white rounded-3xl border border-slate-200 shadow-md p-4 sm:p-6 space-y-4">
+      <div className={`bg-white rounded-3xl border border-slate-200 shadow-md p-4 sm:p-6 space-y-4 transition-all ${
+        isFullscreen 
+          ? 'fixed inset-0 z-50 rounded-none border-none p-3 sm:p-5 bg-slate-950 text-white flex flex-col justify-between overflow-hidden' 
+          : ''
+      }`}>
         
-        {/* Top Control Bar: City info, targets checklist, zoom & timer */}
-        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 bg-slate-50 p-4 rounded-2xl border border-slate-200">
+        {/* Top Control Bar: City info, targets checklist, zoom, fullscreen & timer */}
+        <div className={`flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 p-4 rounded-2xl border ${
+          isFullscreen 
+            ? 'bg-slate-900 border-slate-800 text-white' 
+            : 'bg-slate-50 border-slate-200'
+        }`}>
           
           {/* Left: Location & Target Objectives */}
           <div className="space-y-2 w-full lg:w-auto">
             <div className="flex flex-wrap items-center gap-2 text-xs">
-              <span className="font-bold text-slate-900 bg-white px-3 py-1 rounded-xl border border-slate-200 shadow-2xs flex items-center gap-1.5">
+              <span className={`font-bold px-3 py-1 rounded-xl border shadow-2xs flex items-center gap-1.5 ${
+                isFullscreen ? 'bg-slate-800 text-white border-slate-700' : 'text-slate-900 bg-white border-slate-200'
+              }`}>
                 <span className="text-base">{scene.countryFlag}</span>
                 <span>{scene.cityName}, {scene.countryName}</span>
               </span>
-              <span className="text-[11px] font-bold text-indigo-700 bg-indigo-50 px-2.5 py-0.5 rounded-lg border border-indigo-200">
+              <span className="text-[11px] font-bold text-indigo-400 bg-indigo-950/60 px-2.5 py-0.5 rounded-lg border border-indigo-500/30">
                 {scene.learningFocus}
               </span>
+              {zoomLevel > 1 && (
+                <span className="text-[10px] font-bold text-amber-300 bg-amber-500/20 px-2 py-0.5 rounded-md border border-amber-400/30 flex items-center gap-1 animate-pulse">
+                  <Move className="w-3 h-3" /> Arrastra la pantalla para moverte
+                </span>
+              )}
             </div>
 
             {/* Checklist of Hidden Items for this Level */}
             <div className="flex flex-wrap items-center gap-2 pt-1">
-              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
                 Objetivos a buscar:
               </span>
               {scene.targets.map((tgt, idx) => {
@@ -1324,16 +1402,18 @@ export const WheresGuakyGame: React.FC<WheresGuakyGameProps> = ({
                     onClick={() => setSelectedTargetIndex(idx)}
                     className={`px-3 py-1 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 border ${
                       isFound
-                        ? 'bg-emerald-100 text-emerald-800 border-emerald-300 line-through opacity-80'
+                        ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 line-through opacity-80'
                         : isSelected
-                        ? 'bg-slate-900 text-amber-300 border-slate-900 shadow-xs ring-2 ring-amber-300'
+                        ? 'bg-amber-400 text-slate-950 border-amber-300 shadow-xs ring-2 ring-amber-300 font-black'
+                        : isFullscreen
+                        ? 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700'
                         : 'bg-white hover:bg-slate-100 text-slate-700 border-slate-200'
                     }`}
                   >
                     <span>{tgt.icon}</span>
                     <span>{tgt.name}</span>
                     {isFound ? (
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
                     ) : (
                       <span className="w-2 h-2 rounded-full bg-amber-400" />
                     )}
@@ -1344,13 +1424,25 @@ export const WheresGuakyGame: React.FC<WheresGuakyGameProps> = ({
           </div>
 
           {/* Right: Controls & Timer */}
-          <div className="flex flex-wrap items-center gap-2.5 w-full lg:w-auto justify-end">
-            {/* Zoom Controls */}
-            <div className="flex items-center bg-white rounded-xl border border-slate-200 p-0.5 shadow-2xs">
+          <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto justify-end">
+            {/* Zoom Controls with +/- */}
+            <div className={`flex items-center rounded-xl border p-0.5 shadow-2xs ${
+              isFullscreen ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'
+            }`}>
+              <button
+                type="button"
+                onClick={() => setZoomLevel(prev => (prev === 1.8 ? 1.4 : prev === 1.4 ? 1 : 1))}
+                disabled={zoomLevel <= 1}
+                className="p-1.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white disabled:opacity-30 transition-colors"
+                title="Alejar (-)"
+              >
+                <ZoomOut className="w-3.5 h-3.5" />
+              </button>
+
               <button
                 type="button"
                 onClick={() => setZoomLevel(1)}
-                className={`p-1.5 rounded-lg text-xs font-bold transition-colors ${zoomLevel === 1 ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-100'}`}
+                className={`px-2 py-1 rounded-lg text-xs font-bold transition-colors ${zoomLevel === 1 ? 'bg-amber-400 text-slate-950 font-black' : 'text-slate-400 hover:text-white'}`}
                 title="Vista panorámica (1x)"
               >
                 1x
@@ -1358,7 +1450,7 @@ export const WheresGuakyGame: React.FC<WheresGuakyGameProps> = ({
               <button
                 type="button"
                 onClick={() => setZoomLevel(1.4)}
-                className={`p-1.5 rounded-lg text-xs font-bold transition-colors ${zoomLevel === 1.4 ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-100'}`}
+                className={`px-2 py-1 rounded-lg text-xs font-bold transition-colors ${zoomLevel === 1.4 ? 'bg-amber-400 text-slate-950 font-black' : 'text-slate-400 hover:text-white'}`}
                 title="Zoom medio (1.4x)"
               >
                 1.4x
@@ -1366,12 +1458,46 @@ export const WheresGuakyGame: React.FC<WheresGuakyGameProps> = ({
               <button
                 type="button"
                 onClick={() => setZoomLevel(1.8)}
-                className={`p-1.5 rounded-lg text-xs font-bold transition-colors ${zoomLevel === 1.8 ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-100'}`}
+                className={`px-2 py-1 rounded-lg text-xs font-bold transition-colors ${zoomLevel === 1.8 ? 'bg-amber-400 text-slate-950 font-black' : 'text-slate-400 hover:text-white'}`}
                 title="Zoom máximo (1.8x)"
               >
                 1.8x
               </button>
+
+              <button
+                type="button"
+                onClick={() => setZoomLevel(prev => (prev === 1 ? 1.4 : prev === 1.4 ? 1.8 : 1.8))}
+                disabled={zoomLevel >= 1.8}
+                className="p-1.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white disabled:opacity-30 transition-colors"
+                title="Acercar (+)"
+              >
+                <ZoomIn className="w-3.5 h-3.5" />
+              </button>
             </div>
+
+            {/* Pantalla Completa Toggle */}
+            <button
+              type="button"
+              onClick={() => setIsFullscreen(!isFullscreen)}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 border shadow-2xs ${
+                isFullscreen
+                  ? 'bg-rose-500 hover:bg-rose-600 text-white border-rose-400 font-black'
+                  : 'bg-white hover:bg-slate-100 text-slate-800 border-slate-200'
+              }`}
+              title={isFullscreen ? 'Salir de pantalla completa (Esc)' : 'Expandir a pantalla completa'}
+            >
+              {isFullscreen ? (
+                <>
+                  <Minimize2 className="w-3.5 h-3.5" />
+                  <span>Cerrar Pantalla Completa</span>
+                </>
+              ) : (
+                <>
+                  <Maximize2 className="w-3.5 h-3.5 text-indigo-600" />
+                  <span>Pantalla Completa</span>
+                </>
+              )}
+            </button>
 
             {/* Clue button */}
             <button
@@ -1394,7 +1520,7 @@ export const WheresGuakyGame: React.FC<WheresGuakyGameProps> = ({
 
             {/* Timer */}
             {gameStatus === 'searching' && (
-              <div className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-900 text-amber-300 rounded-xl font-mono text-xs font-black shadow-xs">
+              <div className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-900 text-amber-300 rounded-xl font-mono text-xs font-black shadow-xs border border-amber-400/30">
                 <Clock className="w-3.5 h-3.5 text-amber-400 animate-spin" />
                 <span>{secondsRemaining}s</span>
               </div>
@@ -1424,14 +1550,45 @@ export const WheresGuakyGame: React.FC<WheresGuakyGameProps> = ({
           </div>
         )}
 
-        {/* FULL WIMMELBILD ILLUSTRATION BOARD (SCROLLABLE & ZOOMABLE) */}
-        <div className="relative w-full rounded-3xl overflow-hidden border-2 border-slate-300 shadow-xl bg-slate-950">
+        {/* FULL WIMMELBILD ILLUSTRATION BOARD (SCROLLABLE & ZOOMABLE & DRAGGABLE) */}
+        <div className={`relative w-full rounded-3xl overflow-hidden border-2 border-slate-300 shadow-xl bg-slate-950 ${
+          isFullscreen ? 'flex-1 min-h-0' : ''
+        }`}>
           
-          <div className="w-full max-h-[580px] overflow-auto scrollbar-thin">
+          <div 
+            ref={boardContainerRef}
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+            onMouseLeave={handleMouseUp}
+            className={`w-full overflow-auto scrollbar-thin transition-all select-none relative ${
+              isFullscreen 
+                ? 'h-full max-h-none' 
+                : 'h-[62vh] min-h-[460px] max-h-[700px]'
+            } ${isPanning ? 'cursor-grabbing' : zoomLevel > 1 ? 'cursor-grab' : 'cursor-crosshair'}`}
+          >
+            {/* Loading state for illustration */}
+            {isImageLoading && (
+              <div className="absolute inset-0 bg-slate-950/90 backdrop-blur-xs flex flex-col items-center justify-center p-6 text-center text-white z-20 space-y-3">
+                <div className="w-16 h-16 rounded-2xl bg-white p-2 border-2 border-amber-400 shadow-xl flex items-center justify-center animate-bounce">
+                  <img 
+                    src="/guaky-mascota.png" 
+                    alt="Guaky Oficial" 
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+                <div className="flex items-center gap-2 text-amber-300 font-bold text-sm">
+                  <Loader2 className="w-4 h-4 animate-spin text-amber-400" />
+                  <span>Cargando escena de {scene.cityName}...</span>
+                </div>
+                <p className="text-xs text-slate-400">Preparando ilustración y personajes escondidos</p>
+              </div>
+            )}
+
             <div 
               ref={boardRef}
               onClick={handleBoardClick}
-              className="relative cursor-crosshair select-none transition-transform origin-top-left"
+              className="relative select-none transition-transform origin-top-left"
               style={{
                 width: `${zoomLevel * 100}%`,
                 minWidth: '100%'
@@ -1441,7 +1598,11 @@ export const WheresGuakyGame: React.FC<WheresGuakyGameProps> = ({
               <img
                 src={scene.imageUrl}
                 alt={`${scene.cityName} - ${scene.title}`}
-                className="w-full h-auto block select-none pointer-events-auto"
+                onLoad={() => setIsImageLoading(false)}
+                onError={() => setIsImageLoading(false)}
+                className={`w-full h-auto block select-none pointer-events-auto transition-opacity duration-300 ${
+                  isImageLoading ? 'opacity-0' : 'opacity-100'
+                }`}
                 draggable={false}
                 referrerPolicy="no-referrer"
               />
@@ -1487,7 +1648,7 @@ export const WheresGuakyGame: React.FC<WheresGuakyGameProps> = ({
               <div className="w-20 h-20 rounded-3xl bg-white p-2 border-2 border-amber-400 shadow-xl flex items-center justify-center animate-bounce">
                 <img 
                   src="/guaky-mascota.png" 
-                  alt="Güaky" 
+                  alt="Guaky Oficial" 
                   className="w-full h-full object-contain"
                   referrerPolicy="no-referrer"
                 />
@@ -1508,7 +1669,7 @@ export const WheresGuakyGame: React.FC<WheresGuakyGameProps> = ({
               </div>
 
               <div className="p-3 bg-white/10 rounded-2xl border border-white/10 max-w-sm text-xs text-amber-200">
-                <span>🎯 Encuentra a <strong>Güaky y los {scene.targets.length - 1} objetos de vocabulario</strong> antes de que termine el tiempo ({scene.timeLimitSeconds}s).</span>
+                <span>🎯 Encuentra a <strong>Guaky y los {scene.targets.length - 1} objetos de vocabulario</strong> antes de que termine el tiempo ({scene.timeLimitSeconds}s).</span>
               </div>
 
               <button
@@ -1597,7 +1758,7 @@ export const WheresGuakyGame: React.FC<WheresGuakyGameProps> = ({
           <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200 text-xs">
             <span className="font-bold text-slate-900 block mb-0.5">📚 Vocabulario Curricular Nivel 1</span>
             <p className="text-slate-500 text-[11px] leading-relaxed">
-              No solo buscas a Güaky: también identificas útiles escolares, medios de transporte, alimentos y monumentos en inglés.
+              No solo buscas a Guaky: también identificas útiles escolares, medios de transporte, alimentos y monumentos en inglés.
             </p>
           </div>
           <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200 text-xs">
