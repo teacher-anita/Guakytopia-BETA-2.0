@@ -202,7 +202,7 @@ export const GamificationHub: React.FC<GamificationHubProps> = ({
           }`}
         >
           <Search className="w-4 h-4 text-amber-500" />
-          <span>🔍 ¿Dónde está Guaky? • Where&apos;s Guaky?</span>
+          <span>🔍 Where&apos;s Güaky?</span>
           <span className="text-[10px] bg-amber-400 text-slate-950 font-black px-1.5 py-0.2 rounded-full">XP</span>
         </button>
 

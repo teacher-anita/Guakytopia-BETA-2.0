@@ -22,7 +22,9 @@ import {
   Compass,
   Award,
   Layers,
-  BookOpen
+  BookOpen,
+  Languages,
+  Globe
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { Student, AudienceTheme } from '../types';
@@ -32,6 +34,7 @@ interface WheresGuakyGameProps {
   audienceTheme: AudienceTheme;
   onAwardXp: (studentId: string, amount: number) => void;
 }
+export type WheresGüakyGameProps = WheresGuakyGameProps;
 
 export interface HiddenTarget {
   id: string;
@@ -59,8 +62,9 @@ export interface WorldTourScene {
   timeLimitSeconds: number;
   imageUrl: string;
   storyContext: string;
+  storyContextEnglish: string;
   learningFocus: string;
-  // Multiple hidden targets: Guaky + Level 1 curriculum vocabulary objects
+  // Multiple hidden targets: Güaky + Level 1 curriculum vocabulary objects
   targets: {
     id: string;
     name: string;
@@ -87,8 +91,9 @@ const WORLD_TOUR_SCENES: WorldTourScene[] = [
     difficulty: 'Easy',
     xpReward: 50,
     timeLimitSeconds: 60,
-    imageUrl: '/images/wheres_guaky/wheres_guaky_caracas_1792356372195.jpg',
+    imageUrl: '/images/wheres_guaky/wheres_guaky_caracas_retro.jpg',
     storyContext: '¡Bienvenidos al valle de Caracas! Frente al majestuoso Ávila y el teleférico, la gente disfruta de arepas, empanadas, salsa y dominó en el parque. Güaky acompaña a dos estudiantes recién graduadas de inglés.',
+    storyContextEnglish: 'Welcome to Caracas! Facing majestic Mount Ávila and the cable car, people enjoy arepas, tropical snacks, lively salsa music and dominoes in the park. Güaky cheers alongside two proud English academy graduates.',
     learningFocus: 'Unit 1 Vocabulary: Greetings, Graduation Cap, Mango Cart, Flag.',
     targets: [
       {
@@ -97,33 +102,33 @@ const WORLD_TOUR_SCENES: WorldTourScene[] = [
         nameSpanish: 'Güaky el Guacamayo',
         icon: '🦜',
         isMainMascot: true,
-        xPercent: 61.5,
-        yPercent: 78.5,
+        xPercent: 20.5,
+        yPercent: 38.0,
         hitRadiusPercent: 6.5,
-        clueEnglish: '“I am standing in the foreground, waving next to two happy students wearing graduation caps!”',
-        clueSpanish: 'Güaky está al frente a la derecha, saludando junto a dos estudiantes con birretes de graduación.'
+        clueEnglish: '“Look on the left in the flowering pink trumpet tree! I am nestled naturally on a branch among the tropical blossoms!”',
+        clueSpanish: 'En el árbol de flores rosadas a la izquierda, Güaky está posado entre las ramas y flores tropicales.'
       },
       {
         id: 'arepa_cart',
         name: 'Arepas Stand',
         nameSpanish: 'Puesto de Arepas',
         icon: '🫓',
-        xPercent: 12.0,
-        yPercent: 78.0,
+        xPercent: 73.0,
+        yPercent: 75.0,
         hitRadiusPercent: 7.0,
-        clueEnglish: '“Look in the lower-left corner for the colorful food cart that says \'Arepas y Sabor\'!”',
-        clueSpanish: 'En la esquina inferior izquierda, el carrito de comida con toldo de rayas.'
+        clueEnglish: '“Look in the lower-right area for the cheerful yellow-and-orange canopy cart cooking fresh Venezuelan arepas!”',
+        clueSpanish: 'Abajo a la derecha, el carrito con toldo amarillo y naranja preparando arepas calientes.'
       },
       {
         id: 'cable_car',
         name: 'Teleférico Cable Car',
         nameSpanish: 'Cabina del Teleférico',
         icon: '🚠',
-        xPercent: 88.0,
-        yPercent: 10.0,
+        xPercent: 33.0,
+        yPercent: 20.0,
         hitRadiusPercent: 6.0,
-        clueEnglish: '“Look high up in the blue sky! A red cable car is heading towards El Ávila mountain!”',
-        clueSpanish: 'Arriba en el cielo azul, una cabina roja del teleférico subiendo al Ávila.'
+        clueEnglish: '“Look high up towards Mount Ávila! A red cable car cabin is ascending along the cables!”',
+        clueSpanish: 'Arriba en la montaña del Ávila, una cabina roja del teleférico subiendo por los cables.'
       }
     ]
   },
@@ -139,43 +144,44 @@ const WORLD_TOUR_SCENES: WorldTourScene[] = [
     difficulty: 'Medium',
     xpReward: 60,
     timeLimitSeconds: 60,
-    imageUrl: '/images/wheres_guaky/wheres_guaky_nyc_1792356345839.jpg',
+    imageUrl: '/images/wheres_guaky/wheres_guaky_nyc_retro.jpg',
     storyContext: 'Luces de neón de Broadway, taxis amarillos tocando corneta y puestos de hot dogs en Times Square. Güaky está aprendiendo las palabras de útiles escolares en pleno corazón de Manhattan.',
-    learningFocus: 'Unit 1 Supplies: Big Red Pencil, English Backpack, Yellow Taxi.',
+    storyContextEnglish: 'Neon Broadway marquees, yellow cabs honking in traffic, and bustling crowds in Times Square. Güaky is learning school supplies and city words right in the heart of Manhattan.',
+    learningFocus: 'Unit 1 Supplies: Bookstore, English Backpack, Yellow Taxi.',
     targets: [
       {
         id: 'guaky',
-        name: 'Güaky with Red Pencil',
-        nameSpanish: 'Güaky con su Lápiz Rojo',
+        name: 'Güaky on the Fire Escape',
+        nameSpanish: 'Güaky en la Escalera de Incendios',
         icon: '🦜',
         isMainMascot: true,
-        xPercent: 66.5,
-        yPercent: 63.5,
-        hitRadiusPercent: 6.5,
-        clueEnglish: '“I am right in the middle of Times Square, holding a giant red classroom pencil next to the I ❤️ NY tourists!”',
-        clueSpanish: 'Güaky está en el centro-derecha, sosteniendo un lápiz rojo gigante entre los taxis amarillos.'
+        xPercent: 20.8,
+        yPercent: 13.5,
+        hitRadiusPercent: 6.0,
+        clueEnglish: '“Look at the brick building on the left! I am perched discreetly on the upper fire escape balcony next to flower pots and laundry!”',
+        clueSpanish: 'En el edificio de ladrillos a la izquierda, Güaky está en el balcón superior de la escalera de incendios junto a las macetas.'
       },
       {
-        id: 'hotdog_cart',
-        name: 'New York Hot Dog Cart',
-        nameSpanish: 'Carrito de Hot Dogs',
-        icon: '🌭',
-        xPercent: 33.0,
-        yPercent: 79.0,
-        hitRadiusPercent: 6.5,
-        clueEnglish: '“Find the vendor under the red and white umbrella serving delicious hot dogs!”',
-        clueSpanish: 'El vendedor bajo la sombrilla roja y blanca en el centro inferior.'
+        id: 'yellow_taxi',
+        name: 'Yellow Checker Cab',
+        nameSpanish: 'Taxi Amarillo de Nueva York',
+        icon: '🚕',
+        xPercent: 41.5,
+        yPercent: 75.0,
+        hitRadiusPercent: 7.0,
+        clueEnglish: '“Look right in the center of the street for the iconic yellow checker taxi cab!”',
+        clueSpanish: 'En el centro de la calle, el clásico taxi amarillo de Nueva York.'
       },
       {
-        id: 'donut_billboard',
-        name: 'Big Apple Donut Sign',
-        nameSpanish: 'Letrero Big Apple Donuts',
-        icon: '🍩',
-        xPercent: 13.0,
-        yPercent: 24.0,
-        hitRadiusPercent: 6.5,
-        clueEnglish: '“Look on the upper-left building facade for the Big Apple Donuts shop!”',
-        clueSpanish: 'Arriba a la izquierda, la fachada de la tienda de donuts con la manzana roja.'
+        id: 'broadway_marquee',
+        name: 'Broadway Theater Marquee',
+        nameSpanish: 'Marquesina de Teatro Broadway',
+        icon: '🎭',
+        xPercent: 35.0,
+        yPercent: 30.0,
+        hitRadiusPercent: 7.0,
+        clueEnglish: '“Look along the Broadway facade for the large illustrated poster marquee for The Phantom of the Opera!”',
+        clueSpanish: 'En la fachada de Broadway, la marquesina con la máscara blanca de Phantom of the Opera.'
       }
     ]
   },
@@ -558,43 +564,44 @@ const WORLD_TOUR_SCENES: WorldTourScene[] = [
     difficulty: 'Medium',
     xpReward: 80,
     timeLimitSeconds: 50,
-    imageUrl: '/images/wheres_guaky/wheres_guaky_london_1792355962298.jpg',
+    imageUrl: '/images/wheres_guaky/wheres_guaky_london_retro.jpg',
     storyContext: 'Una concurrida terminal de vuelos internacionales con pasajeros de todo el planeta, autobuses rojos londinenses de juguete, tiendas Duty Free y pilotos de aviación comercial.',
+    storyContextEnglish: 'A bustling international airport terminal in London with Big Ben and red double-decker buses outside, hundreds of travelers with luggage, and pilots preparing for flight. Güaky is disguised right near the departures board.',
     learningFocus: 'Unit 1 Travel & Countries: World Map, Double Decker Bus, Departure Board.',
     targets: [
       {
         id: 'guaky',
-        name: 'Güaky with World Map',
-        nameSpanish: 'Güaky con el Mapa Mundial',
+        name: 'Güaky on the Luggage Trolley',
+        nameSpanish: 'Güaky en el Carrito de Equipaje',
         icon: '🦜',
         isMainMascot: true,
-        xPercent: 51.5,
-        yPercent: 60.5,
-        hitRadiusPercent: 6.5,
-        clueEnglish: '“I am in the center walkway, holding an open green world map next to the nun and the luggage trolley!”',
-        clueSpanish: 'Güaky está justo al centro sosteniendo un mapa verde entre las maletas y la monja.'
-      },
-      {
-        id: 'double_decker',
-        name: 'Red Double Decker Toy Bus',
-        nameSpanish: 'Autobús Rojo Londinense',
-        icon: '🚌',
-        xPercent: 13.0,
-        yPercent: 62.0,
+        xPercent: 88.0,
+        yPercent: 71.0,
         hitRadiusPercent: 6.0,
-        clueEnglish: '“On the shelves of the Duty Free shop on the left, find the iconic London red double-decker bus!”',
-        clueSpanish: 'En los estantes de la tienda Duty Free a la izquierda, los autobuses rojos ingleses.'
+        clueEnglish: '“Look in the lower-right area near the British Tea & Cakes cart! I am perched atop stacked vintage leather suitcases on a luggage trolley!”',
+        clueSpanish: 'Abajo a la derecha junto al puesto de té británico, Güaky está sobre las maletas de cuero en el carrito de equipaje.'
       },
       {
         id: 'flight_board',
-        name: 'Airport Departures Board',
+        name: 'Departures Flight Board',
         nameSpanish: 'Pantalla de Salidas de Vuelo',
         icon: '🛫',
-        xPercent: 12.0,
-        yPercent: 14.0,
+        xPercent: 33.0,
+        yPercent: 15.0,
+        hitRadiusPercent: 8.0,
+        clueEnglish: '“Look up at the giant retro split-flap timetable board showing flight departures to New York, Paris, and Heathrow!”',
+        clueSpanish: 'Arriba el gran panel mecánico retro de salidas con vuelos a Nueva York, París y Heathrow.'
+      },
+      {
+        id: 'double_decker',
+        name: 'London Red Double-Decker Bus',
+        nameSpanish: 'Autobús Rojo de Dos Pisos',
+        icon: '🚌',
+        xPercent: 59.0,
+        yPercent: 26.0,
         hitRadiusPercent: 7.0,
-        clueEnglish: '“Look up in the top left corner for the big electronic board listing London departures!”',
-        clueSpanish: 'Arriba a la izquierda, la gran pantalla negra con la lista de vuelos a distintas ciudades.'
+        clueEnglish: '“Look through the great glass station arches outside where the classic red London double-decker bus is parked!”',
+        clueSpanish: 'A través de los grandes arcos de cristal hacia la calle, el clásico autobús rojo de dos pisos de Londres.'
       }
     ]
   },
@@ -962,6 +969,35 @@ export const WheresGuakyGame: React.FC<WheresGuakyGameProps> = ({
   const [isImageLoading, setIsImageLoading] = useState(true);
   const [isPanning, setIsPanning] = useState(false);
 
+  // User identity: Spanglish is ONLY unlocked for our enrolled students
+  const isOurUser = Boolean(
+    currentStudent && 
+    currentStudent.id && 
+    currentStudent.id !== 'guest'
+  );
+
+  // Games are in English by default. Only our enrolled students can activate Spanglish mode.
+  const [spanglishMode, setSpanglishMode] = useState<boolean>(() => {
+    if (!currentStudent || currentStudent.id === 'guest') return false;
+    const saved = localStorage.getItem(`wheres_guaky_spanglish_${currentStudent.id}`);
+    return saved === 'true';
+  });
+
+  useEffect(() => {
+    if (!isOurUser) {
+      setSpanglishMode(false);
+    }
+  }, [isOurUser]);
+
+  const toggleSpanglish = () => {
+    if (!isOurUser) return;
+    const next = !spanglishMode;
+    setSpanglishMode(next);
+    if (currentStudent) {
+      localStorage.setItem(`wheres_guaky_spanglish_${currentStudent.id}`, String(next));
+    }
+  };
+
   // Targets found in the current scene session: { targetId: true }
   const [foundTargetsInScene, setFoundTargetsInScene] = useState<Record<string, boolean>>({});
   const [selectedTargetIndex, setSelectedTargetIndex] = useState<number>(0);
@@ -1242,22 +1278,47 @@ export const WheresGuakyGame: React.FC<WheresGuakyGameProps> = ({
             <div className="flex flex-wrap items-center gap-2">
               <span className="text-[11px] font-black uppercase tracking-wider bg-white/15 px-3 py-1 rounded-full border border-white/20 flex items-center gap-1.5">
                 <Compass className="w-3.5 h-3.5 text-amber-300" />
-                World Tour Edition • ¿Dónde está Guaky? • Where&apos;s Guaky?
+                World Tour Edition • Where&apos;s Güaky?
               </span>
               <span className="text-[11px] font-bold text-emerald-300 bg-emerald-500/20 px-2.5 py-0.5 rounded-full border border-emerald-400/30">
-                {totalCompletedScenes} de {WORLD_TOUR_SCENES.length} Ciudades Desbloqueadas
+                {totalCompletedScenes} of {WORLD_TOUR_SCENES.length} Cities Unlocked
               </span>
             </div>
 
             <h2 className="text-2xl sm:text-4xl font-black tracking-tight text-white flex items-center gap-2.5">
-              <span>¿Dónde está Guaky? (Where&apos;s Guaky: World Tour)</span>
+              <span>Where&apos;s Güaky? • World Tour</span>
               <span className="text-3xl animate-bounce">🌍🦜</span>
             </h2>
 
             <p className="text-xs sm:text-sm text-slate-200 leading-relaxed font-medium">
-              Viaja por las grandes metrópolis del mundo resolviendo misiones de vocabulario en ilustraciones gigantes estilo <em>Where&apos;s Waldo / ¿Dónde está Wally?</em>.
-              Encuentra a <strong>Guaky</strong> y los <strong>objetos de vocabulario</strong> escondidos entre cientos de personajes.
+              Travel through the world&apos;s greatest metropolises solving vocabulary missions in giant <em>Where&apos;s Waldo</em> style illustrations.
+              Find <strong>Güaky</strong> and the <strong>hidden English vocabulary items</strong> nestled among hundreds of bustling characters.
             </p>
+
+            {/* Language Mode: 100% English by default. Spanglish is exclusive for enrolled flock members. */}
+            <div className="pt-2 flex items-center gap-2">
+              {isOurUser ? (
+                <div className="flex items-center gap-2 bg-black/35 backdrop-blur-xs px-3 py-1.5 rounded-full border border-white/20 text-xs">
+                  <span className="text-slate-300 text-[11px]">Game Language:</span>
+                  <button
+                    type="button"
+                    onClick={toggleSpanglish}
+                    className={`px-2.5 py-0.5 rounded-full font-bold transition-all text-[11px] flex items-center gap-1.5 ${
+                      spanglishMode
+                        ? 'bg-amber-400 text-slate-950 font-black shadow-xs'
+                        : 'bg-white/20 text-white hover:bg-white/30'
+                    }`}
+                  >
+                    <span>{spanglishMode ? '🌴 Spanglish (Flock Member Mode)' : '🇺🇸 English (Default)'}</span>
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-1.5 text-[11px] text-amber-200 bg-black/30 backdrop-blur-xs px-3 py-1 rounded-full border border-white/15">
+                  <span>🇺🇸</span>
+                  <span>Game Language: <strong>English</strong> (Default)</span>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Right Status Card: Progress & Identity confirmation */}
@@ -1265,19 +1326,19 @@ export const WheresGuakyGame: React.FC<WheresGuakyGameProps> = ({
             <div className="w-14 h-14 rounded-2xl bg-white p-1 border-2 border-amber-400 shadow-md shrink-0 flex items-center justify-center overflow-hidden">
               <img 
                 src="/guaky-mascota.png" 
-                alt="Guaky Oficial" 
+                alt="Güaky Oficial" 
                 className="w-full h-full object-contain"
                 referrerPolicy="no-referrer"
               />
             </div>
             <div>
               <span className="text-[10px] text-amber-300 font-bold uppercase tracking-wider block">
-                Pasaporte Internacional
+                World Passport
               </span>
-              <p className="text-xs font-black text-white">Nivel Actual: {unlockedLevel}</p>
+              <p className="text-xs font-black text-white">Current Level: {unlockedLevel}</p>
               <div className="mt-1 flex items-center gap-1.5 text-[11px] text-slate-200">
                 <Trophy className="w-3.5 h-3.5 text-amber-300" />
-                <span>Recompensa: <strong>+{scene.xpReward} XP</strong></span>
+                <span>Reward: <strong>+{scene.xpReward} XP</strong></span>
               </div>
             </div>
           </div>
@@ -1289,9 +1350,9 @@ export const WheresGuakyGame: React.FC<WheresGuakyGameProps> = ({
         <div className="flex items-center justify-between text-xs font-bold text-slate-600 px-1">
           <span className="uppercase tracking-wider flex items-center gap-1.5">
             <MapPin className="w-4 h-4 text-rose-500" />
-            Ruta de Ciudades del Mundo (Haz clic para viajar)
+            World Tour Destinations (Click to travel)
           </span>
-          <span className="text-slate-400">Desbloqueas avanzando en la ruta</span>
+          <span className="text-slate-400">Unlock destinations as you advance</span>
         </div>
 
         <div className="flex items-center gap-2.5 overflow-x-auto pb-2 scrollbar-none">
@@ -1313,6 +1374,9 @@ export const WheresGuakyGame: React.FC<WheresGuakyGameProps> = ({
                   setZoomLevel(1);
                   setFoundTargetsInScene({});
                   setSelectedTargetIndex(0);
+                  setTimeout(() => {
+                    boardContainerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                  }, 100);
                 }}
                 disabled={!isUnlocked}
                 className={`p-3 rounded-2xl text-left border transition-all shrink-0 min-w-[170px] relative overflow-hidden ${
@@ -1329,15 +1393,15 @@ export const WheresGuakyGame: React.FC<WheresGuakyGameProps> = ({
                   <span className="text-lg">{sc.countryFlag}</span>
                   {isCompleted ? (
                     <span className="bg-emerald-500/20 text-emerald-600 font-black text-[10px] px-2 py-0.5 rounded-full flex items-center gap-1">
-                      <CheckCircle2 className="w-3 h-3 text-emerald-500" /> Superado
+                      <CheckCircle2 className="w-3 h-3 text-emerald-500" /> Completed
                     </span>
                   ) : !isUnlocked ? (
                     <span className="text-[10px] font-bold text-slate-400 flex items-center gap-1">
-                      <Lock className="w-3 h-3" /> Bloqueado
+                      <Lock className="w-3 h-3" /> Locked
                     </span>
                   ) : (
                     <span className="text-[10px] font-bold text-amber-500 bg-amber-50 px-2 py-0.5 rounded-full">
-                      Nivel {sc.levelNumber}
+                      Level {sc.levelNumber}
                     </span>
                   )}
                 </div>
@@ -1573,7 +1637,7 @@ export const WheresGuakyGame: React.FC<WheresGuakyGameProps> = ({
                 <div className="w-16 h-16 rounded-2xl bg-white p-2 border-2 border-amber-400 shadow-xl flex items-center justify-center animate-bounce">
                   <img 
                     src="/guaky-mascota.png" 
-                    alt="Guaky Oficial" 
+                    alt="Güaky Oficial" 
                     className="w-full h-full object-contain"
                   />
                 </div>
@@ -1648,7 +1712,7 @@ export const WheresGuakyGame: React.FC<WheresGuakyGameProps> = ({
               <div className="w-20 h-20 rounded-3xl bg-white p-2 border-2 border-amber-400 shadow-xl flex items-center justify-center animate-bounce">
                 <img 
                   src="/guaky-mascota.png" 
-                  alt="Guaky Oficial" 
+                  alt="Güaky Oficial" 
                   className="w-full h-full object-contain"
                   referrerPolicy="no-referrer"
                 />
@@ -1669,7 +1733,7 @@ export const WheresGuakyGame: React.FC<WheresGuakyGameProps> = ({
               </div>
 
               <div className="p-3 bg-white/10 rounded-2xl border border-white/10 max-w-sm text-xs text-amber-200">
-                <span>🎯 Encuentra a <strong>Guaky y los {scene.targets.length - 1} objetos de vocabulario</strong> antes de que termine el tiempo ({scene.timeLimitSeconds}s).</span>
+                <span>🎯 Encuentra a <strong>Güaky y los {scene.targets.length - 1} objetos de vocabulario</strong> antes de que termine el tiempo ({scene.timeLimitSeconds}s).</span>
               </div>
 
               <button
@@ -1758,7 +1822,7 @@ export const WheresGuakyGame: React.FC<WheresGuakyGameProps> = ({
           <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200 text-xs">
             <span className="font-bold text-slate-900 block mb-0.5">📚 Vocabulario Curricular Nivel 1</span>
             <p className="text-slate-500 text-[11px] leading-relaxed">
-              No solo buscas a Guaky: también identificas útiles escolares, medios de transporte, alimentos y monumentos en inglés.
+              No solo buscas a Güaky: también identificas útiles escolares, medios de transporte, alimentos y monumentos en inglés.
             </p>
           </div>
           <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200 text-xs">
@@ -1773,3 +1837,5 @@ export const WheresGuakyGame: React.FC<WheresGuakyGameProps> = ({
     </div>
   );
 };
+
+export const WheresGüakyGame = WheresGuakyGame;
