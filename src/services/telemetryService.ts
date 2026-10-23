@@ -34,9 +34,10 @@ export function getLocalStudentTelemetry(studentId: string): StudentTelemetry {
  */
 export async function trackStudentAction(
   student: Student | null,
-  section: 'hub' | 'classroom' | 'library' | 'lab' | 'calendar',
+  section: 'hub' | 'classroom' | 'library' | 'lab' | 'calendar' | 'arena',
   action: string,
-  detail?: string
+  detail?: string,
+  gameMeta?: { wordMastered?: string; wordNeedsPractice?: string; gameId?: string }
 ): Promise<StudentTelemetry | null> {
   if (!student || !student.id || student.id === 'guest') {
     return null;
@@ -53,6 +54,19 @@ export async function trackStudentAction(
     timestamp: nowIso
   };
 
+  // Update words lists
+  const prevNeedsPractice = currentTelemetry.wordsNeedsPractice || [];
+  let nextNeedsPractice = prevNeedsPractice;
+  if (gameMeta?.wordNeedsPractice && !prevNeedsPractice.includes(gameMeta.wordNeedsPractice)) {
+    nextNeedsPractice = [gameMeta.wordNeedsPractice, ...prevNeedsPractice].slice(0, 20);
+  } else if (gameMeta?.wordMastered && prevNeedsPractice.includes(gameMeta.wordMastered)) {
+    nextNeedsPractice = prevNeedsPractice.filter(w => w !== gameMeta.wordMastered);
+  }
+
+  const nextMasteredCount = gameMeta?.wordMastered 
+    ? (currentTelemetry.wordsMasteredCount || 0) + 1 
+    : (currentTelemetry.wordsMasteredCount || 0);
+
   const updatedTelemetry: StudentTelemetry = {
     ...currentTelemetry,
     totalInteractions: (currentTelemetry.totalInteractions || 0) + 1,
@@ -67,6 +81,11 @@ export async function trackStudentAction(
     lastLabVisit: section === 'lab' ? nowIso : currentTelemetry.lastLabVisit,
     calendarVisits: section === 'calendar' ? (currentTelemetry.calendarVisits || 0) + 1 : (currentTelemetry.calendarVisits || 0),
     lastCalendarVisit: section === 'calendar' ? nowIso : currentTelemetry.lastCalendarVisit,
+    arenaVisits: section === 'arena' ? (currentTelemetry.arenaVisits || 0) + 1 : (currentTelemetry.arenaVisits || 0),
+    lastArenaVisit: section === 'arena' ? nowIso : currentTelemetry.lastArenaVisit,
+    lastGamePlayed: gameMeta?.gameId || currentTelemetry.lastGamePlayed,
+    wordsMasteredCount: nextMasteredCount,
+    wordsNeedsPractice: nextNeedsPractice,
     recentActivity: [event, ...(currentTelemetry.recentActivity || [])].slice(0, 40)
   };
 

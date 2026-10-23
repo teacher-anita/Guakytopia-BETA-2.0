@@ -28,6 +28,7 @@ import {
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { Student, AudienceTheme } from '../types';
+import { trackStudentAction } from '../services/telemetryService';
 
 interface WheresGuakyGameProps {
   currentStudent: Student | null;

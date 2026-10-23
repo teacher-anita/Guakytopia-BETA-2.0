@@ -198,7 +198,7 @@ export interface Student {
 
 export interface StudentActivityEvent {
   id: string;
-  section: 'hub' | 'classroom' | 'library' | 'lab' | 'calendar';
+  section: 'hub' | 'classroom' | 'library' | 'lab' | 'calendar' | 'arena';
   action: string;
   detail?: string;
   timestamp: string;
@@ -215,9 +215,15 @@ export interface StudentTelemetry {
   lastLabVisit?: string;
   calendarVisits: number;
   lastCalendarVisit?: string;
+  arenaVisits?: number;
+  lastArenaVisit?: string;
   totalInteractions: number;
   lastActiveAt?: string;
   recentActivity: StudentActivityEvent[];
+  // Granular cognitive telemetry from games
+  wordsMasteredCount?: number;
+  wordsNeedsPractice?: string[];
+  lastGamePlayed?: string;
 }
 
 export interface TeacherAnnouncement {

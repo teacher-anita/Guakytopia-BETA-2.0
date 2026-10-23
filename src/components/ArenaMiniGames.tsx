@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { BookOpen, CheckCircle2, Clock3, Heart, RotateCcw, Search, Sparkles, Swords, User, Compass } from 'lucide-react';
 import { Student } from '../types';
 import { saveArenaLives, subscribeToArenaLives } from '../services/db';
+import { trackStudentAction } from '../services/telemetryService';
 
 interface ArenaMiniGamesProps {
   currentStudent: Student | null;
@@ -326,6 +327,20 @@ export const ArenaMiniGames: React.FC<ArenaMiniGamesProps> = ({ currentStudent, 
       unit: `unit_${word.unit}`,
       at: Date.now()
     }].slice(-MAX_LEARNING_SIGNALS));
+
+    // Persist real cognitive telemetry to student profile and Firestore Cloud
+    if (currentStudent && currentStudent.id !== 'guest') {
+      void trackStudentAction(
+        currentStudent,
+        'arena',
+        correct ? `Acierto en ${activeGame.toUpperCase()}` : `Dificultad en ${activeGame.toUpperCase()}`,
+        `Palabra: "${targetWord}" • Nivel: ${word.level} • Unidad: ${word.unit} (${word.category})`,
+        {
+          [correct ? 'wordMastered' : 'wordNeedsPractice']: targetWord,
+          gameId: activeGame
+        }
+      );
+    }
   };
 
   const winRound = (xp = 10) => {
