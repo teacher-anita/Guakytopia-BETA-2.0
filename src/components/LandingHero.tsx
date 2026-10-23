@@ -35,6 +35,7 @@ interface LandingHeroProps {
   onOpenOptimizer: () => void;
   onOpenPaymentModal?: () => void;
   onOpenPricingModal?: () => void;
+  onOpenGuakypedia?: () => void;
 }
 
 const JUNIOR_WORLDS = [
@@ -95,7 +96,8 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
   onExploreGamification,
   onOpenOptimizer,
   onOpenPaymentModal,
-  onOpenPricingModal
+  onOpenPricingModal,
+  onOpenGuakypedia
 }) => {
   const isKids = audienceTheme === 'kids';
 
@@ -294,6 +296,16 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
               <Calendar className="w-4 h-4 text-[#FFD166]" />
               <span>{isKids ? '📅 Misiones en Vivo & Horarios' : 'Ver Horarios & Flights'}</span>
             </button>
+            {onOpenGuakypedia && (
+              <button
+                onClick={onOpenGuakypedia}
+                className="px-6 py-4 rounded-2xl font-black text-sm bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-slate-950 shadow-lg transition-transform hover:scale-102 flex items-center justify-center gap-2"
+                title="Abrir Güakypedia • Guía Oficial de Güakytopia"
+              >
+                <BookOpen className="w-4 h-4" />
+                <span>🧭 Güakypedia Oficial</span>
+              </button>
+            )}
           </div>
 
           </div>

@@ -62,7 +62,7 @@ export interface WorldTourScene {
   timeLimitSeconds: number;
   imageUrl: string;
   storyContext: string;
-  storyContextEnglish: string;
+  storyContextEnglish?: string;
   learningFocus: string;
   // Multiple hidden targets: Güaky + Level 1 curriculum vocabulary objects
   targets: {

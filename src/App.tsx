@@ -26,6 +26,7 @@ import { ThemeSelectorModal, StudyThemeId } from './components/ThemeSelectorModa
 import { UnitOneMasterClass } from './components/UnitOneMasterClass';
 import { ClassroomHub } from './components/ClassroomHub';
 import { AcademicLibrary } from './components/AcademicLibrary';
+import { GuakypediaView } from './components/GuakypediaView';
 import { Student, ScheduleSlot, AudienceTheme, Teacher, StaffRole } from './types';
 import { INITIAL_STUDENTS, INITIAL_SCHEDULE_SLOTS, ENGLISH_LEVELS } from './data/curriculumData';
 import { INITIAL_TEACHERS } from './data/teachersData';
@@ -691,6 +692,18 @@ export default function App() {
             onOpenOptimizer={() => setIsOptimizerOpen(true)}
             onOpenPaymentModal={() => setIsPaymentModalOpen(true)}
             onOpenPricingModal={() => setIsPricingModalOpen(true)}
+            onOpenGuakypedia={() => setActiveTab('guakypedia')}
+          />
+        )}
+
+        {/* TAB: GÜAKYPEDIA (LA GUÍA OFICIAL PARA DESCUBRIR GÜAKYTOPIA) */}
+        {activeTab === 'guakypedia' && (
+          <GuakypediaView
+            audienceTheme={audienceTheme}
+            currentStudent={currentStudent}
+            onNavigateToTab={(tab) => setActiveTab(tab)}
+            onOpenPricingModal={() => setIsPricingModalOpen(true)}
+            onOpenCouponModal={() => setIsCouponOpen(true)}
           />
         )}
 
@@ -1065,6 +1078,13 @@ export default function App() {
               <ShieldCheck className="w-4 h-4" />
               Privacidad y Confidencialidad Garantizada
             </span>
+            <span>•</span>
+            <button
+              onClick={() => setActiveTab('guakypedia')}
+              className="text-amber-600 hover:underline font-black flex items-center gap-1"
+            >
+              <span>🧭 Güakypedia Oficial</span>
+            </button>
             <span>•</span>
             <button
               onClick={() => setIsThemeModalOpen(true)}

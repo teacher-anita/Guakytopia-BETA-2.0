@@ -102,6 +102,22 @@ export const Header: React.FC<HeaderProps> = ({
                 </button>
               )}
 
+              {/* GÜAKYPEDIA BUTTON (Enciclopedia & Guía Oficial) */}
+              <button
+                onClick={() => onTabChange('guakypedia')}
+                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-black transition-all shadow-2xs border ${
+                  activeTab === 'guakypedia'
+                    ? 'bg-gradient-to-r from-amber-400 to-orange-500 text-slate-950 border-amber-300 ring-2 ring-amber-300 scale-102'
+                    : 'bg-indigo-50 hover:bg-indigo-100 text-indigo-950 border-indigo-200'
+                }`}
+                title="Abrir Güakypedia • La Guía Oficial de Güakytopia"
+              >
+                <BookOpen className="w-3.5 h-3.5 text-indigo-600" />
+                <span className="hidden sm:inline">Güakypedia</span>
+                <span className="sm:hidden">Guía</span>
+                <span className="text-[9px] bg-indigo-600 text-white font-bold px-1 rounded-full">Doc</span>
+              </button>
+
               {/* TARIFAS & CALCULADORA DE PRECIOS BUTTON */}
               {onOpenPricingModal && (
                 <button
@@ -252,6 +268,22 @@ export const Header: React.FC<HeaderProps> = ({
               >
                 <span className="text-sm">🏠</span>
                 <span>{isKids ? 'Aventura' : 'Home'}</span>
+              </button>
+
+              {/* Güakypedia • Guía Oficial */}
+              <button
+                onClick={() => onTabChange('guakypedia')}
+                className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 ${
+                  activeTab === 'guakypedia'
+                    ? isKids
+                      ? 'bg-gradient-to-r from-amber-400 to-orange-500 text-slate-950 shadow-xs font-black'
+                      : 'bg-white text-indigo-700 shadow-xs font-black ring-1 ring-indigo-400/40'
+                    : 'hover:text-slate-900'
+                }`}
+                title="Güakypedia • Guía Oficial de Aprendizaje"
+              >
+                <span className="text-sm">🧭</span>
+                <span>Güakypedia</span>
               </button>
 
               {/* 2. Inscribirme / Unirme (Solo visible si NO está inscrito/logueado como alumno) */}
