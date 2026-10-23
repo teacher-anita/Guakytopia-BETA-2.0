@@ -1143,6 +1143,36 @@ export const WheresGuakyGame: React.FC<WheresGuakyGameProps> = ({
     dragStartRef.current = null;
   };
 
+  const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (zoomLevel <= 1 || !boardContainerRef.current || e.touches.length !== 1) return;
+    const touch = e.touches[0];
+    dragStartRef.current = {
+      x: touch.clientX,
+      y: touch.clientY,
+      scrollLeft: boardContainerRef.current.scrollLeft,
+      scrollTop: boardContainerRef.current.scrollTop
+    };
+    hasMovedRef.current = false;
+    setIsPanning(true);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (!isPanning || !dragStartRef.current || !boardContainerRef.current || e.touches.length !== 1) return;
+    const touch = e.touches[0];
+    const dx = touch.clientX - dragStartRef.current.x;
+    const dy = touch.clientY - dragStartRef.current.y;
+    if (Math.abs(dx) > 6 || Math.abs(dy) > 6) {
+      hasMovedRef.current = true;
+      boardContainerRef.current.scrollLeft = dragStartRef.current.scrollLeft - dx;
+      boardContainerRef.current.scrollTop = dragStartRef.current.scrollTop - dy;
+    }
+  };
+
+  const handleTouchEnd = () => {
+    setIsPanning(false);
+    dragStartRef.current = null;
+  };
+
   const handleStartMission = () => {
     setSecondsRemaining(scene.timeLimitSeconds);
     setGameStatus('searching');
@@ -1622,10 +1652,13 @@ export const WheresGuakyGame: React.FC<WheresGuakyGameProps> = ({
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
             onMouseLeave={handleMouseUp}
-            className={`w-full overflow-auto scrollbar-thin transition-all select-none relative ${
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+            className={`w-full overflow-auto scrollbar-thin transition-all select-none relative touch-pan-x touch-pan-y ${
               isFullscreen 
                 ? 'h-full max-h-none' 
-                : 'h-[62vh] min-h-[460px] max-h-[700px]'
+                : 'h-[50vh] sm:h-[62vh] min-h-[340px] sm:min-h-[460px] max-h-[700px]'
             } ${isPanning ? 'cursor-grabbing' : zoomLevel > 1 ? 'cursor-grab' : 'cursor-crosshair'}`}
           >
             {/* Loading state for illustration */}

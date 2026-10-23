@@ -152,6 +152,7 @@ export interface Student {
   completedHours: number;
   xp: number;
   streak: number;
+  lastActiveDate?: string; // YYYY-MM-DD for accurate daily streak tracking
   league: 'Bronce' | 'Plata' | 'Oro' | 'Diamante';
   rating: {
     fluency: number; // 1-5

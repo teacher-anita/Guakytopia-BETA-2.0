@@ -111,6 +111,23 @@ export default function App() {
     }
   }, [currentStudentId]);
 
+  // Guest XP & Streak Tracking (Stored locally so visitors can accumulate progress even before logging in)
+  const [guestXp, setGuestXp] = useState<number>(() => {
+    try {
+      return parseInt(localStorage.getItem('guakytopia_guest_xp') || '0', 10);
+    } catch {
+      return 0;
+    }
+  });
+
+  const [guestStreak, setGuestStreak] = useState<number>(() => {
+    try {
+      return parseInt(localStorage.getItem('guakytopia_guest_streak') || '0', 10);
+    } catch {
+      return 0;
+    }
+  });
+
   // Real-time Firestore Sync for Students
   useEffect(() => {
     const unsubStudents = subscribeToStudents((latestStudents) => {
@@ -453,13 +470,52 @@ export default function App() {
   };
 
   const handleAwardXp = async (studentId: string, amount: number) => {
+    // 1. Guest users: accumulate XP and streak locally
+    if (!studentId || studentId === 'guest') {
+      const today = new Date().toISOString().split('T')[0];
+      const newXp = (guestXp || 0) + amount;
+      setGuestXp(newXp);
+      try {
+        localStorage.setItem('guakytopia_guest_xp', String(newXp));
+        const lastActive = localStorage.getItem('guakytopia_guest_last_active');
+        let newStreak = guestStreak || 0;
+        if (lastActive !== today) {
+          newStreak += 1;
+          setGuestStreak(newStreak);
+          localStorage.setItem('guakytopia_guest_streak', String(newStreak));
+          localStorage.setItem('guakytopia_guest_last_active', today);
+        }
+      } catch {}
+      return;
+    }
+
+    // 2. Enrolled student users: update reactive state, calculate daily streak, and sync to Firestore
     const target = students.find(s => s.id === studentId);
     if (!target) return;
+
+    const today = new Date().toISOString().split('T')[0];
+    const isNewDay = target.lastActiveDate !== today;
+    const newStreak = isNewDay ? (target.streak || 0) + 1 : Math.max(target.streak || 1, 1);
+    const newXp = (target.xp || 0) + amount;
+
+    // League promotion based on XP milestones
+    let newLeague: 'Bronce' | 'Plata' | 'Oro' | 'Diamante' = target.league || 'Bronce';
+    if (newXp >= 1500) newLeague = 'Diamante';
+    else if (newXp >= 800) newLeague = 'Oro';
+    else if (newXp >= 300) newLeague = 'Plata';
+
     const updated: Student = {
       ...target,
-      xp: target.xp + amount,
-      streak: target.streak + 1
+      xp: newXp,
+      streak: newStreak,
+      league: newLeague,
+      lastActiveDate: today
     };
+
+    // Update React state immediately so header and gamification views update synchronously
+    setStudents(prev => prev.map(s => s.id === updated.id ? updated : s));
+
+    // Persist to local storage and Firestore Cloud
     await saveStudent(updated);
   };
 
@@ -670,8 +726,8 @@ export default function App() {
         onOpenThemeModal={() => setIsThemeModalOpen(true)}
         onOpenPricingModal={() => setIsPricingModalOpen(true)}
         onOpenProfile={() => setIsProfileOpen(true)}
-        currentStudentXp={currentStudent?.xp || 0}
-        currentStudentStreak={currentStudent?.streak || 0}
+        currentStudentXp={currentStudent ? currentStudent.xp : guestXp}
+        currentStudentStreak={currentStudent ? currentStudent.streak : guestStreak}
         currentStudent={currentStudent}
         activeTab={activeTab}
         onTabChange={setActiveTab}
