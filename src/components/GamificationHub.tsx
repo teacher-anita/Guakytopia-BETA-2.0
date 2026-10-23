@@ -64,36 +64,36 @@ export const GamificationHub: React.FC<GamificationHubProps> = ({
   const [isGamerModalOpen, setIsGamerModalOpen] = useState(false);
   const [pendingGamerXp, setPendingGamerXp] = useState(50);
 
-  // 3 Daily Quests (Micro-desafíos diarios)
+  // 3 Daily Quests (100% English daily micro-challenges)
   const [quests, setQuests] = useState<DailyQuest[]>([
     {
       id: 'q1',
-      title: 'Misión Fonética: Saludos Cotidianos',
+      title: 'Phonetic Mission: Daily Greetings',
       xpReward: 15,
-      question: '¿Qué respuesta es más natural para: "How is it going?"',
+      question: 'Which response is the most natural to: "How is it going?"',
       options: ['I am going to school', 'Pretty good, thanks! How about you?', 'Yes, it goes', 'At 4:00 PM'],
       correctIndex: 1,
-      explanation: '"Pretty good, thanks!" es la respuesta nativa y cotidiana para saludar amigablemente.',
+      explanation: '"Pretty good, thanks!" is the natural, native everyday response when someone greets you.',
       completed: false
     },
     {
       id: 'q2',
-      title: 'Misión Gramatical: Tercera Persona',
+      title: 'Grammar Mission: Third-Person Singular',
       xpReward: 20,
-      question: 'Elige la forma correcta: "My sister _____ (teach) science at the local academy."',
+      question: 'Choose the correct form: "My sister _____ (teach) science at the local academy."',
       options: ['teaches', 'teach', 'teachies', 'is teach'],
       correctIndex: 0,
-      explanation: 'Para verbos que terminan en "ch" con He/She, se añade -es: teaches.',
+      explanation: 'For verbs ending in "-ch" with He/She/It, add "-es": teaches.',
       completed: false
     },
     {
       id: 'q3',
-      title: 'Misión Conversacional: Real Talk',
+      title: 'Conversational Idioms: Real Talk',
       xpReward: 25,
-      question: '¿Qué significa la expresión "By the way" en una conversación?',
-      options: ['Por el camino', 'Por cierto / A propósito', 'De ninguna manera', 'Con mucho gusto'],
+      question: 'What does the expression "By the way" mean in a conversation?',
+      options: ['Along the road', 'Incidentally / As an aside', 'No way at all', 'With great pleasure'],
       correctIndex: 1,
-      explanation: '"By the way" se utiliza para introducir un tema nuevo o información adicional.',
+      explanation: '"By the way" is used to introduce a new topic, extra information, or an aside naturally.',
       completed: false
     }
   ]);
@@ -157,7 +157,7 @@ export const GamificationHub: React.FC<GamificationHubProps> = ({
           <div className="space-y-2 max-w-xl">
             <div className="flex items-center gap-2">
               <span className="text-xs font-bold uppercase tracking-wider bg-white/15 px-3 py-1 rounded-full backdrop-blur-md">
-                The Flock Community • Hábito Diario
+                The Flock Community • Daily Habit
               </span>
               <span className="text-xs text-[#FFD166] font-bold flex items-center gap-1">
                 <Sparkles className="w-3.5 h-3.5 text-[#FF6B4A]" />
@@ -165,10 +165,10 @@ export const GamificationHub: React.FC<GamificationHubProps> = ({
               </span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-black tracking-tight">
-              {isKids ? '¡Tus Misiones y Puntos Güaky! 🚀' : 'The Flock Arena • Retos Diarios & Comunidad'}
+              {isKids ? 'Your Missions & Güaky XP! 🚀' : 'The Flock Arena • Daily Quests & Community'}
             </h2>
             <p className="text-xs sm:text-sm text-slate-200 leading-relaxed">
-              Completa tus 3 micro-misiones diarias para alimentar tu Racha de Fuego 🔥, sumar puntos XP y avanzar junto a toda la comunidad de Güakytopia.
+              Complete your 3 daily micro-missions to fuel your Fire Streak 🔥, earn XP points, and level up alongside the whole Güakytopia community.
             </p>
           </div>
 
@@ -178,12 +178,12 @@ export const GamificationHub: React.FC<GamificationHubProps> = ({
               <Flame className="w-7 h-7 fill-orange-400" />
             </div>
             <div>
-              <span className="text-[11px] text-blue-200 block uppercase font-bold tracking-wider">Tu Racha Activa</span>
+              <span className="text-[11px] text-blue-200 block uppercase font-bold tracking-wider">Your Active Streak</span>
               <div className="flex items-baseline gap-1.5">
                 <span className="text-2xl font-black text-white">{currentStudent?.streak || 0}</span>
-                <span className="text-xs text-amber-300 font-bold">Días Consecutivos</span>
+                <span className="text-xs text-amber-300 font-bold">Consecutive Days</span>
               </div>
-              <span className="text-[10px] text-blue-200 block">Total: {currentStudent?.xp || 0} XP Güakytopia</span>
+              <span className="text-[10px] text-blue-200 block">Total: {currentStudent?.xp || 0} Güakytopia XP</span>
             </div>
           </div>
         </div>
@@ -217,7 +217,7 @@ export const GamificationHub: React.FC<GamificationHubProps> = ({
           }`}
         >
           <Zap className="w-4 h-4 text-amber-400" />
-          <span>⚡ Misiones Diarias & Liga</span>
+          <span>⚡ Daily Quests & League</span>
         </button>
 
         <button
@@ -231,7 +231,7 @@ export const GamificationHub: React.FC<GamificationHubProps> = ({
           }`}
         >
           <Gamepad2 className="w-4 h-4 text-emerald-400" />
-          <span>🎮 Arena de Juegos (Sopa, Scrabble, Ahorcado)</span>
+          <span>🎮 Arcade Arena (Word Search, Scrabble, Hangman)</span>
         </button>
       </div>
 
@@ -253,10 +253,10 @@ export const GamificationHub: React.FC<GamificationHubProps> = ({
           <div className="flex items-center justify-between">
             <h3 className="font-black text-slate-900 text-lg flex items-center gap-2">
               <Zap className="w-5 h-5 text-amber-500 fill-amber-400" />
-              <span>Misiones de Hoy</span>
+              <span>Today&apos;s Missions</span>
             </h3>
             <span className="text-xs font-semibold text-slate-500">
-              {quests.filter(q => q.completed).length} de {quests.length} completadas
+              {quests.filter(q => q.completed).length} of {quests.length} completed
             </span>
           </div>
 
@@ -297,7 +297,7 @@ export const GamificationHub: React.FC<GamificationHubProps> = ({
                       : 'bg-blue-600 hover:bg-blue-700 text-white shadow-xs'
                   }`}
                 >
-                  {quest.completed ? '¡Completada!' : 'Resolver Misión'}
+                  {quest.completed ? 'Completed!' : 'Solve Mission'}
                 </button>
               </div>
             ))}
@@ -305,9 +305,9 @@ export const GamificationHub: React.FC<GamificationHubProps> = ({
 
           {/* Pedagogical Note */}
           <div className="p-4 bg-blue-50 border border-blue-200 rounded-2xl text-xs text-blue-900 space-y-1">
-            <strong className="block font-bold">💡 Hábito Neurodivergente Cokitö:</strong>
+            <strong className="block font-bold">💡 Teacher Cokitö Neurodivergent Habit:</strong>
             <p className="text-blue-800 leading-relaxed text-[11px]">
-              La constancia vence a la intensidad. Dedicar 5 minutos cada día a resolver un micro-reto mantiene tu memoria fonética y semántica activa sin generar fatiga mental.
+              Consistency beats intensity. Spending 5 focused minutes every day on a micro-challenge keeps your phonetic and semantic memory sharp without mental burnout.
             </p>
           </div>
         </div>
@@ -317,17 +317,17 @@ export const GamificationHub: React.FC<GamificationHubProps> = ({
           <div className="flex items-center justify-between">
             <h3 className="font-black text-slate-900 text-lg flex items-center gap-2">
               <Trophy className="w-5 h-5 text-amber-500" />
-              <span>Liga Cokitö</span>
+              <span>Cokitö League</span>
             </h3>
             <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2.5 py-0.5 rounded-full">
-              División Oro
+              Gold Division
             </span>
           </div>
 
           <div className="bg-white rounded-3xl border border-slate-200 shadow-xs overflow-hidden">
             <div className="p-3 bg-slate-50 border-b border-slate-100 text-[11px] font-bold text-slate-500 flex justify-between uppercase">
-              <span>Posición / Alumno</span>
-              <span>Puntos XP</span>
+              <span>Rank / Student</span>
+              <span>XP Points</span>
             </div>
 
             <div className="divide-y divide-slate-100">
@@ -359,9 +359,9 @@ export const GamificationHub: React.FC<GamificationHubProps> = ({
                       <div>
                         <span className="block font-semibold text-slate-800">
                           {st.name} {st.lastName || ''}
-                          {isCurrent && <span className="text-amber-700 text-[10px] ml-1">(Tú)</span>}
+                          {isCurrent && <span className="text-amber-700 text-[10px] ml-1">(You)</span>}
                         </span>
-                        <span className="text-[10px] text-slate-400">Racha: {st.streak} días 🔥</span>
+                        <span className="text-[10px] text-slate-400">Streak: {st.streak} days 🔥</span>
                       </div>
                     </div>
 
@@ -391,7 +391,7 @@ export const GamificationHub: React.FC<GamificationHubProps> = ({
             <div className="p-5 bg-gradient-to-r from-blue-900 via-indigo-950 to-blue-900 text-white flex items-center justify-between">
               <div>
                 <span className="text-[10px] font-bold uppercase tracking-wider bg-amber-400 text-slate-950 px-2 py-0.5 rounded-full">
-                  +{activeQuest.xpReward} XP Recompensa
+                  +{activeQuest.xpReward} XP Reward
                 </span>
                 <h3 className="font-black text-base text-white mt-1">
                   {activeQuest.title}
@@ -450,7 +450,7 @@ export const GamificationHub: React.FC<GamificationHubProps> = ({
                     : 'bg-rose-50 border-rose-200 text-rose-950'
                 }`}>
                   <strong className="block">
-                    {answeredState === 'correct' ? '¡Respuesta Correcta! 🎉' : '¡Casi! Sigue practicando:'}
+                    {answeredState === 'correct' ? 'Correct Answer! 🎉' : 'Almost! Keep practicing:'}
                   </strong>
                   <p>{activeQuest.explanation}</p>
                 </div>
@@ -464,7 +464,7 @@ export const GamificationHub: React.FC<GamificationHubProps> = ({
                     disabled={selectedOpt === null}
                     className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-xs shadow-md transition-colors disabled:opacity-50"
                   >
-                    Comprobar
+                    Check Answer
                   </button>
                 ) : (
                   <button
@@ -472,7 +472,7 @@ export const GamificationHub: React.FC<GamificationHubProps> = ({
                     onClick={handleCloseQuest}
                     className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-xs shadow-md transition-colors"
                   >
-                    Continuar
+                    Continue
                   </button>
                 )}
               </div>

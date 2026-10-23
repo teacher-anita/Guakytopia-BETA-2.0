@@ -1446,7 +1446,7 @@ export const WheresGuakyGame: React.FC<WheresGuakyGameProps> = ({
               </span>
               {zoomLevel > 1 && (
                 <span className="text-[10px] font-bold text-amber-300 bg-amber-500/20 px-2 py-0.5 rounded-md border border-amber-400/30 flex items-center gap-1 animate-pulse">
-                  <Move className="w-3 h-3" /> Arrastra la pantalla para moverte
+                  <Move className="w-3 h-3" /> Drag to pan across scene
                 </span>
               )}
             </div>
@@ -1454,7 +1454,7 @@ export const WheresGuakyGame: React.FC<WheresGuakyGameProps> = ({
             {/* Checklist of Hidden Items for this Level */}
             <div className="flex flex-wrap items-center gap-2 pt-1">
               <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                Objetivos a buscar:
+                Targets to find:
               </span>
               {scene.targets.map((tgt, idx) => {
                 const isFound = Boolean(foundTargetsInScene[tgt.id]);
@@ -1498,7 +1498,7 @@ export const WheresGuakyGame: React.FC<WheresGuakyGameProps> = ({
                 onClick={() => setZoomLevel(prev => (prev === 1.8 ? 1.4 : prev === 1.4 ? 1 : 1))}
                 disabled={zoomLevel <= 1}
                 className="p-1.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white disabled:opacity-30 transition-colors"
-                title="Alejar (-)"
+                title="Zoom out (-)"
               >
                 <ZoomOut className="w-3.5 h-3.5" />
               </button>
@@ -1507,7 +1507,7 @@ export const WheresGuakyGame: React.FC<WheresGuakyGameProps> = ({
                 type="button"
                 onClick={() => setZoomLevel(1)}
                 className={`px-2 py-1 rounded-lg text-xs font-bold transition-colors ${zoomLevel === 1 ? 'bg-amber-400 text-slate-950 font-black' : 'text-slate-400 hover:text-white'}`}
-                title="Vista panorámica (1x)"
+                title="Overview (1x)"
               >
                 1x
               </button>
@@ -1515,7 +1515,7 @@ export const WheresGuakyGame: React.FC<WheresGuakyGameProps> = ({
                 type="button"
                 onClick={() => setZoomLevel(1.4)}
                 className={`px-2 py-1 rounded-lg text-xs font-bold transition-colors ${zoomLevel === 1.4 ? 'bg-amber-400 text-slate-950 font-black' : 'text-slate-400 hover:text-white'}`}
-                title="Zoom medio (1.4x)"
+                title="Medium zoom (1.4x)"
               >
                 1.4x
               </button>
@@ -1523,7 +1523,7 @@ export const WheresGuakyGame: React.FC<WheresGuakyGameProps> = ({
                 type="button"
                 onClick={() => setZoomLevel(1.8)}
                 className={`px-2 py-1 rounded-lg text-xs font-bold transition-colors ${zoomLevel === 1.8 ? 'bg-amber-400 text-slate-950 font-black' : 'text-slate-400 hover:text-white'}`}
-                title="Zoom máximo (1.8x)"
+                title="Max zoom (1.8x)"
               >
                 1.8x
               </button>
@@ -1533,7 +1533,7 @@ export const WheresGuakyGame: React.FC<WheresGuakyGameProps> = ({
                 onClick={() => setZoomLevel(prev => (prev === 1 ? 1.4 : prev === 1.4 ? 1.8 : 1.8))}
                 disabled={zoomLevel >= 1.8}
                 className="p-1.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white disabled:opacity-30 transition-colors"
-                title="Acercar (+)"
+                title="Zoom in (+)"
               >
                 <ZoomIn className="w-3.5 h-3.5" />
               </button>
@@ -1548,17 +1548,17 @@ export const WheresGuakyGame: React.FC<WheresGuakyGameProps> = ({
                   ? 'bg-rose-500 hover:bg-rose-600 text-white border-rose-400 font-black'
                   : 'bg-white hover:bg-slate-100 text-slate-800 border-slate-200'
               }`}
-              title={isFullscreen ? 'Salir de pantalla completa (Esc)' : 'Expandir a pantalla completa'}
+              title={isFullscreen ? 'Exit fullscreen (Esc)' : 'Expand to fullscreen'}
             >
               {isFullscreen ? (
                 <>
                   <Minimize2 className="w-3.5 h-3.5" />
-                  <span>Cerrar Pantalla Completa</span>
+                  <span>Exit Fullscreen</span>
                 </>
               ) : (
                 <>
                   <Maximize2 className="w-3.5 h-3.5 text-indigo-600" />
-                  <span>Pantalla Completa</span>
+                  <span>Fullscreen</span>
                 </>
               )}
             </button>
@@ -1569,17 +1569,17 @@ export const WheresGuakyGame: React.FC<WheresGuakyGameProps> = ({
               className="px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5"
             >
               <HelpCircle className="w-3.5 h-3.5 text-amber-600" />
-              <span>{showClue ? 'Ocultar Pista' : 'Pedir Pista'}</span>
+              <span>{showClue ? 'Hide Hint' : 'Get Hint'}</span>
             </button>
 
             {/* Audio pronunciation button */}
             <button
               onClick={speakClue}
               className="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-900 border border-indigo-200 rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5"
-              title="Escuchar pista del objetivo activo en inglés nativo"
+              title="Listen to target hint with native English audio"
             >
               <Volume2 className="w-3.5 h-3.5 text-indigo-600" />
-              <span>Escuchar Pista 🎧</span>
+              <span>Listen to Hint 🎧</span>
             </button>
 
             {/* Timer */}
@@ -1598,7 +1598,7 @@ export const WheresGuakyGame: React.FC<WheresGuakyGameProps> = ({
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 font-bold text-amber-900">
                 <Sparkles className="w-4 h-4 text-amber-600" />
-                <span>Pista para: <strong>{activeTarget.icon} {activeTarget.name}</strong></span>
+                <span>Clue for: <strong>{activeTarget.icon} {activeTarget.name}</strong></span>
               </div>
               <span className="text-[10px] text-amber-800 bg-amber-200/60 px-2 py-0.5 rounded-md font-mono">
                 {scene.cityName}
@@ -1607,9 +1607,6 @@ export const WheresGuakyGame: React.FC<WheresGuakyGameProps> = ({
             
             <p className="font-mono text-xs text-amber-950 bg-white/85 p-3 rounded-xl border border-amber-200 leading-relaxed">
               {activeTarget.clueEnglish}
-            </p>
-            <p className="text-[11px] text-amber-800">
-              💡 <strong>En español:</strong> {activeTarget.clueSpanish}
             </p>
           </div>
         )}
@@ -1643,9 +1640,9 @@ export const WheresGuakyGame: React.FC<WheresGuakyGameProps> = ({
                 </div>
                 <div className="flex items-center gap-2 text-amber-300 font-bold text-sm">
                   <Loader2 className="w-4 h-4 animate-spin text-amber-400" />
-                  <span>Cargando escena de {scene.cityName}...</span>
+                  <span>Loading {scene.cityName} scene...</span>
                 </div>
-                <p className="text-xs text-slate-400">Preparando ilustración y personajes escondidos</p>
+                <p className="text-xs text-slate-400">Preparing retro illustration and hidden characters</p>
               </div>
             )}
 
@@ -1712,7 +1709,7 @@ export const WheresGuakyGame: React.FC<WheresGuakyGameProps> = ({
               <div className="w-20 h-20 rounded-3xl bg-white p-2 border-2 border-amber-400 shadow-xl flex items-center justify-center animate-bounce">
                 <img 
                   src="/guaky-mascota.png" 
-                  alt="Güaky Oficial" 
+                  alt="Güaky Mascot" 
                   className="w-full h-full object-contain"
                   referrerPolicy="no-referrer"
                 />
@@ -1720,7 +1717,7 @@ export const WheresGuakyGame: React.FC<WheresGuakyGameProps> = ({
 
               <div className="max-w-md space-y-1.5">
                 <div className="flex items-center justify-center gap-1.5 text-amber-300 text-xs font-bold">
-                  <span>{scene.countryFlag} Nivel {scene.levelNumber}</span>
+                  <span>{scene.countryFlag} Level {scene.levelNumber}</span>
                   <span>•</span>
                   <span>{scene.cityName}, {scene.countryName}</span>
                 </div>
@@ -1728,12 +1725,12 @@ export const WheresGuakyGame: React.FC<WheresGuakyGameProps> = ({
                   {scene.title}
                 </h3>
                 <p className="text-xs text-slate-300 leading-relaxed">
-                  {scene.storyContext}
+                  {scene.storyContextEnglish || scene.storyContext}
                 </p>
               </div>
 
               <div className="p-3 bg-white/10 rounded-2xl border border-white/10 max-w-sm text-xs text-amber-200">
-                <span>🎯 Encuentra a <strong>Güaky y los {scene.targets.length - 1} objetos de vocabulario</strong> antes de que termine el tiempo ({scene.timeLimitSeconds}s).</span>
+                <span>🎯 Find <strong>Güaky and the {scene.targets.length - 1} vocabulary targets</strong> before time runs out ({scene.timeLimitSeconds}s).</span>
               </div>
 
               <button
@@ -1741,7 +1738,7 @@ export const WheresGuakyGame: React.FC<WheresGuakyGameProps> = ({
                 className="px-8 py-3 bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-slate-950 font-black rounded-2xl shadow-xl hover:scale-105 transition-all text-sm flex items-center gap-2"
               >
                 <Search className="w-4 h-4" />
-                <span>¡Comenzar Búsqueda en {scene.cityName}!</span>
+                <span>Start Search in {scene.cityName}!</span>
               </button>
             </div>
           )}
@@ -1756,17 +1753,17 @@ export const WheresGuakyGame: React.FC<WheresGuakyGameProps> = ({
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="text-[10px] font-bold uppercase tracking-wider text-amber-300">
-                      ¡Misión Cumplida en {scene.cityName}!
+                      Mission Accomplished in {scene.cityName}!
                     </span>
                     <span className="bg-emerald-500/20 text-emerald-300 text-[10px] font-bold px-2 py-0.2 rounded-full border border-emerald-400/30">
-                      +{scene.xpReward} XP Ganados
+                      +{scene.xpReward} XP Earned
                     </span>
                   </div>
                   <h4 className="text-base sm:text-lg font-black text-white">
-                    ¡Todos los objetivos encontrados! 🏆
+                    All Targets Found! 🏆
                   </h4>
                   <p className="text-xs text-slate-300">
-                    Siguiente destino desbloqueado en tu pasaporte de Güakytopia.
+                    Next destination unlocked in your Güakytopia world passport.
                   </p>
                 </div>
               </div>
@@ -1777,13 +1774,13 @@ export const WheresGuakyGame: React.FC<WheresGuakyGameProps> = ({
                   className="px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-bold transition-colors flex-1 sm:flex-initial"
                 >
                   <RotateCcw className="w-3.5 h-3.5 inline mr-1" />
-                  Repetir
+                  Replay
                 </button>
                 <button
                   onClick={handleNextCity}
                   className="px-6 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black rounded-xl text-xs transition-transform hover:scale-105 shadow-md flex items-center justify-center gap-1.5 flex-1 sm:flex-initial"
                 >
-                  <span>Viajar a la Siguiente Ciudad</span>
+                  <span>Travel to Next City</span>
                   <ChevronRight className="w-4 h-4" />
                 </button>
               </div>
@@ -1795,17 +1792,17 @@ export const WheresGuakyGame: React.FC<WheresGuakyGameProps> = ({
             <div className="absolute inset-0 bg-slate-950/85 backdrop-blur-xs flex flex-col items-center justify-center p-6 text-center text-white z-30 space-y-3 animate-fadeIn">
               <span className="text-4xl">⏱️</span>
               <h3 className="text-xl font-black text-rose-400">
-                ¡Tiempo Agotado en {scene.cityName}!
+                Time&apos;s Up in {scene.cityName}!
               </h3>
               <p className="text-xs text-slate-300 max-w-sm leading-relaxed">
-                ¡Las multitudes son inmensas! Vuelve a intentarlo, usa los botones de Zoom (1.4x o 1.8x) y escucha la pista en inglés.
+                The crowds are dense! Try again, use the Zoom buttons (1.4x or 1.8x), and listen to the English clue.
               </p>
               <button
                 onClick={handleStartMission}
                 className="px-6 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl text-xs shadow-md transition-colors flex items-center gap-2"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
-                <span>Reintentar {scene.cityName}</span>
+                <span>Retry {scene.cityName}</span>
               </button>
             </div>
           )}
@@ -1814,21 +1811,21 @@ export const WheresGuakyGame: React.FC<WheresGuakyGameProps> = ({
         {/* Bottom Explanatory Strip: Pedagogy & Rules */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
           <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200 text-xs">
-            <span className="font-bold text-slate-900 block mb-0.5">🌍 Pasaporte de Ciudades</span>
+            <span className="font-bold text-slate-900 block mb-0.5">🌍 World City Passport</span>
             <p className="text-slate-500 text-[11px] leading-relaxed">
-              Viaja por Caracas, Nueva York, San Francisco, Londres, París, Roma y el Campus Central superando cada nivel.
+              Travel across Caracas, New York, San Francisco, London, Paris, Rome, and the Central Campus as you clear each level.
             </p>
           </div>
           <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200 text-xs">
-            <span className="font-bold text-slate-900 block mb-0.5">📚 Vocabulario Curricular Nivel 1</span>
+            <span className="font-bold text-slate-900 block mb-0.5">📚 Super Goal 1 Curriculum</span>
             <p className="text-slate-500 text-[11px] leading-relaxed">
-              No solo buscas a Güaky: también identificas útiles escolares, medios de transporte, alimentos y monumentos en inglés.
+              Not only searching for Güaky: find school supplies, city vehicles, foods, animals, and landmarks in 100% English.
             </p>
           </div>
           <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200 text-xs">
-            <span className="font-bold text-slate-900 block mb-0.5">🔍 Zoom Dinámico &amp; Audio Nativo</span>
+            <span className="font-bold text-slate-900 block mb-0.5">🔍 Dynamic Zoom &amp; Native Audio</span>
             <p className="text-slate-500 text-[11px] leading-relaxed">
-              Acerca la imagen para inspeccionar a los cientos de personajes y escucha la descripción en inglés con pronunciación clara.
+              Zoom in smoothly to inspect hundreds of hand-drawn retro characters, and listen to spoken clues with native English audio.
             </p>
           </div>
         </div>
