@@ -30,6 +30,8 @@ import { StudentScheduleRequestModal } from './StudentScheduleRequestModal';
 import { MonthScheduleView } from './MonthScheduleView';
 import { PrepaidSessionBookingModal } from './PrepaidSessionBookingModal';
 import { formatSlotLabel } from '../utils/scheduleFormatter';
+import { StudyThemeId } from './ThemeSelectorModal';
+import { getThemeBannerClass } from '../utils/themeStyles';
 
 interface CalendarViewProps {
   slots: ScheduleSlot[];
@@ -43,6 +45,7 @@ interface CalendarViewProps {
   onUpdateStudent?: (student: Student) => void;
   onOpenPaymentModal?: () => void;
   onOpenPricingModal?: () => void;
+  studyTheme?: StudyThemeId;
 }
 
 export type StudyRhythm = 'mon_wed' | 'tue_thu' | 'intensive_6h' | 'saturday' | 'all';
@@ -59,7 +62,8 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
   onOpenRegister,
   onUpdateStudent,
   onOpenPaymentModal,
-  onOpenPricingModal
+  onOpenPricingModal,
+  studyTheme = 'official'
 }) => {
   // Main Calendar View Tab: Weekly vs Current Month (Octubre) vs Next Month (Noviembre)
   const [calendarTab, setCalendarTab] = useState<CalendarViewTab>('weekly');
@@ -314,61 +318,66 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
   };
 
   return (
-    <div className="max-w-7xl mx-auto py-6 px-4 space-y-6 animate-fadeIn">
+    <div className="w-full space-y-8 animate-fadeIn">
       
       {/* 1. Header Card with Title & Staff Badge */}
-      <div className={`rounded-3xl border shadow-xs p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 transition-all ${
-        isKids 
-          ? 'bg-gradient-to-r from-purple-50 via-indigo-50 to-sky-50 border-purple-200 font-fredoka' 
-          : 'bg-white border-slate-200'
-      }`}>
-        <div className="flex items-center gap-3">
-          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-xs shrink-0 ${
-            isKids ? 'bg-gradient-to-br from-purple-500 to-indigo-600 text-white shadow-md' : 'bg-[#2EC4B6]/10 text-[#2EC4B6] border border-[#2EC4B6]/20'
-          }`}>
-            <CalendarIcon className="w-6 h-6" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <h2 className="text-xl sm:text-2xl font-black text-[#243447] tracking-tight">
-                {isKids ? '🚀 Agenda de Misiones • Horarios Junior' : 'Agenda Semanal • Horarios de Vuelo'}
-              </h2>
-              {activeRole === 'teacher' ? (
-                <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-300">
-                  👑 Vista Staff Teacher / Rectoría
-                </span>
-              ) : isKids ? (
-                <span className="text-[11px] font-black px-2.5 py-0.5 rounded-full bg-purple-100 text-purple-900 border border-purple-300 flex items-center gap-1">
-                  <Shield className="w-3 h-3 text-purple-600" />
-                  Misiones 1 a 1 y Squad
-                </span>
-              ) : (
-                <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200 flex items-center gap-1">
-                  <Shield className="w-3 h-3" />
-                  Horarios Confidenciales
-                </span>
-              )}
-            </div>
-            <p className="text-xs text-slate-500 mt-0.5">
-              {isKids 
-                ? 'Elige tus bloques semanales para practicar en vivo con tus mentores. ¡Reserva a tiempo para no quedarte sin cupo!'
-                : 'Filtra según la frecuencia de tu plan para ver solo los días que te corresponden sin sobrecarga visual.'}
-            </p>
-          </div>
-        </div>
+      <div className={`rounded-3xl border shadow-2xl p-6 sm:p-8 relative overflow-hidden transition-all text-white ${getThemeBannerClass(studyTheme, isKids)}`}>
+        {/* Ambient Glows */}
+        <div className="absolute top-0 right-0 w-80 h-80 bg-teal-500/10 rounded-full blur-3xl pointer-events-none -mr-16 -mt-16" />
+        <div className="absolute bottom-0 left-1/3 w-72 h-72 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
 
-        {/* Action Button to Register / Book */}
-        <button
-          onClick={() => handleInitiateBooking()}
-          className={`w-full md:w-auto px-5 py-3 rounded-2xl font-black text-xs shadow-xs transition-all flex items-center justify-center gap-2 ${
-            isKids 
-              ? 'btn-game-3d btn-game-yellow text-slate-950 font-black' 
-              : 'bg-[#2EC4B6] hover:bg-[#259C90] text-slate-950'
-          }`}
-        >
-          <Plus className="w-4 h-4" />
-          <span>{isKids ? '🎯 Agendar Mi Misión en Vivo' : effectiveStudent ? 'Solicitar / Agendar Mi Turno' : 'Solicitar Inscripción en un Turno'}</span>
-        </button>
+        <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+          <div className="flex items-center gap-4">
+            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-md shrink-0 ${
+              isKids ? 'bg-gradient-to-br from-purple-500 to-indigo-600 text-white shadow-md' : 'bg-teal-500/20 text-teal-300 border border-teal-400/30'
+            }`}>
+              <CalendarIcon className="w-6 h-6" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight">
+                  {isKids ? '🚀 Agenda de Misiones • Horarios Junior' : 'Agenda Semanal • Horarios de Vuelo'}
+                </h2>
+                {activeRole === 'teacher' ? (
+                  <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-amber-400 text-slate-950 border border-amber-300">
+                    👑 Vista Staff Teacher / Rectoría
+                  </span>
+                ) : isKids ? (
+                  <span className="text-[11px] font-black px-2.5 py-0.5 rounded-full bg-purple-500/30 text-purple-200 border border-purple-400/30 flex items-center gap-1">
+                    <Shield className="w-3 h-3 text-purple-300" />
+                    Misiones 1 a 1 y Squad
+                  </span>
+                ) : (
+                  <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 flex items-center gap-1">
+                    <Shield className="w-3 h-3" />
+                    Horarios Confidenciales
+                  </span>
+                )}
+              </div>
+              <p className="text-amber-200 font-mono text-xs mt-1">
+                «Open the World. Start where you are. Keep going.»
+              </p>
+              <p className="text-xs text-slate-300 mt-1 max-w-xl">
+                {isKids 
+                  ? 'Elige tus bloques semanales para practicar en vivo con tus mentores. ¡Reserva a tiempo para no quedarte sin cupo!'
+                  : 'Filtra según la frecuencia de tu plan para ver solo los días que te corresponden sin sobrecarga visual.'}
+              </p>
+            </div>
+          </div>
+
+          {/* Action Button to Register / Book */}
+          <button
+            onClick={() => handleInitiateBooking()}
+            className={`w-full md:w-auto px-5 py-3 rounded-2xl font-black text-xs shadow-md transition-all flex items-center justify-center gap-2 shrink-0 ${
+              isKids 
+                ? 'btn-game-3d btn-game-yellow text-slate-950 font-black' 
+                : 'bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-slate-950'
+            }`}
+          >
+            <Plus className="w-4 h-4" />
+            <span>{isKids ? '🎯 Agendar Mi Misión en Vivo' : effectiveStudent ? 'Solicitar / Agendar Mi Turno' : 'Solicitar Inscripción en un Turno'}</span>
+          </button>
+        </div>
       </div>
 
       {/* 2. Notification Toast */}

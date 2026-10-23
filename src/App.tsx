@@ -23,6 +23,7 @@ import { StudentScheduleRequestModal } from './components/StudentScheduleRequest
 import { LanguageLab } from './components/LanguageLab';
 import { PrincipalDashboard } from './components/PrincipalDashboard';
 import { ThemeSelectorModal, StudyThemeId } from './components/ThemeSelectorModal';
+import { GuakypackModal } from './components/GuakypackModal';
 import { UnitOneMasterClass } from './components/UnitOneMasterClass';
 import { ClassroomHub } from './components/ClassroomHub';
 import { AcademicLibrary } from './components/AcademicLibrary';
@@ -48,6 +49,7 @@ import { ShieldCheck, Calendar } from 'lucide-react';
 import { GuakyChatbot } from './components/GuakyChatbot';
 import { fetchLiveBcvRate, initMidnightBcvScheduler } from './services/currencyService';
 import { trackStudentAction } from './services/telemetryService';
+import { getThemeBackgroundClass } from './utils/themeStyles';
 
 export default function App() {
   // Navigation & Theme State
@@ -73,6 +75,7 @@ export default function App() {
     title: 'Membresía Plataforma Campus Güakytopia (Promo $4.99)',
     amount: 4.99
   });
+  const [isGuakypackOpen, setIsGuakypackOpen] = useState(false);
   const [isDirectScheduleBookingOpen, setIsDirectScheduleBookingOpen] = useState(false);
 
   // Staff Authentication role: 'principal' (The Principal Waky) | 'teacher' (Coquito) | null
@@ -677,11 +680,7 @@ export default function App() {
   };
 
   return (
-    <div className={`min-h-screen flex flex-col transition-colors duration-300 ${
-      audienceTheme === 'kids' 
-        ? 'bg-gradient-to-b from-indigo-50/70 via-purple-50/40 to-sky-50/60 text-slate-800' 
-        : 'bg-slate-50 text-slate-900 font-sans'
-    }`}>
+    <div className={`min-h-screen flex flex-col transition-colors duration-300 ${getThemeBackgroundClass(studyTheme, audienceTheme === 'kids')}`}>
       {/* Junior Mode Floating Gamer Notification Banner */}
       {audienceTheme === 'kids' && (
         <aside aria-label="Aviso modo Junior" className="bg-gradient-to-r from-purple-600 via-indigo-600 to-sky-500 text-white px-3 py-1.5 text-xs font-black shadow-inner flex items-center justify-between overflow-hidden relative">
@@ -725,6 +724,7 @@ export default function App() {
         onOpenCouponModal={() => setIsCouponOpen(true)}
         onOpenThemeModal={() => setIsThemeModalOpen(true)}
         onOpenPricingModal={() => setIsPricingModalOpen(true)}
+        onOpenGuakypack={() => setIsGuakypackOpen(true)}
         onOpenProfile={() => setIsProfileOpen(true)}
         currentStudentXp={currentStudent ? currentStudent.xp : guestXp}
         currentStudentStreak={currentStudent ? currentStudent.streak : guestStreak}
@@ -733,10 +733,11 @@ export default function App() {
         onTabChange={setActiveTab}
         allStudents={students}
         onSelectStudent={setCurrentStudentId}
+        studyTheme={studyTheme}
       />
 
       {/* Main Content (with bottom padding on mobile for the floating bar) */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-28 md:pb-8">
+      <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-6 pb-28 md:pb-8">
         
         {/* TAB 1: LANDING PAGE (Initial Welcome Page) */}
         {activeTab === 'landing' && (
@@ -749,6 +750,7 @@ export default function App() {
             onOpenPaymentModal={() => setIsPaymentModalOpen(true)}
             onOpenPricingModal={() => setIsPricingModalOpen(true)}
             onOpenGuakypedia={() => setActiveTab('guakypedia')}
+            studyTheme={studyTheme}
           />
         )}
 
@@ -760,6 +762,8 @@ export default function App() {
             onNavigateToTab={(tab) => setActiveTab(tab)}
             onOpenPricingModal={() => setIsPricingModalOpen(true)}
             onOpenCouponModal={() => setIsCouponOpen(true)}
+            onOpenGuakypack={() => setIsGuakypackOpen(true)}
+            studyTheme={studyTheme}
           />
         )}
 
@@ -850,6 +854,7 @@ export default function App() {
             onUpdateStudent={handleUpdateStudent}
             onOpenPricingModal={() => setIsPricingModalOpen(true)}
             onOpenPaymentModal={() => setIsPaymentModalOpen(true)}
+            studyTheme={studyTheme}
           />
         )}
 
@@ -862,6 +867,8 @@ export default function App() {
             activeRole={isTeacherAuthenticated ? 'teacher' : 'student'}
             audienceTheme={audienceTheme}
             canSyncArenaLives={!isTeacherAuthenticated && Boolean(user && currentStudent && user.email?.toLowerCase() === currentStudent.email.toLowerCase())}
+            onOpenGuakypack={() => setIsGuakypackOpen(true)}
+            studyTheme={studyTheme}
           />
         )}
 
@@ -1053,6 +1060,17 @@ export default function App() {
           setIsPricingModalOpen(false);
           setIsPaymentModalOpen(true);
         }}
+      />
+
+      {/* Güakypack Modal (Backpack del Explorador) */}
+      <GuakypackModal
+        isOpen={isGuakypackOpen}
+        onClose={() => setIsGuakypackOpen(false)}
+        currentStudent={currentStudent}
+        onOpenPricingModal={() => setIsPricingModalOpen(true)}
+        onNavigateToTab={setActiveTab}
+        onUpdateStudent={handleUpdateStudent}
+        audienceTheme={audienceTheme}
       />
 
       {/* Official Payment & Checkout Modal */}

@@ -26,6 +26,57 @@ interface GuakyChatbotProps {
   studentName?: string;
 }
 
+function getLocalSmartFallback(query: string): { reply: string; suggestWhatsApp: boolean } {
+  const q = query.toLowerCase();
+  
+  if (q.includes('4.99') || q.includes('pase digital') || q.includes('digital pass') || q.includes('membres')) {
+    return {
+      reply: `¡Squawk! 🦜 El **Pase Digital** cuesta solo **$4.99 USD/mes** (promo de entrada). Es 100% para aprendizaje autónomo e incluye acceso a los 12 niveles oficiales de libros SuperGoal/MegaGoal, audios nativos, 100 drills por unidad en el Lab Güakytalkie, quizzes y The Flock Arena. ¡Sin clases fijas obligatorias!`,
+      suggestWhatsApp: false
+    };
+  }
+  
+  if (q.includes('hour bag') || q.includes('bolsa de horas') || q.includes('prepaid') || q.includes('escudo') || q.includes('10')) {
+    return {
+      reply: `¡Squawk! 🦜 La **Hour Bag** (Bolsa de Horas Prepagadas) cuesta **$10 USD / hora** con un paquete mínimo de 6 horas ($60 USD). Tiene 30 días de vigencia para tutorías 1 a 1 flexibles. ¡Además incluye el beneficio exclusivo del **Escudo de las 12 horas**, para reprogramar 1 sesión al mes avisando con solo 12h de anticipación!`,
+      suggestWhatsApp: false
+    };
+  }
+  
+  if (q.includes('arena') || q.includes('juego') || q.includes('quest') || q.includes('where') || q.includes('game') || q.includes('racha') || q.includes('streak')) {
+    return {
+      reply: `¡Squawk! 🎮 En **The Flock Arena** entrenas tu racha diaria y ganas XP con:
+1. **Daily Quests & League**: 3 micro-misiones diarias y el cuadro de honor de alumnos inscritos en la Cokitö League.
+2. **WW (Where's Güaky?)**: Busca a Güaky y objetos del vocabulario en una detallada escena retro ochentera wimmelbild.
+3. **Arcade Games**: Word Scramble, Vocab Match y Hangman (Ahorcado).
+4. **Gamer Account**: Para guardar tus vidas, racha y puntos de experiencia.`,
+      suggestWhatsApp: false
+    };
+  }
+  
+  if (q.includes('hub') || q.includes('nivel') || q.includes('level') || q.includes('curricul') || q.includes('mcgraw')) {
+    return {
+      reply: `¡Squawk! 📚 El **Hub** contiene tu **Learning Pathway** con 12 niveles oficiales (A1 a C2) de **McGraw Hill Education**:
+• **SuperGoal (1 a 4)**: Para juniors/teens y bases comunicativas.
+• **MegaGoal (1 a 8)**: Para adultos y comunicación profesional.
+Cada unidad tiene 3 sesiones (A, B, C), audios nativos, Cokitö Tips y Owl Culture Corner. Para desbloquear la siguiente unidad necesitas 70% en el Unit Quiz.`,
+      suggestWhatsApp: false
+    };
+  }
+  
+  if (q.includes('practice') || q.includes('english') || q.includes('hello') || q.includes('hi') || q.includes('talk')) {
+    return {
+      reply: `Hello there! 🦜 I'm Güaky the Macaw! I'm thrilled to chat with you in English. We can talk about your day, practice conversational English, or explore any grammar topic you want to master. What would you like to practice today?`,
+      suggestWhatsApp: false
+    };
+  }
+
+  return {
+    reply: `¡Squawk! 🦜 Como embajador y coach de **Güakytopia**, puedo orientarte sobre la **Güakypedia** (6 pilares y políticas), el **Hub** (12 niveles McGraw Hill), la **Arena** (Daily Quests y juegos) o podemos practicar inglés conversacional. Si deseas atención administrativa o inscribirte, ¡únete a nuestro **Welcome Lounge en WhatsApp**!`,
+    suggestWhatsApp: true
+  };
+}
+
 export const GuakyChatbot: React.FC<GuakyChatbotProps> = ({
   teacherWhatsAppUsername = 'CokitoVZLA',
   studentName
@@ -42,13 +93,16 @@ export const GuakyChatbot: React.FC<GuakyChatbotProps> = ({
     {
       id: 'welcome',
       role: 'assistant',
-      text: `¡Hola! 🦜 Soy **Güaky**, tu compañero de aventura en **Güakytopia**. ¡Bienvenido a nuestra bandada de exploradores del inglés!
+      text: `¡Hola! Hello! 🦜 Soy **Güaky the Macaw**, tu coach de inglés y guía oficial de **Güakytopia**.
 
-¿En qué te puedo orientar hoy? Puedes preguntarme sobre:
-• La **Membresía Campus de $4.99/mes** (promo de entrada).
-• Los **paquetes de clases en vivo** (Básico, Regular, Intensivo o Express).
-• Nuestras **PrePaid Classes** (horas individuales a $10/h).
-• O únete a nuestro **Welcome Lounge de WhatsApp** para recibir soporte o coordinar con la academia.`,
+Hablo con total fluidez en **español** y en **inglés**. I can help you with anything across our entire campus!
+
+Pregúntame o conversemos sobre:
+• **Güakypedia**: Metodología McGraw Hill, 12 niveles, Hour Bag, Pase Digital ($4.99/mes), políticas y pagos en Bs (BCV) o $.
+• **The Hub**: Tu Learning Pathway, libros SuperGoal/MegaGoal, audios nativos y tips de Cokitö.
+• **The Arena**: Misiones diarias (Daily Quests), rachas, juegos arcade y Where's Güaky.
+• **English Practice**: ¡Charlemos en inglés para soltar la lengua y perfeccionar tu vocabulario!
+• **Welcome Lounge de WhatsApp**: Soporte directo con la academia.`,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     }
   ]);
@@ -108,13 +162,14 @@ export const GuakyChatbot: React.FC<GuakyChatbotProps> = ({
 
       setMessages(prev => [...prev, assistantMessage]);
     } catch (err: any) {
-      console.error(err);
+      console.warn('Network or API fallback engaged:', err);
+      const fallback = getLocalSmartFallback(query);
       const fallbackMessage: ChatMessage = {
         id: `fallback_${Date.now()}`,
         role: 'assistant',
-        text: `🦜 ¡Squawk! Puedes entrar directamente al **Welcome Lounge en WhatsApp** para consultar cualquier detalle con la academia.`,
+        text: fallback.reply,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        showWhatsAppButton: true
+        showWhatsAppButton: fallback.suggestWhatsApp
       };
       setMessages(prev => [...prev, fallbackMessage]);
     } finally {
@@ -127,46 +182,53 @@ export const GuakyChatbot: React.FC<GuakyChatbotProps> = ({
       {
         id: `welcome_${Date.now()}`,
         role: 'assistant',
-        text: `¡Conversación reiniciada! 🦜 ¿En qué otra consulta sobre Güakytopia te puedo colaborar?`,
+        text: `¡Conversación reiniciada! 🦜 ¿En qué otra consulta sobre Güakytopia te puedo colaborar? / How else can I help you today?`,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       }
     ]);
   };
 
   const quickChips = [
-    '¿Cómo funciona la membresía de $4.99?',
-    '¿Qué son las PrePaid Classes?',
-    '¿Cuáles son los planes de clases?',
+    '¿Cómo funciona el Pase Digital de $4.99?',
+    'What are the 12 levels & McGraw Hill?',
+    '¿Qué es la Hour Bag y el Escudo de 12h?',
+    'Let’s practice conversational English!',
+    '¿Cómo funcionan las Daily Quests y la Arena?',
     '👉 Entrar al Welcome Lounge'
   ];
 
   return (
     <>
-      {/* Floating Launcher Button */}
+      {/* Floating Launcher Button - Minimized to only Güaky's Imagotype */}
       {!isOpen && (
         <button
           onClick={() => {
             setIsOpen(true);
             setIsMinimized(false);
           }}
-          className="fixed bottom-20 md:bottom-6 right-4 sm:right-6 z-50 flex items-center gap-2.5 px-4 py-3 bg-gradient-to-r from-[#2EC4B6] via-[#259C90] to-[#243447] text-white rounded-full shadow-2xl hover:shadow-[#2EC4B6]/30 transition-all hover:scale-105 group border-2 border-white/40"
-          title="Pregúntale a Güaky 🦜"
+          className="fixed bottom-20 md:bottom-6 right-4 sm:right-6 z-50 w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-white p-1 shadow-2xl hover:shadow-[#2EC4B6]/40 transition-all hover:scale-110 active:scale-95 group border-2 border-[#2EC4B6] flex items-center justify-center cursor-pointer"
+          title="Güaky 🦜 • Asistente y Guía Oficial"
+          aria-label="Abrir chat con Güaky"
         >
-          <div className="w-8 h-8 rounded-full bg-white p-0.5 flex items-center justify-center shadow-inner overflow-hidden">
+          <div className="w-full h-full rounded-full overflow-hidden flex items-center justify-center bg-gradient-to-br from-teal-50 to-amber-50">
             <img 
               src="/guaky-chat.png" 
               alt="Güaky" 
-              className="w-full h-full object-contain" 
+              className="w-full h-full object-contain transform group-hover:rotate-6 transition-transform" 
               onError={(e) => {
-                e.currentTarget.style.visibility = 'hidden';
+                e.currentTarget.style.display = 'none';
+                const parent = e.currentTarget.parentElement;
+                if (parent && !parent.querySelector('.fallback-emoji')) {
+                  const span = document.createElement('span');
+                  span.className = 'fallback-emoji text-2xl';
+                  span.textContent = '🦜';
+                  parent.appendChild(span);
+                }
               }}
             />
           </div>
-          <div className="text-left hidden sm:block">
-            <p className="text-xs font-black leading-none text-white">Talk to Güaky 🦜</p>
-            <p className="text-[10px] text-teal-100 leading-tight">Pregúntame lo que sea</p>
-          </div>
-          <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse" />
+          {/* Subtle online pulse dot */}
+          <span className="absolute top-0 right-0 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-white shadow-xs animate-pulse" />
         </button>
       )}
 
@@ -343,7 +405,7 @@ export const GuakyChatbot: React.FC<GuakyChatbotProps> = ({
                   type="text"
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
-                  placeholder="Escribe tu pregunta a Güaky..."
+                  placeholder="Pregúntame en español o ask me in English..."
                   className="flex-1 p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:bg-white focus:ring-2 focus:ring-[#2EC4B6] focus:outline-hidden"
                   disabled={isLoading}
                 />

@@ -169,6 +169,8 @@ export interface Student {
   prepaidHoursTotal?: number;   // Total hours acquired in current cycle (e.g. 8, 12, 16, 24)
   prepaidHoursExpiresAt?: string; // 30 calendar days validity
   isPrepaidActive?: boolean;
+  /** Inventario Güakypack (Horas, Escudos, Pases a Flock Conversation y Podios) */
+  guakypack?: GuakypackData;
   /** My Own Flock (Grupos privados formados por el alumno) */
   myOwnFlockName?: string;
   myOwnFlockRole?: 'creator' | 'member';
@@ -348,8 +350,18 @@ export interface Teacher {
   // Flock Credentials & Onboarding
   flockRole?: string; // e.g. "Flock Mentor", "Head Teacher"
   password?: string;
-  temporaryPassword?: string;
   welcomeEmailSent?: boolean;
   welcomeEmailSentAt?: string;
+}
+
+export interface GuakypackData {
+  hoursBalance: number;
+  hoursEarned: number; // Horas gratis ganadas en Cokitö's League
+  hoursExpiryDate?: string;
+  hourShields: number; // Escudos de 12 horas para reprogramar clases
+  streakShields: number; // Escudos de Racha (Streak Freeze)
+  flockPasses: number; // Pases a Flock Conversation Club ganados
+  podiumCount: number; // Contador de podios (0-3) para 1 Mes Gratis de Pase Digital
+  savedWords?: string[]; // Libreta personal de palabras guardadas del Lab / Arena
 }
 

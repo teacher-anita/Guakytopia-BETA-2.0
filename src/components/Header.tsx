@@ -16,6 +16,8 @@ import {
 import { User } from 'firebase/auth';
 import { AudienceTheme, Student, StaffRole } from '../types';
 import { GuakyLogo } from './GuakyLogo';
+import { StudyThemeId } from './ThemeSelectorModal';
+import { getThemeHeaderClass } from '../utils/themeStyles';
 
 interface HeaderProps {
   user: User | null;
@@ -31,6 +33,7 @@ interface HeaderProps {
   onOpenCouponModal: () => void;
   onOpenThemeModal?: () => void;
   onOpenPricingModal?: () => void;
+  onOpenGuakypack?: () => void;
   onOpenProfile: () => void;
   currentStudentXp: number;
   currentStudentStreak: number;
@@ -39,6 +42,7 @@ interface HeaderProps {
   onTabChange: (tab: string) => void;
   allStudents: Student[];
   onSelectStudent: (studentId: string) => void;
+  studyTheme?: StudyThemeId;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -55,6 +59,7 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenCouponModal,
   onOpenThemeModal,
   onOpenPricingModal,
+  onOpenGuakypack,
   onOpenProfile,
   currentStudentXp,
   currentStudentStreak,
@@ -62,7 +67,8 @@ export const Header: React.FC<HeaderProps> = ({
   activeTab,
   onTabChange,
   allStudents,
-  onSelectStudent
+  onSelectStudent,
+  studyTheme = 'official'
 }) => {
   const isKids = audienceTheme === 'kids';
   const isEnrolled = isTeacherAuthenticated || (currentStudent && currentStudent.status === 'enrolled');
@@ -72,7 +78,7 @@ export const Header: React.FC<HeaderProps> = ({
   return (
     <>
       {/* Top Header */}
-      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/90 shadow-2xs">
+      <header className={`sticky top-0 z-40 backdrop-blur-md border-b shadow-2xs transition-colors duration-200 ${getThemeHeaderClass(studyTheme)}`}>
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
           
           {/* Row 1: Brand & Top Actions (Guaranteed 100% visible, never escapes on the right) */}
@@ -87,22 +93,10 @@ export const Header: React.FC<HeaderProps> = ({
               <GuakyLogo size="sm" showSubtitle={true} />
             </button>
 
-            {/* Right Action Cluster - Always visible on desktop, tablet, and mobile */}
+            {/* Right Action Cluster - Strict Strategic Order */}
             <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
               
-              {/* THEME / AMBIENTE DE ESTUDIO BUTTON (Sensory & Neurodiversity Control) */}
-              {onOpenThemeModal && (
-                <button
-                  onClick={onOpenThemeModal}
-                  className="flex items-center gap-1.5 px-2.5 py-1.5 bg-[#FFF9F0] hover:bg-[#FFEECB] text-[#243447] border border-[#FFD166] rounded-xl text-xs font-bold transition-all shadow-2xs"
-                  title="Personalizar ambiente de estudio (Bajo estímulo, Modo Oscuro TDAH, Pasteles)"
-                >
-                  <Palette className="w-3.5 h-3.5 text-[#2EC4B6]" />
-                  <span className="hidden sm:inline">Ambiente</span>
-                </button>
-              )}
-
-              {/* GÜAKYPEDIA BUTTON (Enciclopedia & Guía Oficial) */}
+              {/* 1. GÜAKYPEDIA BUTTON (Enciclopedia & Guía Oficial) */}
               <button
                 onClick={() => onTabChange('guakypedia')}
                 className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-black transition-all shadow-2xs border ${
@@ -115,10 +109,10 @@ export const Header: React.FC<HeaderProps> = ({
                 <BookOpen className="w-3.5 h-3.5 text-indigo-600" />
                 <span className="hidden sm:inline">Güakypedia</span>
                 <span className="sm:hidden">Guía</span>
-                <span className="text-[9px] bg-indigo-600 text-white font-bold px-1 rounded-full">Doc</span>
+                <span className="text-[9px] bg-indigo-600 text-white font-bold px-1 rounded-full hidden md:inline">Doc</span>
               </button>
 
-              {/* TARIFAS & CALCULADORA DE PRECIOS BUTTON */}
+              {/* 2. TARIFAS & PAGOS BUTTON */}
               {onOpenPricingModal && (
                 <button
                   onClick={onOpenPricingModal}
@@ -131,50 +125,63 @@ export const Header: React.FC<HeaderProps> = ({
                 </button>
               )}
 
-              {/* Coupon / Beca button */}
+              {/* 3. BECA / CÓDIGO BUTTON */}
               <button
                 onClick={onOpenCouponModal}
                 className="flex items-center gap-1.5 px-2.5 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 rounded-xl text-xs font-bold transition-all shadow-2xs"
                 title="Canjear código de cortesía o beca"
               >
                 <KeyRound className="w-3.5 h-3.5 text-amber-600" />
-                <span className="hidden sm:inline">Beca / Código</span>
+                <span className="hidden sm:inline">Beca</span>
               </button>
 
-              {/* AUDIENCE THEME TOGGLE: Junior 12+ vs Adult (Available on Mobile & Desktop) */}
+              {/* 4 & 5. AUDIENCE THEME TOGGLE: Junior (JR 🚀) FIRST, then Adult (Graduation Cap) in dark tone */}
               <div className="flex bg-slate-100 p-0.5 rounded-xl items-center text-xs font-bold border border-slate-200/90 shadow-2xs">
+                {/* 4. Junior first */}
+                <button
+                  onClick={() => onAudienceChange('kids')}
+                  className={`flex items-center gap-1 px-2 sm:px-2.5 py-1 rounded-lg transition-all ${
+                    isKids
+                      ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-xs font-black'
+                      : 'text-slate-600 hover:text-purple-700'
+                  }`}
+                  title="Modo Junior 12+ (Arcade, Desafíos & Aventura)"
+                >
+                  <Sparkles className="w-3 h-3 text-amber-300" />
+                  <span className="text-[11px] font-black">JR 🚀</span>
+                </button>
+
+                {/* 5. Adult second: only graduation hat, dark tone */}
                 <button
                   onClick={() => onAudienceChange('adults')}
-                  className={`flex items-center gap-1 px-2 sm:px-2.5 py-1 rounded-lg transition-all ${
+                  className={`flex items-center justify-center p-1.5 rounded-lg transition-all ${
                     !isKids
                       ? 'bg-[#243447] text-white shadow-xs'
                       : 'text-slate-600 hover:text-slate-900'
                   }`}
                   title="Modo Adulto (Currículo Profesional)"
+                  aria-label="Modo Adulto"
                 >
                   <GraduationCap className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">Adult</span>
-                  <span className="sm:hidden text-[10px]">18+</span>
-                </button>
-                <button
-                  onClick={() => onAudienceChange('kids')}
-                  className={`flex items-center gap-1 px-2 sm:px-2.5 py-1 rounded-lg transition-all ${
-                    isKids
-                      ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-xs animate-pulse-glow font-black'
-                      : 'text-slate-600 hover:text-purple-700'
-                  }`}
-                  title="Modo Junior 12+ (Arcade, Desafíos & Aventura)"
-                >
-                  <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-                  <span className="hidden sm:inline">Junior 12+ 🚀</span>
-                  <span className="sm:hidden text-[10px] font-black">Jr 🚀</span>
                 </button>
               </div>
 
-              {/* INICIO DE SESIÓN DE TEACHER / PORTAL DOCENTE (Movido arriba junto a ambiente, tarifas, beca, adulto/junior) */}
+              {/* 6. AMBIENTE DE ESTUDIO ICON */}
+              {onOpenThemeModal && (
+                <button
+                  onClick={onOpenThemeModal}
+                  className="flex items-center justify-center p-2 bg-[#FFF9F0] hover:bg-[#FFEECB] text-[#243447] border border-[#FFD166] rounded-xl text-xs font-bold transition-all shadow-2xs"
+                  title="Personalizar ambiente de estudio (Bajo estímulo, Modo Oscuro TDAH, Pasteles)"
+                  aria-label="Ambiente de estudio"
+                >
+                  <Palette className="w-3.5 h-3.5 text-[#2EC4B6]" />
+                </button>
+              )}
+
+              {/* 7. TEACHER LOGIN BUTTON: Solo el candadito para ahorrar espacio */}
               <button
                 onClick={() => onTabChange('teacher')}
-                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-black transition-all shadow-2xs border ${
+                className={`flex items-center justify-center p-2 rounded-xl text-xs font-black transition-all shadow-2xs border ${
                   activeTab === 'teacher'
                     ? staffRole === 'principal'
                       ? 'bg-amber-400 text-slate-950 border-amber-500 shadow-xs ring-2 ring-amber-400/50'
@@ -183,18 +190,24 @@ export const Header: React.FC<HeaderProps> = ({
                       ? 'bg-indigo-50 hover:bg-indigo-100 text-indigo-900 border-indigo-300'
                       : 'bg-slate-900 hover:bg-slate-800 text-amber-300 border-slate-800'
                 }`}
-                title={isTeacherAuthenticated ? (staffRole === 'principal' ? "Rectoría General" : "Panel de Teacher Cokitö") : "Inicio de sesión de Teacher / Portal Docente"}
+                title={isTeacherAuthenticated ? (staffRole === 'principal' ? "Rectoría General" : "Panel de Teacher Cokitö") : "Portal Docente / Staff"}
+                aria-label="Portal Docente"
               >
                 <Lock className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-                <span className="hidden sm:inline">
-                  {isTeacherAuthenticated 
-                    ? (staffRole === 'principal' ? 'Rectoría' : 'Teacher Cokitö') 
-                    : 'Teacher'}
-                </span>
-                <span className="sm:hidden">
-                  Teacher
-                </span>
               </button>
+
+              {/* 8. GÜAKYPACK BUTTON (Backpack 🎒) */}
+              {onOpenGuakypack && (
+                <button
+                  onClick={onOpenGuakypack}
+                  className="flex items-center gap-1 px-2 sm:px-2.5 py-1.5 bg-gradient-to-r from-amber-50 to-orange-50 hover:from-amber-100 hover:to-orange-100 text-amber-950 border border-amber-300 rounded-xl text-xs font-black transition-all shadow-2xs group"
+                  title="Abrir Güakypack • Horas, Escudos y Premios de Cokitö's League"
+                  aria-label="Abrir Güakypack"
+                >
+                  <span className="text-sm group-hover:scale-125 transition-transform">🎒</span>
+                  <span className="hidden sm:inline text-[11px] font-black">Pack</span>
+                </button>
+              )}
 
               {/* Gamification badge: Racha + XP */}
               <div className="flex items-center gap-1 sm:gap-1.5 bg-slate-50 border border-slate-200/80 px-2 sm:px-2.5 py-1 rounded-xl text-xs">
@@ -255,22 +268,7 @@ export const Header: React.FC<HeaderProps> = ({
               
               {/* --- ZONA IZQUIERDA: ACCESO LIBRE (SIN CANDADOS) --- */}
 
-              {/* 1. Home / Aventura */}
-              <button
-                onClick={() => onTabChange('landing')}
-                className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 ${
-                  activeTab === 'landing'
-                    ? isKids 
-                      ? 'bg-purple-600 text-white shadow-xs font-black' 
-                      : 'bg-white text-[#2EC4B6] shadow-xs font-bold'
-                    : 'hover:text-slate-900'
-                }`}
-              >
-                <span className="text-sm">🏠</span>
-                <span>{isKids ? 'Aventura' : 'Home'}</span>
-              </button>
-
-              {/* Güakypedia • Guía Oficial */}
+              {/* 1. Güakypedia • DE PRIMERITO */}
               <button
                 onClick={() => onTabChange('guakypedia')}
                 className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 ${
@@ -286,22 +284,20 @@ export const Header: React.FC<HeaderProps> = ({
                 <span>Güakypedia</span>
               </button>
 
-              {/* 2. Inscribirme / Unirme (Solo visible si NO está inscrito/logueado como alumno) */}
-              {!isEnrolled && !isStudentLoggedIn && (
-                <button
-                  onClick={() => onTabChange('register')}
-                  className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 ${
-                    activeTab === 'register'
-                      ? isKids
-                        ? 'bg-gradient-to-r from-amber-400 to-orange-500 text-slate-950 shadow-xs font-black'
-                        : 'bg-white text-[#2EC4B6] shadow-xs font-bold'
-                      : 'hover:text-slate-900'
-                  }`}
-                >
-                  <span className="text-sm">✍️</span>
-                  <span>{isKids ? 'Unirme al Squad' : 'Inscribirme'}</span>
-                </button>
-              )}
+              {/* 2. Home / Aventura */}
+              <button
+                onClick={() => onTabChange('landing')}
+                className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 ${
+                  activeTab === 'landing'
+                    ? isKids 
+                      ? 'bg-purple-600 text-white shadow-xs font-black' 
+                      : 'bg-white text-[#2EC4B6] shadow-xs font-bold'
+                    : 'hover:text-slate-900'
+                }`}
+              >
+                <span className="text-sm">🏠</span>
+                <span>{isKids ? 'Aventura' : 'Home'}</span>
+              </button>
 
               {/* 3. Agenda / Misiones en Vivo */}
               <button
@@ -419,7 +415,24 @@ export const Header: React.FC<HeaderProps> = ({
       <nav className="fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200/90 shadow-2xl px-1 py-1 flex md:hidden items-center justify-around pb-safe">
         <div className="w-full max-w-lg mx-auto flex items-center justify-around">
           
-          {/* 1. Home / Aventura */}
+          {/* 1. Güakypedia • De primerito */}
+          <button
+            onClick={() => onTabChange('guakypedia')}
+            className={`flex flex-col items-center justify-center py-1 px-1 rounded-xl transition-all flex-1 min-w-0 max-w-[54px] ${
+              activeTab === 'guakypedia'
+                ? isKids
+                  ? 'text-amber-800 font-black bg-amber-50 scale-105'
+                  : 'text-indigo-700 font-black bg-indigo-50 scale-102'
+                : 'text-slate-500 hover:text-slate-800'
+            }`}
+          >
+            <span className="text-base">🧭</span>
+            <span className="text-[9px] leading-tight truncate w-full text-center mt-0.5 font-bold">
+              Guía
+            </span>
+          </button>
+
+          {/* 2. Home / Aventura */}
           <button
             onClick={() => onTabChange('landing')}
             className={`flex flex-col items-center justify-center py-1 px-1 rounded-xl transition-all flex-1 min-w-0 max-w-[54px] ${
@@ -435,25 +448,6 @@ export const Header: React.FC<HeaderProps> = ({
               {isKids ? 'Aventura' : 'Home'}
             </span>
           </button>
-
-          {/* 2. Inscribirme / Unirme (Solo si no está inscrito/alumno logueado) */}
-          {!isEnrolled && !isStudentLoggedIn && (
-            <button
-              onClick={() => onTabChange('register')}
-              className={`flex flex-col items-center justify-center py-1 px-1 rounded-xl transition-all flex-1 min-w-0 max-w-[54px] ${
-                activeTab === 'register'
-                  ? isKids
-                    ? 'text-amber-700 font-black bg-amber-50 scale-105'
-                    : 'text-[#2EC4B6] font-bold bg-[#2EC4B6]/10 scale-102'
-                  : 'text-slate-500 hover:text-slate-800'
-              }`}
-            >
-              <span className="text-base">✍️</span>
-              <span className="text-[9px] leading-tight truncate w-full text-center mt-0.5">
-                {isKids ? 'Squad' : 'Inscribir'}
-              </span>
-            </button>
-          )}
 
           {/* 3. Agenda / Misiones */}
           <button

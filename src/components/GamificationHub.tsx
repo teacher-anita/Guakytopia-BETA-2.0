@@ -25,6 +25,8 @@ import { Student, AudienceTheme } from '../types';
 import { ArenaMiniGames } from './ArenaMiniGames';
 import { WheresGuakyGame } from './WheresGuakyGame';
 import { GamerAccountModal } from './GamerAccountModal';
+import { StudyThemeId } from './ThemeSelectorModal';
+import { getThemeBannerClass } from '../utils/themeStyles';
 
 interface GamificationHubProps {
   currentStudent: Student | null;
@@ -34,7 +36,9 @@ interface GamificationHubProps {
   audienceTheme: AudienceTheme;
   canSyncArenaLives: boolean;
   onOpenPricingModal?: () => void;
+  onOpenGuakypack?: () => void;
   onRegisterGamer?: (gamerData: { name: string; username: string; email: string; pin: string }) => void;
+  studyTheme?: StudyThemeId;
 }
 
 interface DailyQuest {
@@ -56,10 +60,12 @@ export const GamificationHub: React.FC<GamificationHubProps> = ({
   audienceTheme,
   canSyncArenaLives,
   onOpenPricingModal,
-  onRegisterGamer
+  onOpenGuakypack,
+  onRegisterGamer,
+  studyTheme = 'official'
 }) => {
   const isKids = audienceTheme === 'kids';
-  const [arcadeSubTab, setArcadeSubTab] = useState<'wheres_guaky' | 'daily_quests' | 'arena_games'>('wheres_guaky');
+  const [arcadeSubTab, setArcadeSubTab] = useState<'daily_quests' | 'wheres_guaky' | 'arena_games'>('daily_quests');
   const [leaderboardFilter, setLeaderboardFilter] = useState<'general' | 'students'>('general');
   const [isGamerModalOpen, setIsGamerModalOpen] = useState(false);
   const [pendingGamerXp, setPendingGamerXp] = useState(50);
@@ -145,14 +151,14 @@ export const GamificationHub: React.FC<GamificationHubProps> = ({
   const activeLeaderboard = leaderboardFilter === 'general' ? generalLeaderboard : studentsLeaderboard;
 
   return (
-    <div className="max-w-6xl mx-auto py-6 px-4 space-y-8 animate-fadeIn">
+    <div className="w-full space-y-8 animate-fadeIn">
       
       {/* Header Banner */}
-      <div className={`rounded-3xl p-6 sm:p-8 text-white shadow-lg relative overflow-hidden ${
-        isKids
-          ? 'bg-gradient-to-r from-amber-400 via-orange-500 to-rose-500'
-          : 'bg-gradient-to-r from-slate-900 via-indigo-950 to-blue-900 border border-slate-800'
-      }`}>
+      <div className={`rounded-3xl p-6 sm:p-8 text-white shadow-2xl relative overflow-hidden transition-all ${getThemeBannerClass(studyTheme, isKids)}`}>
+        {/* Ambient Glows */}
+        <div className="absolute top-0 right-0 w-80 h-80 bg-teal-500/10 rounded-full blur-3xl pointer-events-none -mr-16 -mt-16" />
+        <div className="absolute bottom-0 left-1/3 w-72 h-72 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+
         <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
           <div className="space-y-2 max-w-xl">
             <div className="flex items-center gap-2">
@@ -167,6 +173,9 @@ export const GamificationHub: React.FC<GamificationHubProps> = ({
             <h2 className="text-2xl sm:text-3xl font-black tracking-tight">
               {isKids ? 'Your Missions & Güaky XP! 🚀' : 'The Flock Arena • Daily Quests & Community'}
             </h2>
+            <p className="text-amber-200 font-mono text-xs">
+              «Open the World. Start where you are. Keep going.»
+            </p>
             <p className="text-xs sm:text-sm text-slate-200 leading-relaxed">
               Complete your 3 daily micro-missions to fuel your Fire Streak 🔥, earn XP points, and level up alongside the whole Güakytopia community.
             </p>
@@ -191,21 +200,7 @@ export const GamificationHub: React.FC<GamificationHubProps> = ({
 
       {/* ARCADE SUB-NAV SELECTOR */}
       <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
-        <button
-          onClick={() => setArcadeSubTab('wheres_guaky')}
-          className={`px-4 py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-2 shrink-0 border ${
-            arcadeSubTab === 'wheres_guaky'
-              ? isKids
-                ? 'bg-gradient-to-r from-amber-400 to-orange-500 text-slate-950 border-amber-300 shadow-md font-black scale-102'
-                : 'bg-teal-600 text-white border-teal-500 shadow-md font-black scale-102'
-              : 'bg-white hover:bg-slate-50 text-slate-700 border-slate-200'
-          }`}
-        >
-          <Search className="w-4 h-4 text-amber-500" />
-          <span>🔍 Where&apos;s Güaky?</span>
-          <span className="text-[10px] bg-amber-400 text-slate-950 font-black px-1.5 py-0.2 rounded-full">XP</span>
-        </button>
-
+        {/* 1. Daily Quests & League (PRIMERO) */}
         <button
           onClick={() => setArcadeSubTab('daily_quests')}
           className={`px-4 py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-2 shrink-0 border ${
@@ -218,8 +213,25 @@ export const GamificationHub: React.FC<GamificationHubProps> = ({
         >
           <Zap className="w-4 h-4 text-amber-400" />
           <span>⚡ Daily Quests & League</span>
+          <span className="text-[10px] bg-amber-400 text-slate-950 font-black px-1.5 py-0.2 rounded-full">Top</span>
         </button>
 
+        {/* 2. WW • Where's Güaky? (SEGUNDO) */}
+        <button
+          onClick={() => setArcadeSubTab('wheres_guaky')}
+          className={`px-4 py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-2 shrink-0 border ${
+            arcadeSubTab === 'wheres_guaky'
+              ? isKids
+                ? 'bg-gradient-to-r from-amber-400 to-orange-500 text-slate-950 border-amber-300 shadow-md font-black scale-102'
+                : 'bg-teal-600 text-white border-teal-500 shadow-md font-black scale-102'
+              : 'bg-white hover:bg-slate-50 text-slate-700 border-slate-200'
+          }`}
+        >
+          <Search className="w-4 h-4 text-amber-500" />
+          <span>🔍 WW • Where&apos;s Güaky?</span>
+        </button>
+
+        {/* 3. Arcade Games (TERCERO) */}
         <button
           onClick={() => setArcadeSubTab('arena_games')}
           className={`px-4 py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-2 shrink-0 border ${
@@ -231,20 +243,11 @@ export const GamificationHub: React.FC<GamificationHubProps> = ({
           }`}
         >
           <Gamepad2 className="w-4 h-4 text-emerald-400" />
-          <span>🎮 Arcade Arena (Word Search, Scrabble, Hangman)</span>
+          <span>🎮 Arcade Games (Word Scramble, Vocab, Drills)</span>
         </button>
       </div>
 
-      {/* SUB-VIEW 1: WHERE'S GÜAKY? */}
-      {arcadeSubTab === 'wheres_guaky' && (
-        <WheresGuakyGame
-          currentStudent={currentStudent}
-          audienceTheme={audienceTheme}
-          onAwardXp={onAwardXp}
-        />
-      )}
-
-      {/* SUB-VIEW 2: DAILY QUESTS + LEADERBOARD */}
+      {/* SUB-VIEW 1: DAILY QUESTS + LEADERBOARD (PRIMERO) */}
       {arcadeSubTab === 'daily_quests' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         
@@ -379,7 +382,16 @@ export const GamificationHub: React.FC<GamificationHubProps> = ({
         </div>
       )}
 
-      {/* SUB-VIEW 3: ARENA MINI GAMES */}
+      {/* SUB-VIEW 2: WW • WHERE'S GÜAKY? (SEGUNDO) */}
+      {arcadeSubTab === 'wheres_guaky' && (
+        <WheresGuakyGame
+          currentStudent={currentStudent}
+          audienceTheme={audienceTheme}
+          onAwardXp={onAwardXp}
+        />
+      )}
+
+      {/* SUB-VIEW 3: ARENA MINI GAMES (TERCERO) */}
       {arcadeSubTab === 'arena_games' && (
         <ArenaMiniGames currentStudent={currentStudent} onAwardXp={onAwardXp} canSyncCloud={canSyncArenaLives} />
       )}

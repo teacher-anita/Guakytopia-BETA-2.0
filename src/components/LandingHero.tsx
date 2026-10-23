@@ -26,6 +26,8 @@ import {
 } from 'lucide-react';
 import { AudienceTheme } from '../types';
 import { MODULES_INFO } from '../data/curriculumData';
+import { StudyThemeId } from './ThemeSelectorModal';
+import { getThemeBannerClass } from '../utils/themeStyles';
 
 interface LandingHeroProps {
   audienceTheme: AudienceTheme;
@@ -36,6 +38,7 @@ interface LandingHeroProps {
   onOpenPaymentModal?: () => void;
   onOpenPricingModal?: () => void;
   onOpenGuakypedia?: () => void;
+  studyTheme?: StudyThemeId;
 }
 
 const JUNIOR_WORLDS = [
@@ -97,7 +100,8 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
   onOpenOptimizer,
   onOpenPaymentModal,
   onOpenPricingModal,
-  onOpenGuakypedia
+  onOpenGuakypedia,
+  studyTheme = 'official'
 }) => {
   const isKids = audienceTheme === 'kids';
 
@@ -113,46 +117,46 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
   };
 
   return (
-    <div className={`space-y-12 sm:space-y-16 animate-fadeIn pb-12 ${isKids ? 'font-fredoka' : ''}`}>
+    <div className={`w-full space-y-8 animate-fadeIn pb-8 ${isKids ? 'font-fredoka' : ''}`}>
       
       {/* 1. HERO BANNER */}
-      <section className={`relative overflow-hidden rounded-3xl p-6 sm:p-12 text-white shadow-xl transition-all ${
-        isKids
-          ? 'bg-gradient-to-br from-indigo-950 via-purple-900 to-slate-900 border-2 border-purple-400/40 shadow-2xl'
-          : 'bg-gradient-to-br from-[#243447] via-[#1a2736] to-[#0f1720] border border-slate-700/80'
-      }`}>
+      <section className={`relative overflow-hidden rounded-3xl p-6 sm:p-10 shadow-2xl border transition-all ${getThemeBannerClass(studyTheme, isKids)}`}>
         {/* Glows and particles */}
-        <div className="absolute top-0 right-0 -mr-20 -mt-20 w-80 h-80 rounded-full bg-purple-500/20 blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 rounded-full bg-cyan-400/15 blur-3xl pointer-events-none" />
+        <div className="absolute top-0 right-0 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
+        <div className="absolute bottom-0 left-1/3 w-80 h-80 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
 
         <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-8">
-          <div className="max-w-2xl space-y-6 flex-1">
+          <div className="max-w-2xl space-y-4 flex-1">
           
           <div className="flex flex-wrap items-center gap-2">
             <div className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-black uppercase tracking-wider ${
               isKids 
                 ? 'bg-gradient-to-r from-purple-500 to-indigo-500 text-amber-300 border border-purple-300/40 shadow-xs'
-                : 'bg-white/10 backdrop-blur-md border border-white/20 text-[#FFD166]'
+                : 'bg-amber-400 text-slate-950 shadow-sm'
             }`}>
-              <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-              <span>{isKids ? '🕹️ GÜAKYTOPIA JUNIOR 12+ • ARCADE EDITION' : 'GÜAKYTOPIA • OPEN THE WORLD'}</span>
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>{isKids ? '🕹️ GÜAKYTOPIA JUNIOR 12+ • ARCADE EDITION' : 'GÜAKYTOPIA • CAMPUS DIGITAL'}</span>
             </div>
-            <span className="text-xs text-purple-200 font-bold hidden sm:inline">
-              {isKids ? '⚡ Sube de nivel en inglés jugando y conversando' : 'Start where you are. Keep going.'}
+            <span className="text-xs text-teal-300 font-bold bg-teal-500/20 px-2.5 py-0.5 rounded-full border border-teal-400/30 hidden sm:inline">
+              {isKids ? '⚡ Sube de nivel en inglés jugando' : 'McGraw Hill + Habit Lab'}
             </span>
           </div>
 
-          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-tight">
+          <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black tracking-tight text-white leading-tight">
             {isKids ? (
               <>
-                ¡Sube de Nivel tu Inglés como un <span className="text-amber-300 underline decoration-pink-500 decoration-wavy">Pro Gamer</span>! ⚡🎮
+                ¡Sube de Nivel tu Inglés como un <span className="bg-gradient-to-r from-amber-300 via-pink-400 to-purple-300 bg-clip-text text-transparent">Pro Gamer</span>! ⚡🎮
               </>
             ) : (
-              <>Bienvenido a Tu <span className="text-[#2EC4B6]">Universo del Inglés</span>. Abrir el Mundo.</>
+              <>Bienvenido a Tu <span className="bg-gradient-to-r from-amber-300 via-orange-300 to-teal-300 bg-clip-text text-transparent">Universo del Inglés</span>. Abrir el Mundo.</>
             )}
           </h1>
 
-          <p className="text-sm sm:text-lg text-slate-200 leading-relaxed font-normal">
+          <p className="text-amber-200 font-mono text-xs sm:text-sm tracking-wide">
+            «Open the World. Start where you are. Keep going.»
+          </p>
+
+          <p className="text-xs sm:text-sm text-slate-200 leading-relaxed font-normal">
             {isKids ? (
               'Cero memorizaciones aburridas ni reglas de los años 90. Aprende a hablar con fluidez sobre lo que a ti te apasiona: gaming, Twitch, series, anime, creadores de contenido y cultura global con mentores que te escuchan.'
             ) : (
@@ -848,6 +852,51 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
                 ? 'Profesores que entienden tu mundo: hablan de tus streamers favoritos, música, series y videojuegos.'
                 : 'Nunca etiquetamos. La práctica constante y el hábito diario desarrollan cualquier habilidad.'}
             </p>
+          </div>
+        </div>
+      </section>
+
+      {/* 9. FINAL ENROLLMENT CTA (Inscripción directa al final de la página principal) */}
+      <section className={`rounded-3xl p-6 sm:p-10 border shadow-2xl relative overflow-hidden transition-all text-center ${getThemeBannerClass(studyTheme, isKids)}`}>
+        <div className="absolute top-0 right-0 w-80 h-80 bg-teal-500/10 rounded-full blur-3xl pointer-events-none -mr-16 -mt-16" />
+        <div className="absolute bottom-0 left-1/4 w-80 h-80 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="relative z-10 max-w-2xl mx-auto space-y-4">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-black uppercase tracking-wider bg-amber-400 text-slate-950 shadow-sm mx-auto">
+            <span>✨ Comienza Tu Aventura Hoy</span>
+          </div>
+
+          <h2 className="text-2xl sm:text-4xl font-black tracking-tight text-white leading-tight">
+            {isKids ? '¿Listo para Subir de Nivel en Inglés? 🚀' : 'Inscríbete y Abre las Puertas del Mundo'}
+          </h2>
+
+          <p className="text-amber-200 font-mono text-xs sm:text-sm">
+            «Open the World. Start where you are. Keep going.»
+          </p>
+
+          <p className="text-xs sm:text-sm text-slate-200 leading-relaxed font-normal">
+            {isKids
+              ? 'Realiza tu prueba diagnóstica gamificada sin costo, descubre tu nivel y empieza a practicar con Teacher Cokitö y la comunidad de Güakytopia.'
+              : 'Elige tu plan, haz tu prueba diagnóstica de 50 preguntas y recibe tu diagnóstico personalizado para iniciar tu ruta de fluidez.'}
+          </p>
+
+          <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
+            <button
+              onClick={onStartRegistration}
+              className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-slate-950 font-black rounded-2xl text-sm transition-transform hover:scale-105 shadow-xl flex items-center justify-center gap-2"
+            >
+              <span>{isKids ? '¡Inscribirme y Jugar Gratis! 🎮' : 'Inscribirme y Realizar Prueba Diagnóstica'}</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
+
+            {onOpenPricingModal && (
+              <button
+                onClick={onOpenPricingModal}
+                className="w-full sm:w-auto px-6 py-4 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold rounded-2xl text-sm transition-colors flex items-center justify-center gap-2"
+              >
+                <span>Ver Planes y Tarifas</span>
+              </button>
+            )}
           </div>
         </div>
       </section>

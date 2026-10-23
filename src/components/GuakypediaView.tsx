@@ -33,6 +33,8 @@ import {
   Star
 } from 'lucide-react';
 import { AudienceTheme, Student } from '../types';
+import { StudyThemeId } from './ThemeSelectorModal';
+import { getThemeBannerClass } from '../utils/themeStyles';
 
 interface GuakypediaViewProps {
   audienceTheme: AudienceTheme;
@@ -40,6 +42,7 @@ interface GuakypediaViewProps {
   onNavigateToTab: (tab: string) => void;
   onOpenPricingModal: () => void;
   onOpenCouponModal: () => void;
+  studyTheme?: StudyThemeId;
 }
 
 type PillarId = 'intro' | 'modalities' | 'student_faq' | 'teachers' | 'troubleshooting' | 'glossary';
@@ -216,7 +219,8 @@ export const GuakypediaView: React.FC<GuakypediaViewProps> = ({
   currentStudent,
   onNavigateToTab,
   onOpenPricingModal,
-  onOpenCouponModal
+  onOpenCouponModal,
+  studyTheme = 'official'
 }) => {
   const isKids = audienceTheme === 'kids';
 
@@ -327,16 +331,12 @@ export const GuakypediaView: React.FC<GuakypediaViewProps> = ({
   ] as const;
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10 animate-fadeIn">
+    <div className="w-full space-y-8 animate-fadeIn">
       
       {/* =========================================================================
           HERO BANNER: Güakypedia Guide to Güakytopia
           ========================================================================= */}
-      <div className={`rounded-3xl p-6 sm:p-10 border text-white shadow-2xl relative overflow-hidden transition-all ${
-        isKids
-          ? 'bg-gradient-to-br from-violet-950 via-indigo-900 to-purple-950 border-violet-500/30'
-          : 'bg-gradient-to-br from-slate-950 via-teal-950 to-indigo-950 border-teal-500/30'
-      }`}>
+      <div className={`rounded-3xl p-6 sm:p-10 border shadow-2xl relative overflow-hidden transition-all ${getThemeBannerClass(studyTheme, isKids)}`}>
         <div className="absolute top-0 right-0 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
         <div className="absolute bottom-0 left-1/3 w-80 h-80 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
 
