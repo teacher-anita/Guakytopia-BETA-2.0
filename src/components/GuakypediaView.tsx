@@ -206,11 +206,13 @@ const GLOSSARY_TERMS = [
   { term: 'Flock', def: 'Comunidad de estudiantes y mentores de Güakytopia; también grupos abiertos de práctica y conversación.' },
   { term: 'Güaky', def: 'La guacamaya roja oficial y embajadora cultural de Güakytopia que acompaña todas tus misiones.' },
   { term: 'Güakytalkie (Lab)', def: 'Laboratorio de práctica interactiva con 100 drills graduados por unidad para speaking, listening y gramática.' },
-  { term: 'Hour Bag', def: 'Bolsa prepagada de horas a $10/h (mínimo 6 hrs = $60) con validez mensual y reserva flexible.' },
+  { term: 'Güaky Voice Studio', def: 'Laboratorio fonético exclusivo para miembros con Digital Pass ($4.99/mes) o planes de 6+ hrs, con reconocimiento de voz, audio modelo nativo y Pronunciation Mirror (+20 XP).' },
+  { term: 'Hour Bag / Güakypack', def: 'Mochila digital del estudiante donde se guardan sus horas prepagadas, escudos de protección de clases, escudos de racha y pases de The Flock.' },
   { term: 'Hub', def: 'Centro neurálgico que muestra tu Learning Pathway con los 12 niveles de Güakytopia.' },
   { term: 'Mastery', def: 'Porcentaje de dominio alcanzado en una habilidad tras completar los ejercicios del Lab.' },
   { term: 'Pase Digital', def: 'Membresía autónoma de $4.99/mes con acceso completo a los 12 niveles, audios, Lab y Arena sin clases en vivo obligatorias.' },
   { term: 'Seven Day Pass', def: 'Acceso de cortesía durante 7 días que incluye inducción los lunes (4pm o 7pm) y solicitud de clase modelo.' },
+  { term: 'The Flock Radar', def: 'Super Reporte integral de progreso que diagnostica las 4 habilidades (fluidez, gramática, vocabulario y pronunciación) con tips ADHD-friendly para el estudiante y sus tutores.' },
   { term: 'Unit Quiz', def: 'Prueba de control al final de cada unidad que exige un mínimo de 70% para desbloquear la siguiente.' },
   { term: 'XP (Experience Points)', def: 'Puntos de experiencia ganados en juegos, drills y misiones que determinan tu posición en la Weekly Leaderboard.' }
 ];
@@ -1486,6 +1488,58 @@ export const GuakypediaView: React.FC<GuakypediaViewProps> = ({
                   </button>
                 );
               })}
+            </div>
+          </div>
+
+          {/* NUEVAS HERRAMIENTAS: GÜAKY VOICE STUDIO & SUPER REPORTE DE PROGRESO */}
+          <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-blue-950 text-white rounded-3xl p-6 sm:p-8 space-y-6 shadow-xl border border-white/10">
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <div>
+                <span className="text-[11px] font-black uppercase tracking-wider bg-amber-400 text-slate-950 px-3 py-0.5 rounded-full inline-block mb-1">
+                  Novedades del Campus
+                </span>
+                <h3 className="text-xl sm:text-2xl font-black text-white flex items-center gap-2">
+                  <span>🎙️ Güaky Voice Studio & 📊 The Flock Radar</span>
+                </h3>
+              </div>
+              <span className="text-xs text-blue-200">
+                Pedagogía Fonética & Diagnóstico en Tiempo Real
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Voice Studio Card */}
+              <div className="p-5 bg-white/10 rounded-2xl border border-white/10 space-y-2.5">
+                <div className="flex items-center justify-between gap-2 flex-wrap">
+                  <div className="flex items-center gap-2 text-amber-300 font-bold text-sm">
+                    <span>🎙️</span>
+                    <span>Pronunciation Mirror • Voice Studio</span>
+                  </div>
+                  <span className="text-[9px] font-black uppercase tracking-wider bg-purple-500/30 text-purple-200 border border-purple-400/30 px-2 py-0.5 rounded-full">
+                    Exclusivo Digital Pass ($4.99)
+                  </span>
+                </div>
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  Dentro del asistente <strong>Güaky The Macaw</strong> tienes acceso al Voice Studio (exclusivo para miembros con <strong>Digital Pass</strong> o planes activos de 6+ horas). Puedes activar tu micrófono, pronunciar frases de práctica adaptadas a tu nivel (A1 a B2), escuchar la pronunciación modelo nativa y recibir retroalimentación fonética inmediata sin juicio ni penalizaciones. Cada desafío completado te otorga <strong>+20 XP</strong>.
+                </p>
+                <div className="text-[11px] text-amber-200 bg-amber-400/10 p-2.5 rounded-xl border border-amber-400/20">
+                  🎯 <em>Ideal para vencer el miedo a hablar y entrenar la memoria muscular de la boca antes de tus clases en vivo. Los visitantes pueden escuchar la muestra modelo antes de suscribirse.</em>
+                </div>
+              </div>
+
+              {/* Super Reporte Card */}
+              <div className="p-5 bg-white/10 rounded-2xl border border-white/10 space-y-2.5">
+                <div className="flex items-center gap-2 text-teal-300 font-bold text-sm">
+                  <span>📊</span>
+                  <span>The Flock Radar • Super Reporte de Progreso</span>
+                </div>
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  Accesible desde tu perfil de alumno, este dossier integral evalúa tus competencias en <strong>4 ejes clave</strong>: Fluidez, Precisión Gramatical, Riqueza de Vocabulario y Pronunciación. Incluye <em>"Mi Nido de Oportunidades"</em> con tips mnemotécnicos ADHD-friendly de Güaky, estado de tu Güakypack y exportación en 1 clic para compartir por WhatsApp o imprimir en PDF.
+                </p>
+                <div className="text-[11px] text-teal-200 bg-teal-400/10 p-2.5 rounded-xl border border-teal-400/20">
+                  👨‍👩‍👧 <em>Incluye selector de vista para que los padres o tutores reciban un informe pedagógico claro y transparente.</em>
+                </div>
+              </div>
             </div>
           </div>
 

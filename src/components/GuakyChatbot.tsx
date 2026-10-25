@@ -10,7 +10,18 @@ import {
   Maximize2,
   Bookmark,
   Brain,
-  ChevronRight
+  ChevronRight,
+  Mic,
+  MicOff,
+  Volume2,
+  VolumeX,
+  Radio,
+  Check,
+  Award,
+  Target,
+  BarChart2,
+  Lock,
+  Zap
 } from 'lucide-react';
 import { OFFICIAL_PAGO_MOVIL } from '../services/currencyService';
 import { Student, AudienceTheme } from '../types';
@@ -33,7 +44,45 @@ export interface GuakyChatbotProps {
   activeTab?: string;
   onNavigateToTab?: (tab: string) => void;
   onOpenGuakypack?: () => void;
+  onOpenSuperReport?: () => void;
+  onAwardXp?: (amount: number, reason: string) => void;
+  onOpenPaymentModal?: () => void;
+  onOpenRegistration?: () => void;
 }
+
+export interface PracticePhrase {
+  id: string;
+  level: string;
+  text: string;
+  phoneticTip: string;
+}
+
+export const TARGET_PRACTICE_PHRASES: PracticePhrase[] = [
+  {
+    id: 'p1',
+    level: 'A1 • Principiante',
+    text: "Welcome to Güakytopia! Let's practice English together.",
+    phoneticTip: "Atención a la 'th' en 'together' (lengua entre los dientes) y el sonido /w/ en 'welcome'."
+  },
+  {
+    id: 'p2',
+    level: 'A2 • Intermedio',
+    text: "I worked hard yesterday and watched a great movie.",
+    phoneticTip: "Recuerda que '-ed' en 'worked' y 'watched' suena como una suave /t/: /workt/ y /watcht/."
+  },
+  {
+    id: 'p3',
+    level: 'B1 • Fluidez',
+    text: "She thinks the schedule is flexible and comfortable.",
+    phoneticTip: "Practica 'schedule' (/ˈskedʒ.uːl/) y la 'th' suave en 'thinks'."
+  },
+  {
+    id: 'p4',
+    level: 'B2 • Profesional',
+    text: "The decision was definitely worth every minute of preparation.",
+    phoneticTip: "Diferencia la 'v' de 'every' (labio contra dientes superiores) y la 'th' en 'worth'."
+  }
+];
 
 // Adaptive Greeting Generator based on user profile and platform status
 export function getAdaptiveGreeting(props: {
@@ -315,13 +364,40 @@ export const GuakyChatbot: React.FC<GuakyChatbotProps> = ({
   audienceTheme = 'adults',
   activeTab = 'landing',
   onNavigateToTab,
-  onOpenGuakypack
+  onOpenGuakypack,
+  onOpenSuperReport,
+  onAwardXp,
+  onOpenPaymentModal,
+  onOpenRegistration
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [hasResumedMemory, setHasResumedMemory] = useState(false);
+
+  // Digital Pass Check: Exclusive feature access
+  const hasDigitalPassAccess = Boolean(
+    currentStudent && (
+      currentStudent.isDigitalPass || 
+      (currentStudent.accountType === 'student' && currentStudent.status === 'enrolled') ||
+      (currentStudent.guakypack?.hoursBalance && currentStudent.guakypack.hoursBalance >= 6) ||
+      currentStudent.plan === 'intensive' ||
+      currentStudent.plan === 'super_intensive' ||
+      currentStudent.plan === 'regular'
+    )
+  );
+
+  // Voice Studio & Pronunciation Mirror State
+  const [activeChatTab, setActiveChatTab] = useState<'chat' | 'voiceStudio'>('chat');
+  const [isListening, setIsListening] = useState(false);
+  const [speakingMessageId, setSpeakingMessageId] = useState<string | null>(null);
+  const [voiceStudioTargetIndex, setVoiceStudioTargetIndex] = useState(0);
+  const [voiceStudioSpoken, setVoiceStudioSpoken] = useState('');
+  const [voiceStudioScore, setVoiceStudioScore] = useState<number | null>(null);
+  const [voiceStudioFeedback, setVoiceStudioFeedback] = useState<string | null>(null);
+  const [hasAwardedVoiceXp, setHasAwardedVoiceXp] = useState(false);
+  const recognitionRef = useRef<any>(null);
 
   // Clean WhatsApp URL linking to Welcome Lounge community
   const welcomeLoungeUrl = OFFICIAL_PAGO_MOVIL.whatsappWelcomeLoungeUrl;
@@ -361,6 +437,20 @@ export const GuakyChatbot: React.FC<GuakyChatbotProps> = ({
       }
     ];
   });
+
+  // Stop speech synthesis & recognition when unmounting
+  useEffect(() => {
+    return () => {
+      if (typeof window !== 'undefined' && window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+      }
+      if (recognitionRef.current) {
+        try {
+          recognitionRef.current.stop();
+        } catch {}
+      }
+    };
+  }, []);
 
   // Track if we loaded past memory
   useEffect(() => {
@@ -404,14 +494,159 @@ export const GuakyChatbot: React.FC<GuakyChatbotProps> = ({
   };
 
   useEffect(() => {
-    if (isOpen && !isMinimized) {
+    if (isOpen && !isMinimized && activeChatTab === 'chat') {
       scrollToBottom();
     }
-  }, [messages, isOpen, isMinimized]);
+  }, [messages, isOpen, isMinimized, activeChatTab]);
+
+  // Speech synthesis: read text aloud with authentic bilingual detection
+  const handleToggleSpeak = (messageId: string, text: string) => {
+    if (typeof window === 'undefined' || !window.speechSynthesis) {
+      alert('Tu navegador no soporta síntesis de voz (SpeechSynthesis).');
+      return;
+    }
+
+    if (speakingMessageId === messageId) {
+      window.speechSynthesis.cancel();
+      setSpeakingMessageId(null);
+      return;
+    }
+
+    window.speechSynthesis.cancel();
+    setSpeakingMessageId(messageId);
+
+    const clean = text.replace(/[*_#`~]/g, '').replace(/[\u{1F300}-\u{1F6FF}]/gu, '');
+    const utterance = new SpeechSynthesisUtterance(clean);
+    const isEnglish = /[a-zA-Z\s]{15,}/.test(clean) && !/[áéíóúñ¿¡]/i.test(clean);
+    utterance.lang = isEnglish ? 'en-US' : 'es-US';
+    utterance.rate = 0.95;
+
+    const voices = window.speechSynthesis.getVoices();
+    const voice = voices.find(v => isEnglish ? v.lang.startsWith('en') : v.lang.startsWith('es'));
+    if (voice) utterance.voice = voice;
+
+    utterance.onend = () => setSpeakingMessageId(null);
+    utterance.onerror = () => setSpeakingMessageId(null);
+
+    window.speechSynthesis.speak(utterance);
+  };
+
+  // Microphone speech-to-text in regular chat
+  const handleToggleMicChat = () => {
+    const SpeechRecognition = typeof window !== 'undefined'
+      ? ((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition)
+      : null;
+
+    if (!SpeechRecognition) {
+      alert('El reconocimiento de voz no está disponible en este navegador. Te recomendamos usar Google Chrome, Microsoft Edge o Safari.');
+      return;
+    }
+
+    if (isListening) {
+      try {
+        recognitionRef.current?.stop();
+      } catch {}
+      setIsListening(false);
+    } else {
+      try {
+        const recognition = new SpeechRecognition();
+        recognition.continuous = false;
+        recognition.interimResults = true;
+        recognition.lang = 'en-US';
+
+        recognition.onstart = () => setIsListening(true);
+        recognition.onresult = (event: any) => {
+          let transcript = '';
+          for (let i = event.resultIndex; i < event.results.length; i++) {
+            transcript += event.results[i][0].transcript;
+          }
+          setInput(transcript);
+        };
+        recognition.onerror = () => setIsListening(false);
+        recognition.onend = () => setIsListening(false);
+
+        recognitionRef.current = recognition;
+        recognition.start();
+      } catch (err) {
+        console.warn('Microphone error:', err);
+        setIsListening(false);
+      }
+    }
+  };
+
+  // Pronunciation Mirror test in Voice Studio
+  const handleStartPronunciationTest = () => {
+    const SpeechRecognition = typeof window !== 'undefined'
+      ? ((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition)
+      : null;
+
+    if (!SpeechRecognition) {
+      alert('El reconocimiento de voz no está disponible en este navegador. Te recomendamos usar Google Chrome o Microsoft Edge.');
+      return;
+    }
+
+    const targetPhrase = TARGET_PRACTICE_PHRASES[voiceStudioTargetIndex].text;
+    setVoiceStudioSpoken('');
+    setVoiceStudioScore(null);
+    setVoiceStudioFeedback(null);
+    setHasAwardedVoiceXp(false);
+
+    try {
+      const recognition = new SpeechRecognition();
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.lang = 'en-US';
+
+      recognition.onstart = () => setIsListening(true);
+      recognition.onresult = (event: any) => {
+        const spoken = event.results[0][0].transcript;
+        setVoiceStudioSpoken(spoken);
+
+        const targetCleanWords = targetPhrase.toLowerCase().replace(/[^a-z0-9\s]/g, '').split(/\s+/).filter(Boolean);
+        const spokenCleanWords = spoken.toLowerCase().replace(/[^a-z0-9\s]/g, '').split(/\s+/).filter(Boolean);
+
+        let matchCount = 0;
+        targetCleanWords.forEach(w => {
+          if (spokenCleanWords.includes(w)) matchCount++;
+        });
+
+        const score = Math.min(100, Math.round((matchCount / Math.max(1, targetCleanWords.length)) * 100));
+        setVoiceStudioScore(score);
+
+        if (score >= 80) {
+          setVoiceStudioFeedback(`¡Excelente articulación! Lograste un ${score}% de precisión fonética.`);
+          if (onAwardXp && !hasAwardedVoiceXp) {
+            onAwardXp(20, 'Pronunciation Mirror • Precisión fonética');
+            setHasAwardedVoiceXp(true);
+          }
+        } else if (score >= 50) {
+          setVoiceStudioFeedback(`¡Buen intento (${score}%)! Revisa el tip fonético arriba y vuelve a grabarte.`);
+        } else {
+          setVoiceStudioFeedback(`Detectamos (${score}%): "${spoken}". Intenta pronunciar más cerca del micrófono y a ritmo constante.`);
+        }
+      };
+      recognition.onerror = () => setIsListening(false);
+      recognition.onend = () => setIsListening(false);
+
+      recognitionRef.current = recognition;
+      recognition.start();
+    } catch (err) {
+      console.warn('Pronunciation test error:', err);
+      setIsListening(false);
+    }
+  };
 
   const handleSendMessage = async (textToSend?: string) => {
     let query = (textToSend || input).trim();
     if (!query || isLoading) return;
+
+    // Stop listening if was active
+    if (isListening) {
+      try {
+        recognitionRef.current?.stop();
+      } catch {}
+      setIsListening(false);
+    }
 
     // Check if the user typed a single number (1, 2, 3, 4)
     // If so, map it to the corresponding numbered option in the last assistant message
@@ -437,6 +672,8 @@ export const GuakyChatbot: React.FC<GuakyChatbotProps> = ({
       if (onOpenGuakypack) {
         onOpenGuakypack();
       }
+    } else if ((lowerQuery.includes('super reporte') || lowerQuery.includes('reporte de progreso') || lowerQuery.includes('radar')) && onOpenSuperReport) {
+      onOpenSuperReport();
     } else if (lowerQuery.includes('classroom') && onNavigateToTab) {
       onNavigateToTab('classroom');
     } else if (lowerQuery.includes('hub') && onNavigateToTab) {
@@ -642,149 +879,489 @@ export const GuakyChatbot: React.FC<GuakyChatbotProps> = ({
 
           {!isMinimized && (
             <>
-              {/* Memory Resume Banner */}
-              {hasResumedMemory && (
-                <div className="px-3 py-1.5 bg-gradient-to-r from-teal-50 to-emerald-50 border-b border-teal-100 flex items-center justify-between text-[11px] text-teal-900">
-                  <div className="flex items-center gap-1 font-semibold truncate">
-                    <Brain className="w-3.5 h-3.5 text-teal-600 shrink-0" />
-                    <span className="truncate">Memoria activa • Continuando charla</span>
-                  </div>
+              {/* Studio View Selector: Chat vs Voice Studio */}
+              <div className="bg-slate-900/90 p-1.5 border-b border-slate-700 flex items-center justify-between text-xs">
+                <div className="flex bg-slate-800 p-0.5 rounded-xl border border-slate-700/80 w-full font-bold">
                   <button
-                    onClick={handleResetChat}
-                    className="text-[10px] font-bold text-teal-700 hover:text-teal-900 hover:underline shrink-0 ml-2"
+                    onClick={() => setActiveChatTab('chat')}
+                    className={`flex-1 py-1.5 rounded-lg transition-all flex items-center justify-center gap-1.5 text-xs ${
+                      activeChatTab === 'chat'
+                        ? 'bg-[#2EC4B6] text-slate-950 font-black shadow-xs'
+                        : 'text-slate-300 hover:text-white'
+                    }`}
                   >
-                    Empezar nuevo tema
+                    <MessageSquare className="w-3.5 h-3.5" />
+                    <span>Chat & Ayuda</span>
+                  </button>
+                  <button
+                    onClick={() => setActiveChatTab('voiceStudio')}
+                    className={`flex-1 py-1.5 rounded-lg transition-all flex items-center justify-center gap-1.5 text-xs ${
+                      activeChatTab === 'voiceStudio'
+                        ? 'bg-amber-400 text-slate-950 font-black shadow-xs'
+                        : 'text-slate-300 hover:text-white'
+                    }`}
+                  >
+                    <Radio className="w-3.5 h-3.5" />
+                    <span>🎙️ Voice Studio</span>
+                    {hasDigitalPassAccess ? (
+                      <span className="text-[8px] bg-purple-600 text-white font-black px-1.5 py-0.2 rounded-full uppercase tracking-wider">
+                        Coming Soon
+                      </span>
+                    ) : (
+                      <span className="text-[8px] bg-amber-400 text-slate-950 font-black px-1.5 py-0.2 rounded-full uppercase tracking-wider flex items-center gap-0.5">
+                        <Lock className="w-2.5 h-2.5" /> Pass
+                      </span>
+                    )}
                   </button>
                 </div>
-              )}
+              </div>
 
-              {/* Messages Thread (Scrollable) */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-3.5 bg-slate-50/60 text-xs">
-                {messages.map((m) => {
-                  const isUser = m.role === 'user';
-                  return (
-                    <div
-                      key={m.id}
-                      className={`flex flex-col ${isUser ? 'items-end' : 'items-start'} space-y-1`}
-                    >
-                      <div className="flex items-end gap-1.5 max-w-[90%]">
-                        {!isUser && (
-                          <div className="w-6 h-6 rounded-full bg-white border border-teal-200 p-0.5 flex items-center justify-center shrink-0 shadow-2xs overflow-hidden">
-                            <img 
-                              src="/guaky-chat.png" 
-                              alt="Güaky The Macaw" 
-                              className="w-full h-full object-contain" 
-                              onError={(e) => {
-                                e.currentTarget.style.visibility = 'hidden';
-                              }}
-                            />
-                          </div>
-                        )}
-                        <div
-                          className={`p-3 rounded-2xl leading-relaxed ${
-                            isUser
-                              ? 'bg-[#2EC4B6] text-slate-950 rounded-br-xs shadow-xs'
-                              : 'bg-white text-slate-800 border border-slate-200/90 rounded-bl-xs shadow-xs'
-                          }`}
-                        >
-                          <FormattedChatMessage 
-                            text={m.text} 
-                            isUser={isUser}
-                            onSelectOption={(optionText) => handleSendMessage(optionText)}
-                          />
+              {/* VIEW 1: VOICE STUDIO & PRONUNCIATION MIRROR (GATED BY DIGITAL PASS) */}
+              {activeChatTab === 'voiceStudio' ? (
+                !hasDigitalPassAccess ? (
+                  /* LOCKED PAYWALL PREVIEW FOR NON-DIGITAL PASS USERS */
+                  <div className="flex-1 overflow-y-auto p-4 space-y-3.5 bg-slate-50 text-xs">
+                    <div className="p-4 bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 text-white rounded-2xl shadow-lg border border-purple-400/30 text-center space-y-3">
+                      <div className="w-12 h-12 mx-auto rounded-2xl bg-gradient-to-tr from-amber-400 to-purple-500 flex items-center justify-center shadow-md">
+                        <Lock className="w-6 h-6 text-slate-950" />
+                      </div>
+                      
+                      <div className="space-y-1">
+                        <span className="text-[9px] font-black uppercase tracking-wider bg-purple-500/30 text-purple-200 border border-purple-400/30 px-2.5 py-0.5 rounded-full inline-block">
+                          EXCLUSIVO DIGITAL PASS ($4.99/MES)
+                        </span>
+                        <h3 className="text-base font-black text-white">
+                          Güaky Voice Studio
+                        </h3>
+                        <p className="text-[11px] text-slate-300 max-w-xs mx-auto leading-relaxed">
+                          El laboratorio fonético y el <strong>Pronunciation Mirror</strong> con retroalimentación por micrófono en tiempo real y recompensas de <strong>+20 XP</strong> está reservado para miembros con <strong>Pase Digital ($4.99/mes)</strong> o alumnos inscritos con 6+ horas.
+                        </p>
+                      </div>
 
-                          {/* Interactive WhatsApp Direct Action Card */}
-                          {!isUser && m.showWhatsAppButton && (
-                            <div className="mt-3 pt-2.5 border-t border-slate-100 space-y-2">
-                              <a
-                                href={welcomeLoungeUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="w-full inline-flex items-center justify-center gap-2 px-3.5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow-md transition-transform hover:scale-101"
-                              >
-                                <svg className="w-4 h-4 fill-current shrink-0" viewBox="0 0 24 24">
-                                  <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z" />
-                                </svg>
-                                <span>Entrar al Welcome Lounge de WhatsApp</span>
-                                <ExternalLink className="w-3.5 h-3.5" />
-                              </a>
-                              <p className="text-[10px] text-slate-500 text-center">
-                                Canal de bienvenida oficial • Soporte y consultas
-                              </p>
-                            </div>
-                          )}
-
+                      {/* Benefits breakdown */}
+                      <div className="text-left bg-white/10 rounded-xl p-3 space-y-2 border border-white/10 text-[11px]">
+                        <div className="flex items-center gap-2">
+                          <span className="text-emerald-400 font-bold">✓</span>
+                          <span className="text-slate-200">Reconocimiento fonético por micrófono en vivo</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-emerald-400 font-bold">✓</span>
+                          <span className="text-slate-200">Audio guía nativo para escuchar antes de hablar</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-emerald-400 font-bold">✓</span>
+                          <span className="text-slate-200">Tips de articulación bucal para hispanohablantes</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-amber-300 font-bold">⚡</span>
+                          <span className="text-slate-200">Suma +20 XP por práctica al ranking de la Liga Cokitó</span>
                         </div>
                       </div>
-                      <span className="text-[9px] text-slate-400 px-2">
-                        {m.timestamp}
-                      </span>
-                    </div>
-                  );
-                })}
 
-                {isLoading && (
-                  <div className="flex items-center gap-2 text-slate-500 text-xs p-2">
-                    <div className="w-5 h-5 rounded-full bg-white border border-teal-200 p-0.5 flex items-center justify-center overflow-hidden">
-                      <img 
-                        src="/guaky-chat.png" 
-                        alt="Güaky The Macaw" 
-                        className="w-full h-full object-contain" 
-                        onError={(e) => {
-                          e.currentTarget.style.visibility = 'hidden';
-                        }}
-                      />
-                    </div>
-                    <div className="flex items-center gap-1 bg-white border border-slate-200 px-3 py-1.5 rounded-full shadow-2xs">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#2EC4B6] animate-bounce" />
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#FF6B4A] animate-bounce [animation-delay:0.2s]" />
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#FFD166] animate-bounce [animation-delay:0.4s]" />
-                      <span className="text-[11px] text-slate-500 ml-1">Güaky The Macaw está pensando...</span>
+                      {/* Sample Audio Preview */}
+                      <div className="bg-slate-800/80 rounded-xl p-3 border border-slate-700 text-left space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider">
+                            🎧 Muestra de audio modelo:
+                          </span>
+                          <button
+                            onClick={() => handleToggleSpeak('studio_demo_locked', TARGET_PRACTICE_PHRASES[0].text)}
+                            className="flex items-center gap-1 text-[10px] font-bold text-teal-300 hover:text-teal-200 bg-teal-950/60 px-2 py-0.5 rounded border border-teal-500/40 cursor-pointer"
+                          >
+                            <Volume2 className="w-3 h-3" />
+                            <span>Escuchar demo</span>
+                          </button>
+                        </div>
+                        <p className="text-xs text-white font-medium italic">
+                          "{TARGET_PRACTICE_PHRASES[0].text}"
+                        </p>
+                        <p className="text-[10px] text-slate-400">
+                          {TARGET_PRACTICE_PHRASES[0].phoneticTip}
+                        </p>
+                      </div>
+
+                      {/* CTAs */}
+                      <div className="space-y-2 pt-1">
+                        <button
+                          onClick={() => {
+                            if (onOpenPaymentModal) {
+                              onOpenPaymentModal();
+                            } else if (onOpenRegistration) {
+                              onOpenRegistration();
+                            } else if (onNavigateToTab) {
+                              onNavigateToTab('landing');
+                            }
+                          }}
+                          className="w-full py-2.5 px-4 bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 hover:from-amber-500 hover:to-yellow-500 text-slate-950 font-black rounded-xl text-xs shadow-md flex items-center justify-center gap-2 cursor-pointer transition-transform hover:scale-102"
+                        >
+                          <Zap className="w-4 h-4 text-slate-950 fill-current" />
+                          <span>Activar Digital Pass ($4.99/mes)</span>
+                        </button>
+
+                        <a
+                          href={`https://wa.me/584120000000?text=${encodeURIComponent('¡Hola La Teacher! Quiero activar mi Digital Pass ($4.99) para acceder a Güaky Voice Studio.')}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="w-full py-2 px-3 bg-white/10 hover:bg-white/20 text-slate-200 font-bold rounded-xl text-[11px] border border-white/20 flex items-center justify-center gap-1.5 transition-colors"
+                        >
+                          <span>💬 Consultar con La Teacher en WhatsApp</span>
+                          <ExternalLink className="w-3 h-3" />
+                        </a>
+                      </div>
                     </div>
                   </div>
-                )}
+                ) : (
+                /* FULL VOICE STUDIO & PRONUNCIATION MIRROR (FOR DIGITAL PASS HOLDERS) */
+                <div className="flex-1 overflow-y-auto p-4 space-y-3.5 bg-slate-50/70 text-xs">
+                  
+                  {/* Banner with Coming Soon / Beta disclosure */}
+                  <div className="p-3 bg-gradient-to-r from-purple-50 via-teal-50 to-emerald-50 border border-purple-200 rounded-2xl flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xl">🎙️</span>
+                      <div>
+                        <div className="flex items-center gap-1.5">
+                          <h4 className="font-black text-slate-900 text-xs sm:text-sm">
+                            Pronunciation Mirror
+                          </h4>
+                          <span className="text-[9px] font-black uppercase tracking-wider bg-purple-600 text-white px-2 py-0.2 rounded-full">
+                            COMING SOON 🚀
+                          </span>
+                        </div>
+                        <p className="text-[10px] text-slate-600">
+                          Laboratorio fonético en fase Beta • Entrena tu articulación antes de clases
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <span className="text-[9px] font-black bg-purple-100 text-purple-900 border border-purple-300 px-2 py-0.5 rounded-full">
+                        💎 Digital Pass
+                      </span>
+                      <span className="text-[10px] font-black bg-amber-100 text-amber-900 border border-amber-300 px-2 py-0.5 rounded-full">
+                        +20 XP
+                      </span>
+                    </div>
+                  </div>
 
-                <div ref={messagesEndRef} />
-              </div>
+                  {/* Clarification Alert Box */}
+                  <div className="p-2.5 bg-purple-50/80 border border-purple-200/90 rounded-xl text-[11px] text-purple-950 space-y-1">
+                    <div className="flex items-center gap-1.5 font-black text-purple-900">
+                      <span>🦜</span>
+                      <span>Voz de Guacamaya Personalizada en Camino</span>
+                    </div>
+                    <p className="leading-relaxed text-purple-900/90 text-[10px]">
+                      Por ahora el sistema utiliza el sintetizador de voz estándar de tu navegador para guiar la fonética en inglés y el micrófono para evaluar tu lectura. <strong>¡Muy pronto estrenaremos la voz oficial de Güaky con personalidad propia!</strong> Puedes probar la función y seguir acumulando XP.
+                    </p>
+                  </div>
 
-              {/* Quick Suggestion Chips */}
-              <div className="px-3 py-1.5 bg-white border-t border-slate-100 flex items-center gap-1.5 overflow-x-auto no-scrollbar">
-                {quickChips.map((chip, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => handleSendMessage(chip)}
-                    className="px-2.5 py-1 bg-slate-100 hover:bg-teal-50 hover:text-teal-700 text-slate-600 rounded-lg text-[10px] font-semibold whitespace-nowrap transition-colors cursor-pointer"
+                  {/* Level Phrase Selector */}
+                  <div className="space-y-1">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                      Selecciona una frase de práctica:
+                    </span>
+                    <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1">
+                      {TARGET_PRACTICE_PHRASES.map((p, idx) => (
+                        <button
+                          key={p.id}
+                          onClick={() => {
+                            setVoiceStudioTargetIndex(idx);
+                            setVoiceStudioSpoken('');
+                            setVoiceStudioScore(null);
+                            setVoiceStudioFeedback(null);
+                            setHasAwardedVoiceXp(false);
+                          }}
+                          className={`px-2.5 py-1 rounded-xl text-[10px] font-black whitespace-nowrap transition-all border cursor-pointer ${
+                            voiceStudioTargetIndex === idx
+                              ? 'bg-indigo-600 text-white border-indigo-700 shadow-xs'
+                              : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-100'
+                          }`}
+                        >
+                          {p.level}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Target Phrase Box */}
+                  <div className="p-4 bg-white border border-slate-200 rounded-2xl shadow-2xs space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-black text-indigo-700 uppercase tracking-wider">
+                        Frase a pronunciar:
+                      </span>
+                      <button
+                        onClick={() => handleToggleSpeak('studio_target', TARGET_PRACTICE_PHRASES[voiceStudioTargetIndex].text)}
+                        className="flex items-center gap-1 text-[11px] font-black text-teal-700 hover:text-teal-900 bg-teal-50 px-2.5 py-1 rounded-lg border border-teal-200 transition-colors cursor-pointer"
+                        title="Escuchar pronunciación modelo de Güaky"
+                      >
+                        <Volume2 className="w-3.5 h-3.5" />
+                        <span>Escuchar modelo</span>
+                      </button>
+                    </div>
+
+                    <p className="text-sm font-black text-slate-900 leading-snug">
+                      "{TARGET_PRACTICE_PHRASES[voiceStudioTargetIndex].text}"
+                    </p>
+
+                    <div className="p-2.5 bg-amber-50/70 border border-amber-200 rounded-xl text-[11px] text-amber-950 font-medium leading-relaxed">
+                      💡 <strong>Tip fonético:</strong> {TARGET_PRACTICE_PHRASES[voiceStudioTargetIndex].phoneticTip}
+                    </div>
+                  </div>
+
+                  {/* Record Button */}
+                  <div className="text-center py-2 space-y-2">
+                    <button
+                      onClick={handleStartPronunciationTest}
+                      disabled={isListening}
+                      className={`px-5 py-3 rounded-2xl font-black text-xs sm:text-sm shadow-md transition-all flex items-center justify-center gap-2 mx-auto cursor-pointer ${
+                        isListening
+                          ? 'bg-rose-500 text-white ring-4 ring-rose-200 animate-pulse'
+                          : 'bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 text-white hover:scale-102'
+                      }`}
+                    >
+                      {isListening ? (
+                        <>
+                          <MicOff className="w-4 h-4 animate-bounce" />
+                          <span>🎙️ Escuchando... ¡Habla ahora!</span>
+                        </>
+                      ) : (
+                        <>
+                          <Mic className="w-4 h-4" />
+                          <span>Grabar Mi Pronunciación</span>
+                        </>
+                      )}
+                    </button>
+                    <p className="text-[10px] text-slate-400">
+                      Pronuncia cerca del micrófono en un entorno tranquilo
+                    </p>
+                  </div>
+
+                  {/* Pronunciation Feedback Result */}
+                  {voiceStudioScore !== null && (
+                    <div className="p-4 bg-white border border-slate-200 rounded-2xl shadow-xs space-y-2.5 animate-in fade-in slide-in-from-bottom-2">
+                      <div className="flex items-center justify-between">
+                        <span className="font-black text-xs text-slate-800 flex items-center gap-1.5">
+                          <span>🎯</span> Análisis Fonético
+                        </span>
+                        <span className={`text-xs font-black px-2.5 py-0.5 rounded-full ${
+                          voiceStudioScore >= 80 
+                            ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' 
+                            : voiceStudioScore >= 50
+                              ? 'bg-amber-100 text-amber-800 border border-amber-300'
+                              : 'bg-rose-100 text-rose-800 border border-rose-300'
+                        }`}>
+                          {voiceStudioScore}% Precisión
+                        </span>
+                      </div>
+
+                      <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
+                        <div 
+                          className={`h-full rounded-full transition-all duration-500 ${
+                            voiceStudioScore >= 80 ? 'bg-emerald-500' : voiceStudioScore >= 50 ? 'bg-amber-500' : 'bg-rose-500'
+                          }`}
+                          style={{ width: `${voiceStudioScore}%` }}
+                        />
+                      </div>
+
+                      <div className="p-2.5 bg-slate-50 border border-slate-200/80 rounded-xl text-[11px] space-y-1">
+                        <span className="text-slate-400 font-bold block text-[10px]">Lo que escuchó Güaky:</span>
+                        <p className="font-semibold text-slate-800 italic">"{voiceStudioSpoken}"</p>
+                      </div>
+
+                      {voiceStudioFeedback && (
+                        <p className="text-[11px] text-slate-700 leading-relaxed font-medium">
+                          🦜 {voiceStudioFeedback}
+                        </p>
+                      )}
+                    </div>
+                  )}
+
+                </div>
+              )) : (
+                /* VIEW 2: STANDARD ADAPTIVE CHAT WITH AUDIO CAPABILITIES */
+                <>
+                  {/* Memory Resume Banner */}
+                  {hasResumedMemory && (
+                    <div className="px-3 py-1.5 bg-gradient-to-r from-teal-50 to-emerald-50 border-b border-teal-100 flex items-center justify-between text-[11px] text-teal-900">
+                      <div className="flex items-center gap-1 font-semibold truncate">
+                        <Brain className="w-3.5 h-3.5 text-teal-600 shrink-0" />
+                        <span className="truncate">Memoria activa • Continuando charla</span>
+                      </div>
+                      <button
+                        onClick={handleResetChat}
+                        className="text-[10px] font-bold text-teal-700 hover:text-teal-900 hover:underline shrink-0 ml-2"
+                      >
+                        Empezar nuevo tema
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Messages Thread (Scrollable) */}
+                  <div className="flex-1 overflow-y-auto p-4 space-y-3.5 bg-slate-50/60 text-xs">
+                    {messages.map((m) => {
+                      const isUser = m.role === 'user';
+                      return (
+                        <div
+                          key={m.id}
+                          className={`flex flex-col ${isUser ? 'items-end' : 'items-start'} space-y-1`}
+                        >
+                          <div className="flex items-end gap-1.5 max-w-[90%]">
+                            {!isUser && (
+                              <div className="w-6 h-6 rounded-full bg-white border border-teal-200 p-0.5 flex items-center justify-center shrink-0 shadow-2xs overflow-hidden">
+                                <img 
+                                  src="/guaky-chat.png" 
+                                  alt="Güaky The Macaw" 
+                                  className="w-full h-full object-contain" 
+                                  onError={(e) => {
+                                    e.currentTarget.style.visibility = 'hidden';
+                                  }}
+                                />
+                              </div>
+                            )}
+                            <div
+                              className={`p-3 rounded-2xl leading-relaxed ${
+                                isUser
+                                  ? 'bg-[#2EC4B6] text-slate-950 rounded-br-xs shadow-xs'
+                                  : 'bg-white text-slate-800 border border-slate-200/90 rounded-bl-xs shadow-xs'
+                              }`}
+                            >
+                              <FormattedChatMessage 
+                                text={m.text} 
+                                isUser={isUser}
+                                onSelectOption={(optionText) => handleSendMessage(optionText)}
+                              />
+
+                              {/* Read-Aloud Voice Button on Assistant Messages */}
+                              {!isUser && (
+                                <div className="mt-2 pt-1 border-t border-slate-100 flex items-center justify-end">
+                                  <button
+                                    onClick={() => handleToggleSpeak(m.id, m.text)}
+                                    className="flex items-center gap-1 text-[10px] text-teal-700 hover:text-teal-900 font-bold px-1.5 py-0.5 rounded-md hover:bg-teal-50 transition-colors cursor-pointer"
+                                    title="Escuchar lectura en voz alta"
+                                  >
+                                    {speakingMessageId === m.id ? (
+                                      <>
+                                        <VolumeX className="w-3 h-3 text-rose-500 animate-pulse" />
+                                        <span className="text-rose-600">Pausar</span>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <Volume2 className="w-3 h-3 text-teal-600" />
+                                        <span>Audio guía (Beta)</span>
+                                      </>
+                                    )}
+                                  </button>
+                                </div>
+                              )}
+
+                              {/* Interactive WhatsApp Direct Action Card */}
+                              {!isUser && m.showWhatsAppButton && (
+                                <div className="mt-3 pt-2.5 border-t border-slate-100 space-y-2">
+                                  <a
+                                    href={welcomeLoungeUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="w-full inline-flex items-center justify-center gap-2 px-3.5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow-md transition-transform hover:scale-101"
+                                  >
+                                    <svg className="w-4 h-4 fill-current shrink-0" viewBox="0 0 24 24">
+                                      <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z" />
+                                    </svg>
+                                    <span>Entrar al Welcome Lounge de WhatsApp</span>
+                                    <ExternalLink className="w-3.5 h-3.5" />
+                                  </a>
+                                  <p className="text-[10px] text-slate-500 text-center">
+                                    Canal de bienvenida oficial • Soporte y consultas
+                                  </p>
+                                </div>
+                              )}
+
+                            </div>
+                          </div>
+                          <span className="text-[9px] text-slate-400 px-2">
+                            {m.timestamp}
+                          </span>
+                        </div>
+                      );
+                    })}
+
+                    {isLoading && (
+                      <div className="flex items-center gap-2 text-slate-500 text-xs p-2">
+                        <div className="w-5 h-5 rounded-full bg-white border border-teal-200 p-0.5 flex items-center justify-center overflow-hidden">
+                          <img 
+                            src="/guaky-chat.png" 
+                            alt="Güaky The Macaw" 
+                            className="w-full h-full object-contain" 
+                            onError={(e) => {
+                              e.currentTarget.style.visibility = 'hidden';
+                            }}
+                          />
+                        </div>
+                        <div className="flex items-center gap-1 bg-white border border-slate-200 px-3 py-1.5 rounded-full shadow-2xs">
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#2EC4B6] animate-bounce" />
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#FF6B4A] animate-bounce [animation-delay:0.2s]" />
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#FFD166] animate-bounce [animation-delay:0.4s]" />
+                          <span className="text-[11px] text-slate-500 ml-1">Güaky The Macaw está pensando...</span>
+                        </div>
+                      </div>
+                    )}
+
+                    <div ref={messagesEndRef} />
+                  </div>
+
+                  {/* Quick Suggestion Chips */}
+                  <div className="px-3 py-1.5 bg-white border-t border-slate-100 flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+                    {quickChips.map((chip, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => handleSendMessage(chip)}
+                        className="px-2.5 py-1 bg-slate-100 hover:bg-teal-50 hover:text-teal-700 text-slate-600 rounded-lg text-[10px] font-semibold whitespace-nowrap transition-colors cursor-pointer"
+                      >
+                        {chip}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Input Bar with Microphone Voice Action */}
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      handleSendMessage();
+                    }}
+                    className="p-2.5 bg-white border-t border-slate-200 flex items-center gap-1.5"
                   >
-                    {chip}
-                  </button>
-                ))}
-              </div>
+                    <button
+                      type="button"
+                      onClick={handleToggleMicChat}
+                      className={`p-2.5 rounded-xl border transition-all cursor-pointer ${
+                        isListening
+                          ? 'bg-rose-500 text-white border-rose-600 ring-2 ring-rose-400 animate-pulse shadow-xs'
+                          : 'bg-slate-100 hover:bg-teal-50 text-slate-600 hover:text-teal-700 border-slate-200'
+                      }`}
+                      title={isListening ? 'Detener micrófono' : 'Hablar por micrófono'}
+                    >
+                      {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+                    </button>
 
-              {/* Input Bar */}
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  handleSendMessage();
-                }}
-                className="p-2.5 bg-white border-t border-slate-200 flex items-center gap-1.5"
-              >
-                <input
-                  type="text"
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  placeholder="Escribe tu mensaje o presiona 1, 2, 3..."
-                  className="flex-1 p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:bg-white focus:ring-2 focus:ring-[#2EC4B6] focus:outline-hidden"
-                  disabled={isLoading}
-                />
-                <button
-                  type="submit"
-                  disabled={!input.trim() || isLoading}
-                  className="p-2.5 bg-[#2EC4B6] hover:bg-[#259C90] text-slate-950 font-bold rounded-xl shadow-xs transition-colors disabled:opacity-40 cursor-pointer"
-                  title="Enviar"
-                >
-                  <Send className="w-4 h-4" />
-                </button>
-              </form>
+                    <input
+                      type="text"
+                      value={input}
+                      onChange={(e) => setInput(e.target.value)}
+                      placeholder={isListening ? '🎙️ Escuchando... Habla ahora' : 'Escribe o presiona 1, 2, 3...'}
+                      className={`flex-1 p-2.5 border rounded-xl text-xs focus:bg-white focus:ring-2 focus:ring-[#2EC4B6] focus:outline-hidden ${
+                        isListening ? 'bg-rose-50 border-rose-300 text-rose-950 font-bold' : 'bg-slate-50 border-slate-200'
+                      }`}
+                      disabled={isLoading}
+                    />
+
+                    <button
+                      type="submit"
+                      disabled={!input.trim() || isLoading}
+                      className="p-2.5 bg-[#2EC4B6] hover:bg-[#259C90] text-slate-950 font-bold rounded-xl shadow-xs transition-colors disabled:opacity-40 cursor-pointer"
+                      title="Enviar"
+                    >
+                      <Send className="w-4 h-4" />
+                    </button>
+                  </form>
+                </>
+              )}
             </>
           )}
 

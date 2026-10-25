@@ -28,6 +28,7 @@ import { UnitOneMasterClass } from './components/UnitOneMasterClass';
 import { ClassroomHub } from './components/ClassroomHub';
 import { AcademicLibrary } from './components/AcademicLibrary';
 import { GuakypediaView } from './components/GuakypediaView';
+import { StudentSuperReportModal } from './components/StudentSuperReportModal';
 import { Student, ScheduleSlot, AudienceTheme, Teacher, StaffRole } from './types';
 import { INITIAL_STUDENTS, INITIAL_SCHEDULE_SLOTS, ENGLISH_LEVELS } from './data/curriculumData';
 import { INITIAL_TEACHERS } from './data/teachersData';
@@ -77,6 +78,7 @@ export default function App() {
   });
   const [isGuakypackOpen, setIsGuakypackOpen] = useState(false);
   const [isDirectScheduleBookingOpen, setIsDirectScheduleBookingOpen] = useState(false);
+  const [isSuperReportOpen, setIsSuperReportOpen] = useState(false);
 
   // Staff Authentication role: 'principal' (The Principal Waky) | 'teacher' (Coquito) | null
   const [staffRole, setStaffRole] = useState<StaffRole | null>(() => {
@@ -1047,8 +1049,19 @@ export default function App() {
           setIsProfileOpen(false);
           setIsPricingModalOpen(true);
         }}
+        onOpenSuperReport={() => setIsSuperReportOpen(true)}
         audienceTheme={audienceTheme}
         onAudienceChange={setAudienceTheme}
+      />
+
+      {/* Super Report & The Flock Radar Modal */}
+      <StudentSuperReportModal
+        isOpen={isSuperReportOpen}
+        onClose={() => setIsSuperReportOpen(false)}
+        student={currentStudent}
+        audienceTheme={audienceTheme}
+        onOpenGuakypack={() => setIsGuakypackOpen(true)}
+        onNavigateToTab={setActiveTab}
       />
 
       {/* Pricing & Calculator Modal */}
@@ -1177,7 +1190,7 @@ export default function App() {
         </div>
       </footer>
 
-      {/* Güaky The Macaw AI Chatbot with Adaptive Greetings & Memory */}
+      {/* Güaky The Macaw AI Chatbot with Voice Studio, Adaptive Greetings & Memory */}
       <GuakyChatbot 
         studentName={currentStudent?.name}
         currentStudent={currentStudent}
@@ -1186,6 +1199,14 @@ export default function App() {
         activeTab={activeTab}
         onNavigateToTab={(tab) => setActiveTab(tab)}
         onOpenGuakypack={() => setIsGuakypackOpen(true)}
+        onOpenSuperReport={() => setIsSuperReportOpen(true)}
+        onOpenPaymentModal={() => setIsPaymentModalOpen(true)}
+        onOpenRegistration={() => setActiveTab('register')}
+        onAwardXp={(amount, reason) => {
+          if (currentStudent) {
+            handleAwardXp(currentStudent.id, amount);
+          }
+        }}
         teacherWhatsAppUsername="CokitoVZLA"
       />
 

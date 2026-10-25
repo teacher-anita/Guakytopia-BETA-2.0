@@ -21,7 +21,8 @@ import {
   ArrowRight,
   Eye,
   EyeOff,
-  AlertCircle
+  AlertCircle,
+  BarChart3
 } from 'lucide-react';
 import { Student, AudienceTheme } from '../types';
 import { User as FirebaseUser } from 'firebase/auth';
@@ -42,6 +43,7 @@ interface StudentProfileModalProps {
   onOpenScheduleBooking?: () => void;
   onOpenPaymentModal?: () => void;
   onOpenPricingModal?: () => void;
+  onOpenSuperReport?: () => void;
   audienceTheme?: AudienceTheme;
   onAudienceChange?: (theme: AudienceTheme) => void;
 }
@@ -62,6 +64,7 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({
   onOpenScheduleBooking,
   onOpenPaymentModal,
   onOpenPricingModal,
+  onOpenSuperReport,
   audienceTheme,
   onAudienceChange
 }) => {
@@ -214,6 +217,20 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({
 
               {/* Student Actions */}
               <div className="space-y-2 pt-1">
+                {/* Super Reporte & Radar Button */}
+                {onOpenSuperReport && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onClose();
+                      onOpenSuperReport();
+                    }}
+                    className="w-full py-3 px-4 bg-gradient-to-r from-indigo-900 via-blue-900 to-teal-800 hover:from-indigo-800 hover:to-teal-700 text-white font-black rounded-2xl text-xs shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer group"
+                  >
+                    <BarChart3 className="w-4 h-4 text-amber-300 group-hover:scale-110 transition-transform" />
+                    <span>📊 Abrir Mi Super Reporte & Radar de Progreso</span>
+                  </button>
+                )}
                 {!isEnrolled && (
                   <>
                     <button
