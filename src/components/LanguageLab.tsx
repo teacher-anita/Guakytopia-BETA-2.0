@@ -27,6 +27,7 @@ import {
 import confetti from 'canvas-confetti';
 import { Student } from '../types';
 import { User } from 'firebase/auth';
+import { playNaturalSpeech, stopAllSpeech } from '../services/speechService';
 import { 
   LAB_STATIONS, 
   UNIT_1_LAB_EXERCISES, 
@@ -324,34 +325,24 @@ export const LanguageLab: React.FC<LanguageLabProps> = ({
   };
 
   const fallbackSpeech = () => {
-    if (!('speechSynthesis' in window)) return;
-    window.speechSynthesis.cancel();
-
-    const utterance = new SpeechSynthesisUtterance(activeExercise.ttsText || activeExercise.prompt);
-    const voices = window.speechSynthesis.getVoices();
-    const englishVoices = voices.filter(voice => /^en(-|_)/i.test(voice.lang));
-    const preferredVoice = englishVoices.find(voice =>
-      /natural|neural|online|google us english|samantha|ava|jenny|aria|zira/i.test(voice.name)
-    ) || englishVoices.find(voice => /en-US/i.test(voice.lang)) || englishVoices[0];
-
-    utterance.lang = preferredVoice?.lang || 'en-US';
-    if (preferredVoice) utterance.voice = preferredVoice;
-    utterance.rate = 0.96;
-    utterance.pitch = 1;
+    stopAllSpeech();
     playbackModeRef.current = 'speech';
     setIsAudioPaused(false);
-    utterance.onstart = () => setIsPlayingAudio(true);
-    utterance.onend = () => {
-      setIsPlayingAudio(false);
-      setIsAudioPaused(false);
-      playbackModeRef.current = null;
-    };
-    utterance.onerror = () => {
-      setIsPlayingAudio(false);
-      setIsAudioPaused(false);
-      playbackModeRef.current = null;
-    };
-    window.speechSynthesis.speak(utterance);
+
+    void playNaturalSpeech(activeExercise.ttsText || activeExercise.prompt, {
+      voiceName: 'Puck',
+      onStart: () => setIsPlayingAudio(true),
+      onEnd: () => {
+        setIsPlayingAudio(false);
+        setIsAudioPaused(false);
+        playbackModeRef.current = null;
+      },
+      onError: () => {
+        setIsPlayingAudio(false);
+        setIsAudioPaused(false);
+        playbackModeRef.current = null;
+      }
+    });
   };
 
   // Navigation handlers

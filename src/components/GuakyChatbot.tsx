@@ -21,11 +21,13 @@ import {
   Target,
   BarChart2,
   Lock,
-  Zap
+  Zap,
+  Loader2
 } from 'lucide-react';
 import { OFFICIAL_PAGO_MOVIL } from '../services/currencyService';
 import { Student, AudienceTheme } from '../types';
 import { User } from 'firebase/auth';
+import { stopAllSpeech } from '../services/speechService';
 
 export interface ChatMessage {
   id: string;
@@ -83,6 +85,46 @@ export const TARGET_PRACTICE_PHRASES: PracticePhrase[] = [
     phoneticTip: "Diferencia la 'v' de 'every' (labio contra dientes superiores) y la 'th' en 'worth'."
   }
 ];
+
+// Helper to find the best, most natural human voice from the browser's speech synthesis engine
+export function getBestBrowserVoice(isEnglish: boolean): SpeechSynthesisVoice | null {
+  if (typeof window === 'undefined' || !window.speechSynthesis) return null;
+  const voices = window.speechSynthesis.getVoices();
+  if (!voices || voices.length === 0) return null;
+
+  const targetLang = isEnglish ? 'en' : 'es';
+  const matching = voices.filter(v => v.lang.toLowerCase().startsWith(targetLang));
+  if (matching.length === 0) return voices[0] || null;
+
+  // Priority ranking for natural, neural, and studio voices
+  const highQualityKeywords = [
+    'natural',
+    'online',
+    'neural',
+    'google',
+    'jenny',
+    'guy',
+    'aria',
+    'samantha',
+    'daniel',
+    'karen',
+    'enhanced',
+    'premium'
+  ];
+
+  // Filter out ancient mechanical robotic synthesizers (eSpeak, etc.)
+  const withoutRobotic = matching.filter(
+    v => !v.name.toLowerCase().includes('espeak') && !v.name.toLowerCase().includes('klatt')
+  );
+  const candidates = withoutRobotic.length > 0 ? withoutRobotic : matching;
+
+  for (const kw of highQualityKeywords) {
+    const found = candidates.find(v => v.name.toLowerCase().includes(kw));
+    if (found) return found;
+  }
+
+  return candidates[0] || null;
+}
 
 // Adaptive Greeting Generator based on user profile and platform status
 export function getAdaptiveGreeting(props: {
@@ -392,6 +434,11 @@ export const GuakyChatbot: React.FC<GuakyChatbotProps> = ({
   const [activeChatTab, setActiveChatTab] = useState<'chat' | 'voiceStudio'>('chat');
   const [isListening, setIsListening] = useState(false);
   const [speakingMessageId, setSpeakingMessageId] = useState<string | null>(null);
+  const [selectedVoiceName, setSelectedVoiceName] = useState<'Puck' | 'Zephyr' | 'Kore'>('Puck');
+  const [isGeneratingTts, setIsGeneratingTts] = useState<string | null>(null);
+  const audioPlayerRef = useRef<HTMLAudioElement | null>(null);
+  const ttsCacheRef = useRef<Map<string, string>>(new Map());
+
   const [voiceStudioTargetIndex, setVoiceStudioTargetIndex] = useState(0);
   const [voiceStudioSpoken, setVoiceStudioSpoken] = useState('');
   const [voiceStudioScore, setVoiceStudioScore] = useState<number | null>(null);
@@ -438,12 +485,10 @@ export const GuakyChatbot: React.FC<GuakyChatbotProps> = ({
     ];
   });
 
-  // Stop speech synthesis & recognition when unmounting
+  // Stop speech synthesis, audio player & recognition when unmounting
   useEffect(() => {
     return () => {
-      if (typeof window !== 'undefined' && window.speechSynthesis) {
-        window.speechSynthesis.cancel();
-      }
+      stopAllSpeech();
       if (recognitionRef.current) {
         try {
           recognitionRef.current.stop();
@@ -499,31 +544,97 @@ export const GuakyChatbot: React.FC<GuakyChatbotProps> = ({
     }
   }, [messages, isOpen, isMinimized, activeChatTab]);
 
-  // Speech synthesis: read text aloud with authentic bilingual detection
-  const handleToggleSpeak = (messageId: string, text: string) => {
-    if (typeof window === 'undefined' || !window.speechSynthesis) {
-      alert('Tu navegador no soporta síntesis de voz (SpeechSynthesis).');
+  // Ultra-Natural Speech Synthesis: Gemini AI TTS + Neural Browser Engine Fallback
+  const handleToggleSpeak = async (messageId: string, text: string) => {
+    // If currently speaking this message, toggle stop
+    if (speakingMessageId === messageId) {
+      if (audioPlayerRef.current) {
+        audioPlayerRef.current.pause();
+        audioPlayerRef.current = null;
+      }
+      if (typeof window !== 'undefined' && window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+      }
+      setSpeakingMessageId(null);
+      setIsGeneratingTts(null);
       return;
     }
 
-    if (speakingMessageId === messageId) {
+    // Stop any existing playback
+    if (audioPlayerRef.current) {
+      audioPlayerRef.current.pause();
+      audioPlayerRef.current = null;
+    }
+    if (typeof window !== 'undefined' && window.speechSynthesis) {
       window.speechSynthesis.cancel();
+    }
+
+    setSpeakingMessageId(messageId);
+
+    const clean = text.replace(/[*_#`~]/g, '').replace(/[\u{1F300}-\u{1F6FF}]/gu, '').trim();
+
+    // TIER 1: Try Gemini AI Natural Text-to-Speech (/api/tts)
+    try {
+      setIsGeneratingTts(messageId);
+      const cacheKey = `${selectedVoiceName}:${clean}`;
+      let audioBase64 = ttsCacheRef.current.get(cacheKey);
+
+      if (!audioBase64) {
+        const response = await fetch('/api/tts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            text: clean,
+            voiceName: selectedVoiceName
+          })
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          if (typeof data?.audioBase64 === 'string') {
+            audioBase64 = data.audioBase64;
+            ttsCacheRef.current.set(cacheKey, data.audioBase64);
+          }
+        }
+      }
+
+      if (audioBase64) {
+        setIsGeneratingTts(null);
+        const audio = new Audio(`data:audio/wav;base64,${audioBase64}`);
+        audioPlayerRef.current = audio;
+        audio.onended = () => {
+          setSpeakingMessageId(null);
+          audioPlayerRef.current = null;
+        };
+        audio.onerror = () => {
+          setSpeakingMessageId(null);
+          audioPlayerRef.current = null;
+        };
+        await audio.play();
+        return;
+      }
+    } catch (err) {
+      console.warn('[Voice Studio] Gemini TTS unavailable, engaging neural browser voice:', err);
+    } finally {
+      setIsGeneratingTts(null);
+    }
+
+    // TIER 2: High-Definition Browser Voice Engine (filtered for Natural / Neural voices)
+    if (typeof window === 'undefined' || !window.speechSynthesis) {
       setSpeakingMessageId(null);
       return;
     }
 
-    window.speechSynthesis.cancel();
-    setSpeakingMessageId(messageId);
-
-    const clean = text.replace(/[*_#`~]/g, '').replace(/[\u{1F300}-\u{1F6FF}]/gu, '');
     const utterance = new SpeechSynthesisUtterance(clean);
     const isEnglish = /[a-zA-Z\s]{15,}/.test(clean) && !/[áéíóúñ¿¡]/i.test(clean);
     utterance.lang = isEnglish ? 'en-US' : 'es-US';
-    utterance.rate = 0.95;
+    utterance.rate = 0.95; // Natural human cadence
+    utterance.pitch = 1.03; // Warm, friendly tone
 
-    const voices = window.speechSynthesis.getVoices();
-    const voice = voices.find(v => isEnglish ? v.lang.startsWith('en') : v.lang.startsWith('es'));
-    if (voice) utterance.voice = voice;
+    const bestVoice = getBestBrowserVoice(isEnglish);
+    if (bestVoice) {
+      utterance.voice = bestVoice;
+    }
 
     utterance.onend = () => setSpeakingMessageId(null);
     utterance.onerror = () => setSpeakingMessageId(null);
@@ -966,10 +1077,25 @@ export const GuakyChatbot: React.FC<GuakyChatbotProps> = ({
                           </span>
                           <button
                             onClick={() => handleToggleSpeak('studio_demo_locked', TARGET_PRACTICE_PHRASES[0].text)}
+                            disabled={isGeneratingTts === 'studio_demo_locked'}
                             className="flex items-center gap-1 text-[10px] font-bold text-teal-300 hover:text-teal-200 bg-teal-950/60 px-2 py-0.5 rounded border border-teal-500/40 cursor-pointer"
                           >
-                            <Volume2 className="w-3 h-3" />
-                            <span>Escuchar demo</span>
+                            {isGeneratingTts === 'studio_demo_locked' ? (
+                              <>
+                                <Loader2 className="w-3 h-3 animate-spin text-teal-400" />
+                                <span>Generando voz IA...</span>
+                              </>
+                            ) : speakingMessageId === 'studio_demo_locked' ? (
+                              <>
+                                <VolumeX className="w-3 h-3 text-rose-400" />
+                                <span>Detener</span>
+                              </>
+                            ) : (
+                              <>
+                                <Volume2 className="w-3 h-3" />
+                                <span>Escuchar demo IA</span>
+                              </>
+                            )}
                           </button>
                         </div>
                         <p className="text-xs text-white font-medium italic">
@@ -1042,14 +1168,35 @@ export const GuakyChatbot: React.FC<GuakyChatbotProps> = ({
                     </div>
                   </div>
 
-                  {/* Clarification Alert Box */}
-                  <div className="p-2.5 bg-purple-50/80 border border-purple-200/90 rounded-xl text-[11px] text-purple-950 space-y-1">
-                    <div className="flex items-center gap-1.5 font-black text-purple-900">
-                      <span>🦜</span>
-                      <span>Voz de Guacamaya Personalizada en Camino</span>
+                  {/* Natural AI Voice Selector Bar */}
+                  <div className="p-3 bg-gradient-to-r from-purple-50 via-indigo-50 to-teal-50 border border-purple-200 rounded-2xl space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1.5 font-black text-purple-950 text-xs">
+                        <Sparkles className="w-3.5 h-3.5 text-purple-600" />
+                        <span>Voz Natural de IA:</span>
+                      </div>
+                      <span className="text-[9px] bg-emerald-100 text-emerald-800 border border-emerald-300 font-black px-2 py-0.5 rounded-full">
+                        ✨ Studio 24kHz Native AI
+                      </span>
                     </div>
-                    <p className="leading-relaxed text-purple-900/90 text-[10px]">
-                      Por ahora el sistema utiliza el sintetizador de voz estándar de tu navegador para guiar la fonética en inglés y el micrófono para evaluar tu lectura. <strong>¡Muy pronto estrenaremos la voz oficial de Güaky con personalidad propia!</strong> Puedes probar la función y seguir acumulando XP.
+
+                    <div className="flex items-center gap-1.5">
+                      {(['Puck', 'Zephyr', 'Kore'] as const).map(v => (
+                        <button
+                          key={v}
+                          onClick={() => setSelectedVoiceName(v)}
+                          className={`flex-1 py-1.5 px-2 rounded-xl text-[10px] font-black transition-all border cursor-pointer ${
+                            selectedVoiceName === v
+                              ? 'bg-purple-700 text-white border-purple-800 shadow-xs scale-101'
+                              : 'bg-white text-slate-700 border-purple-200 hover:bg-purple-100'
+                          }`}
+                        >
+                          {v === 'Puck' ? '🦜 Güaky (Puck)' : v === 'Zephyr' ? '🎧 Zephyr' : '👩 Kore'}
+                        </button>
+                      ))}
+                    </div>
+                    <p className="text-[10px] text-purple-900/80 leading-tight">
+                      Voz humana de alta fidelidad generada por IA en tiempo real. <strong>Puck</strong> es la voz oficial y enérgica de Güaky.
                     </p>
                   </div>
 
@@ -1089,11 +1236,30 @@ export const GuakyChatbot: React.FC<GuakyChatbotProps> = ({
                       </span>
                       <button
                         onClick={() => handleToggleSpeak('studio_target', TARGET_PRACTICE_PHRASES[voiceStudioTargetIndex].text)}
-                        className="flex items-center gap-1 text-[11px] font-black text-teal-700 hover:text-teal-900 bg-teal-50 px-2.5 py-1 rounded-lg border border-teal-200 transition-colors cursor-pointer"
-                        title="Escuchar pronunciación modelo de Güaky"
+                        disabled={isGeneratingTts === 'studio_target'}
+                        className={`flex items-center gap-1.5 text-[11px] font-black px-3 py-1.5 rounded-xl border transition-all cursor-pointer ${
+                          speakingMessageId === 'studio_target'
+                            ? 'bg-rose-50 text-rose-700 border-rose-300 hover:bg-rose-100'
+                            : 'bg-teal-50 text-teal-800 border-teal-200 hover:bg-teal-100 shadow-2xs'
+                        }`}
+                        title="Escuchar pronunciación modelo con voz natural de IA"
                       >
-                        <Volume2 className="w-3.5 h-3.5" />
-                        <span>Escuchar modelo</span>
+                        {isGeneratingTts === 'studio_target' ? (
+                          <>
+                            <Loader2 className="w-3.5 h-3.5 animate-spin text-teal-600" />
+                            <span>Generando audio IA...</span>
+                          </>
+                        ) : speakingMessageId === 'studio_target' ? (
+                          <>
+                            <VolumeX className="w-3.5 h-3.5 text-rose-600" />
+                            <span>Detener audio</span>
+                          </>
+                        ) : (
+                          <>
+                            <Volume2 className="w-3.5 h-3.5 text-teal-600" />
+                            <span>Escuchar modelo IA</span>
+                          </>
+                        )}
                       </button>
                     </div>
 
@@ -1234,10 +1400,16 @@ export const GuakyChatbot: React.FC<GuakyChatbotProps> = ({
                                 <div className="mt-2 pt-1 border-t border-slate-100 flex items-center justify-end">
                                   <button
                                     onClick={() => handleToggleSpeak(m.id, m.text)}
+                                    disabled={isGeneratingTts === m.id}
                                     className="flex items-center gap-1 text-[10px] text-teal-700 hover:text-teal-900 font-bold px-1.5 py-0.5 rounded-md hover:bg-teal-50 transition-colors cursor-pointer"
-                                    title="Escuchar lectura en voz alta"
+                                    title="Escuchar con voz natural de IA"
                                   >
-                                    {speakingMessageId === m.id ? (
+                                    {isGeneratingTts === m.id ? (
+                                      <>
+                                        <Loader2 className="w-3 h-3 animate-spin text-teal-600" />
+                                        <span className="text-teal-700">Generando voz IA...</span>
+                                      </>
+                                    ) : speakingMessageId === m.id ? (
                                       <>
                                         <VolumeX className="w-3 h-3 text-rose-500 animate-pulse" />
                                         <span className="text-rose-600">Pausar</span>
@@ -1245,7 +1417,7 @@ export const GuakyChatbot: React.FC<GuakyChatbotProps> = ({
                                     ) : (
                                       <>
                                         <Volume2 className="w-3 h-3 text-teal-600" />
-                                        <span>Audio guía (Beta)</span>
+                                        <span>Voz IA Güaky</span>
                                       </>
                                     )}
                                   </button>

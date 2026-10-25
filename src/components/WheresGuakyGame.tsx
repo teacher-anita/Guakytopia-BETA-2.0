@@ -28,6 +28,7 @@ import {
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { Student, AudienceTheme } from '../types';
+import { playNaturalSpeech, stopAllSpeech } from '../services/speechService';
 import { trackStudentAction } from '../services/telemetryService';
 
 interface WheresGuakyGameProps {
@@ -1282,15 +1283,11 @@ export const WheresGuakyGame: React.FC<WheresGuakyGameProps> = ({
   };
 
   const speakClue = () => {
-    try {
-      if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance(activeTarget.clueEnglish);
-        utterance.lang = 'en-US';
-        utterance.rate = 0.92;
-        window.speechSynthesis.speak(utterance);
-      }
-    } catch {}
+    if (!activeTarget?.clueEnglish) return;
+    void playNaturalSpeech(activeTarget.clueEnglish, {
+      voiceName: 'Puck',
+      speed: 0.94
+    });
   };
 
   const totalCompletedScenes = Object.values(sceneHistory).filter(Boolean).length;

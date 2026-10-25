@@ -442,6 +442,73 @@ IMPORTANT: Always adapt your response naturally to this student's context. If th
   }
 });
 
+// Endpoint for Ultra-Natural Text-to-Speech using Gemini 3.8 Flash Lite TTS
+app.post('/api/tts', async (req: Request, res: Response) => {
+  try {
+    const { text, voiceName = 'Puck', speed = 1.0 } = req.body;
+    if (!text || typeof text !== 'string') {
+      return res.status(400).json({ error: 'Texto requerido para síntesis' });
+    }
+
+    // Clean markdown and emojis for clean, natural audio synthesis
+    const cleanText = text
+      .replace(/[*_#`~>\[\]()]/g, ' ')
+      .replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    if (!cleanText) {
+      return res.status(400).json({ error: 'Texto vacío' });
+    }
+
+    // Allowed prebuilt voice names in Gemini TTS: 'Puck', 'Charon', 'Kore', 'Fenrir', 'Zephyr'
+    const allowedVoices = ['Puck', 'Charon', 'Kore', 'Fenrir', 'Zephyr'];
+    const chosenVoice = allowedVoices.includes(voiceName) ? voiceName : 'Puck';
+
+    const response = await ai.models.generateContent({
+      model: 'gemini-3.8-flash-lite-tts',
+      contents: [
+        {
+          role: 'user',
+          parts: [
+            {
+              text: cleanText,
+              speechMetadata: {
+                style: 'Natural, warm, cheerful bilingual English tutor with crystal-clear native pronunciation, dynamic pitch, and friendly intonation',
+              },
+            },
+          ],
+        },
+      ],
+      config: {
+        responseModalities: ['AUDIO'],
+        speechConfig: {
+          voiceConfig: {
+            prebuiltVoiceConfig: { voiceName: chosenVoice },
+          },
+        },
+      },
+    });
+
+    const base64Audio = response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
+    if (!base64Audio) {
+      throw new Error('No se recibió stream de audio desde Gemini TTS');
+    }
+
+    res.json({
+      audioBase64: base64Audio,
+      format: 'audio/wav',
+      voiceName: chosenVoice
+    });
+  } catch (error: any) {
+    console.warn('[TTS] Gemini TTS endpoint error, falling back:', error?.message);
+    res.status(500).json({ 
+      error: error?.message || 'TTS generation error',
+      fallback: true 
+    });
+  }
+});
+
 async function startServer() {
   const isDev = process.env.NODE_ENV !== 'production';
   const port = 3000;
