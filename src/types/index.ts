@@ -350,6 +350,7 @@ export interface Teacher {
   // Flock Credentials & Onboarding
   flockRole?: string; // e.g. "Flock Mentor", "Head Teacher"
   password?: string;
+  temporaryPassword?: string;
   welcomeEmailSent?: boolean;
   welcomeEmailSentAt?: string;
 }

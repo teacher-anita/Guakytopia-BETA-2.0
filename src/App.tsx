@@ -1177,9 +1177,15 @@ export default function App() {
         </div>
       </footer>
 
-      {/* Güaky Macaw AI Chatbot with WhatsApp Welcome Lounge Bridge */}
+      {/* Güaky The Macaw AI Chatbot with Adaptive Greetings & Memory */}
       <GuakyChatbot 
         studentName={currentStudent?.name}
+        currentStudent={currentStudent}
+        user={user}
+        audienceTheme={audienceTheme}
+        activeTab={activeTab}
+        onNavigateToTab={(tab) => setActiveTab(tab)}
+        onOpenGuakypack={() => setIsGuakypackOpen(true)}
         teacherWhatsAppUsername="CokitoVZLA"
       />
 

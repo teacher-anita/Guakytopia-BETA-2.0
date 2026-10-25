@@ -8,12 +8,15 @@ import {
   RotateCcw, 
   Minimize2, 
   Maximize2,
-  Copy,
-  Check
+  Bookmark,
+  Brain,
+  ChevronRight
 } from 'lucide-react';
 import { OFFICIAL_PAGO_MOVIL } from '../services/currencyService';
+import { Student, AudienceTheme } from '../types';
+import { User } from 'firebase/auth';
 
-interface ChatMessage {
+export interface ChatMessage {
   id: string;
   role: 'user' | 'assistant';
   text: string;
@@ -21,91 +24,378 @@ interface ChatMessage {
   showWhatsAppButton?: boolean;
 }
 
-interface GuakyChatbotProps {
+export interface GuakyChatbotProps {
   teacherWhatsAppUsername?: string;
   studentName?: string;
+  currentStudent?: Student | null;
+  user?: User | null;
+  audienceTheme?: AudienceTheme;
+  activeTab?: string;
+  onNavigateToTab?: (tab: string) => void;
+  onOpenGuakypack?: () => void;
 }
+
+// Adaptive Greeting Generator based on user profile and platform status
+export function getAdaptiveGreeting(props: {
+  currentStudent?: Student | null;
+  user?: User | null;
+  audienceTheme?: AudienceTheme;
+  studentName?: string;
+}): { text: string; chips: string[]; greetingType: 'guest' | 'kids' | 'level1' | 'level2plus' } {
+  const { currentStudent, user, audienceTheme, studentName } = props;
+  const isKids = audienceTheme === 'kids';
+  const isLoggedIn = Boolean(user || currentStudent);
+  const name = currentStudent?.name || studentName || user?.displayName || 'Explorador';
+
+  // 1. Visitor / Not signed in
+  if (!isLoggedIn) {
+    return {
+      greetingType: 'guest',
+      text: `¡Hola! Welcome to Güakytopia 🦜 Soy **Güaky The Macaw**, tu guía oficial del campus.
+
+Aquí transformamos tu inglés con la metodología oficial de McGraw Hill, a tu ritmo y sin estrés. ¿En qué te oriento hoy?
+
+1. ¿Cómo registrarme o empezar mi prueba gratis?
+2. Conocer el Pase Digital ($4.99/mes)
+3. Explorar la Güakypedia oficial y metodologías
+4. Hablar con La Teacher por WhatsApp`,
+      chips: [
+        '1. Registro y prueba gratis',
+        '2. Pase Digital $4.99/mes',
+        '3. Explorar Güakypedia',
+        '4. Hablar por WhatsApp'
+      ]
+    };
+  }
+
+  // 2. Kids / Junior Mode
+  if (isKids) {
+    return {
+      greetingType: 'kids',
+      text: `¡Yaaay! ¡Hola, ${name}! 🦜 Soy **Güaky The Macaw**!
+
+¡Estoy súper feliz de tenerte en tu aventura de inglés en Güakytopia! ¿Qué te gustaría jugar y practicar hoy?
+
+1. Jugar Where's Güaky? en la Arena
+2. Ganar XP con las misiones diarias
+3. Ver mi Güakypack, escudos y vidas
+4. Aprender palabras mágicas en inglés`,
+      chips: [
+        '1. Jugar Where\'s Güaky?',
+        '2. Misiones diarias y XP',
+        '3. Mi Güakypack y vidas',
+        '4. Palabras mágicas'
+      ]
+    };
+  }
+
+  // Determine Level for enrolled student
+  const levelId = currentStudent?.levelId || 'level_1';
+  const levelNum = parseInt(levelId.replace('level_', ''), 10) || 1;
+  const streak = currentStudent?.streak || 0;
+
+  // 3. Level 1 Student (A1 Beginner)
+  if (levelNum <= 1) {
+    return {
+      greetingType: 'level1',
+      text: `¡Hola, ${name}! 🦜 ¡Qué alegría verte de vuelta!
+
+Veo que estás en el **Nivel 1 (SuperGoal 1 / A1)** con **${streak} días de racha activa 🔥**. Vamos a tu propio ritmo, sin miedo a equivocarte y con pasos firmes.
+
+¿Qué revisamos hoy?
+1. Continuar mi sesión en Classroom
+2. Practicar drills en el Lab Güakytalkie
+3. Revisar mis horas y escudos en el Güakypack
+4. Practicar mis primeras frases básicas en inglés`,
+      chips: [
+        '1. Continuar en Classroom',
+        '2. Drills en Lab',
+        '3. Abrir Güakypack',
+        '4. Frases básicas en inglés'
+      ]
+    };
+  }
+
+  // 4. Level 2+ Student (A2, B1, B2, C1, C2) - Greets in English!
+  return {
+    greetingType: 'level2plus',
+    text: `Hello, ${name}! Great to have you back! 🦜
+
+You're rocking **Level ${levelNum}** with an awesome **${streak}-day streak 🔥**! Every session you complete makes your English more fluent.
+
+How would you like to level up today?
+1. Let's practice conversational English!
+2. Jump into my current unit in the Hub
+3. Check my Güakypack & shields
+4. Ask a question about grammar or vocabulary`,
+    chips: [
+      '1. Practice conversational English',
+      '2. Jump into Hub',
+      '3. Check Güakypack',
+      '4. Ask a grammar question'
+    ]
+  };
+}
+
+// Component to render chat text nicely without raw markdown asterisks, ADHD-friendly, with interactive numbered options
+const FormattedChatMessage: React.FC<{ 
+  text: string; 
+  isUser: boolean;
+  onSelectOption?: (optionText: string, optionNumber: string) => void;
+}> = ({ text, isUser, onSelectOption }) => {
+  const lines = text.split('\n');
+
+  return (
+    <div className={`space-y-1.5 ${isUser ? 'text-slate-950 font-semibold' : 'text-slate-800'}`}>
+      {lines.map((line, lIdx) => {
+        const trimmed = line.trim();
+        if (!trimmed) {
+          return <div key={lIdx} className="h-1" />;
+        }
+
+        // Bullet list detection (•, -, *)
+        const isBullet = trimmed.startsWith('• ') || trimmed.startsWith('- ') || (trimmed.startsWith('* ') && !trimmed.startsWith('** '));
+        const cleanBulletText = isBullet ? trimmed.replace(/^[•\-\*]\s+/, '') : trimmed;
+
+        // Numbered list detection (1., 2., etc.)
+        const numberedMatch = trimmed.match(/^(\d+)[\.\)]\s+(.*)$/);
+        const isNumbered = Boolean(numberedMatch);
+        const num = numberedMatch ? numberedMatch[1] : '';
+        const cleanNumberedText = numberedMatch ? numberedMatch[2] : trimmed;
+
+        // Inline parser for **bold** and *italic*
+        const parseInline = (str: string) => {
+          const parts = str.split(/(\*\*.*?\*\*)/g);
+          return parts.map((part, pIdx) => {
+            if (part.startsWith('**') && part.endsWith('**') && part.length >= 4) {
+              const boldContent = part.slice(2, -2);
+              return (
+                <strong key={pIdx} className={isUser ? 'font-black' : 'font-bold text-slate-900'}>
+                  {boldContent}
+                </strong>
+              );
+            }
+            // Strip any rogue remaining double asterisks
+            const sanitized = part.replace(/\*\*/g, '');
+            return sanitized;
+          });
+        };
+
+        if (isBullet) {
+          return (
+            <div key={lIdx} className="flex items-start gap-1.5 pl-0.5 my-1">
+              <span className="text-[#2EC4B6] font-black shrink-0 mt-0.5">•</span>
+              <span className="flex-1 leading-snug">{parseInline(cleanBulletText)}</span>
+            </div>
+          );
+        }
+
+        if (isNumbered && !isUser && onSelectOption) {
+          return (
+            <button
+              key={lIdx}
+              type="button"
+              onClick={() => onSelectOption(cleanNumberedText, num)}
+              className="w-full text-left flex items-start gap-2 p-2 rounded-xl bg-teal-50/70 hover:bg-teal-100/80 border border-teal-200/70 text-teal-950 transition-all hover:scale-101 group cursor-pointer my-1 shadow-2xs"
+              title={`Elegir opción ${num}: ${cleanNumberedText}`}
+            >
+              <span className="inline-flex items-center justify-center w-5 h-5 rounded-lg bg-[#2EC4B6] text-slate-950 text-[11px] font-black shrink-0 mt-0.5 group-hover:scale-110 transition-transform shadow-2xs">
+                {num}
+              </span>
+              <span className="flex-1 text-[11px] font-semibold leading-snug pt-0.5">
+                {parseInline(cleanNumberedText)}
+              </span>
+              <ChevronRight className="w-3.5 h-3.5 text-teal-500 opacity-0 group-hover:opacity-100 transition-opacity mt-1 shrink-0" />
+            </button>
+          );
+        }
+
+        if (isNumbered) {
+          return (
+            <div key={lIdx} className="flex items-start gap-1.5 pl-0.5 my-1">
+              <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-teal-100 text-teal-800 text-[10px] font-black shrink-0 mt-0.5">
+                {num}
+              </span>
+              <span className="flex-1 leading-snug">{parseInline(cleanNumberedText)}</span>
+            </div>
+          );
+        }
+
+        return (
+          <p key={lIdx} className="leading-relaxed">
+            {parseInline(trimmed)}
+          </p>
+        );
+      })}
+    </div>
+  );
+};
 
 function getLocalSmartFallback(query: string): { reply: string; suggestWhatsApp: boolean } {
   const q = query.toLowerCase();
   
-  if (q.includes('4.99') || q.includes('pase digital') || q.includes('digital pass') || q.includes('membres')) {
+  if (q.includes('backpack') || q.includes('pack') || q.includes('mochila') || q.includes('escudo') || q.includes('hour bag') || q.includes('bolsa de horas')) {
     return {
-      reply: `¡Squawk! 🦜 El **Pase Digital** cuesta solo **$4.99 USD/mes** (promo de entrada). Es 100% para aprendizaje autónomo e incluye acceso a los 12 niveles oficiales de libros SuperGoal/MegaGoal, audios nativos, 100 drills por unidad en el Lab Güakytalkie, quizzes y The Flock Arena. ¡Sin clases fijas obligatorias!`,
+      reply: `¡Squawk! 🎒 En tu **Güakypack** llevas todo tu equipamiento:
+
+• **Horas de clase**: Prepaga horas a **$10 USD/h** (paquete de 6h).
+• **Escudo de 12 Horas**: Reprograma 1 clase al mes avisando con solo 12h de anticipación.
+• **Escudo de Racha**: Protege tu streak si algún día no puedes entrar.
+
+¿Quieres saber cómo ganar más escudos jugando en la Arena?`,
       suggestWhatsApp: false
     };
   }
-  
-  if (q.includes('hour bag') || q.includes('bolsa de horas') || q.includes('prepaid') || q.includes('escudo') || q.includes('10')) {
+
+  if (q.includes('4.99') || q.includes('pase digital') || q.includes('digital pass') || q.includes('membres')) {
     return {
-      reply: `¡Squawk! 🦜 La **Hour Bag** (Bolsa de Horas Prepagadas) cuesta **$10 USD / hora** con un paquete mínimo de 6 horas ($60 USD). Tiene 30 días de vigencia para tutorías 1 a 1 flexibles. ¡Además incluye el beneficio exclusivo del **Escudo de las 12 horas**, para reprogramar 1 sesión al mes avisando con solo 12h de anticipación!`,
+      reply: `¡Squawk! 🌴 El **Pase Digital** cuesta solo **$4.99 USD/mes**.
+
+Es 100% autónomo: incluye los 12 niveles de libros SuperGoal/MegaGoal de McGraw Hill, audios nativos, 100 drills por unidad en el Lab y acceso completo a The Flock Arena. ¡Sin horarios fijos!`,
+      suggestWhatsApp: false
+    };
+  }
+
+  if (q.includes('liga') || q.includes('league') || q.includes('podio') || q.includes('premio') || q.includes('honor') || q.includes('cokit')) {
+    return {
+      reply: `¡Squawk! 🏆 En **Cokitö's League** el top 3 semanal gana recompensas reales:
+
+• **Plan Mensual / Pase Digital**: ¡Acumula 3 podios y te ganas 1 mes gratis de suscripción!
+• **Clases privadas**: Puedes canjear podio por 1 hora de tutoría gratis o pases para The Flock Conversation Club.
+
+¡Juega en la Arena para sumar XP y subir al podio!`,
       suggestWhatsApp: false
     };
   }
   
   if (q.includes('arena') || q.includes('juego') || q.includes('quest') || q.includes('where') || q.includes('game') || q.includes('racha') || q.includes('streak')) {
     return {
-      reply: `¡Squawk! 🎮 En **The Flock Arena** entrenas tu racha diaria y ganas XP con:
-1. **Daily Quests & League**: 3 micro-misiones diarias y el cuadro de honor de alumnos inscritos en la Cokitö League.
-2. **WW (Where's Güaky?)**: Busca a Güaky y objetos del vocabulario en una detallada escena retro ochentera wimmelbild.
-3. **Arcade Games**: Word Scramble, Vocab Match y Hangman (Ahorcado).
-4. **Gamer Account**: Para guardar tus vidas, racha y puntos de experiencia.`,
+      reply: `¡Squawk! 🎮 En **The Flock Arena** juegas y ganas XP:
+
+1. **Daily Quests & League**: 3 micro-misiones diarias y el cuadro de honor.
+2. **WW (Where's Güaky?)**: Encuentra a Güaky y palabras en la escena retro.
+3. **Arcade Games**: Word Scramble, Vocab Match y Hangman.
+
+¿Cuál juego te gustaría probar primero?`,
       suggestWhatsApp: false
     };
   }
   
   if (q.includes('hub') || q.includes('nivel') || q.includes('level') || q.includes('curricul') || q.includes('mcgraw')) {
     return {
-      reply: `¡Squawk! 📚 El **Hub** contiene tu **Learning Pathway** con 12 niveles oficiales (A1 a C2) de **McGraw Hill Education**:
-• **SuperGoal (1 a 4)**: Para juniors/teens y bases comunicativas.
-• **MegaGoal (1 a 8)**: Para adultos y comunicación profesional.
-Cada unidad tiene 3 sesiones (A, B, C), audios nativos, Cokitö Tips y Owl Culture Corner. Para desbloquear la siguiente unidad necesitas 70% en el Unit Quiz.`,
+      reply: `¡Squawk! 📚 El **Hub** tiene los 12 niveles oficiales de **McGraw Hill Education** (SuperGoal y MegaGoal).
+
+Cada unidad tiene 3 sesiones guiadas (A, B, C), audios con acento nativo y su Unit Quiz. ¿En qué nivel te encuentras actualmente?`,
       suggestWhatsApp: false
     };
   }
   
   if (q.includes('practice') || q.includes('english') || q.includes('hello') || q.includes('hi') || q.includes('talk')) {
     return {
-      reply: `Hello there! 🦜 I'm Güaky the Macaw! I'm thrilled to chat with you in English. We can talk about your day, practice conversational English, or explore any grammar topic you want to master. What would you like to practice today?`,
+      reply: `Hello there! 🦜 I'm **Güaky The Macaw**, your English buddy!
+
+Let's keep it easy and fun. Tell me: how was your day today, or what is your favorite hobby? (Feel free to answer in English or ask me any question!)`,
       suggestWhatsApp: false
     };
   }
 
   return {
-    reply: `¡Squawk! 🦜 Como embajador y coach de **Güakytopia**, puedo orientarte sobre la **Güakypedia** (6 pilares y políticas), el **Hub** (12 niveles McGraw Hill), la **Arena** (Daily Quests y juegos) o podemos practicar inglés conversacional. Si deseas atención administrativa o inscribirte, ¡únete a nuestro **Welcome Lounge en WhatsApp**!`,
+    reply: `¡Squawk! 🦜 Soy **Güaky The Macaw**, tu compañero en Güakytopia.
+
+Puedo ayudarte con tu **Güakypack** (horas y escudos), el **Pase Digital** ($4.99/mes), la **Arena** o practicar inglés conversacional. Si necesitas soporte con La Teacher, ¡puedes ir directo al Welcome Lounge en WhatsApp!`,
     suggestWhatsApp: true
   };
 }
 
 export const GuakyChatbot: React.FC<GuakyChatbotProps> = ({
   teacherWhatsAppUsername = 'CokitoVZLA',
-  studentName
+  studentName,
+  currentStudent,
+  user,
+  audienceTheme = 'adults',
+  activeTab = 'landing',
+  onNavigateToTab,
+  onOpenGuakypack
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [hasResumedMemory, setHasResumedMemory] = useState(false);
 
   // Clean WhatsApp URL linking to Welcome Lounge community
   const welcomeLoungeUrl = OFFICIAL_PAGO_MOVIL.whatsappWelcomeLoungeUrl;
 
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    {
-      id: 'welcome',
-      role: 'assistant',
-      text: `¡Hola! Hello! 🦜 Soy **Güaky the Macaw**, tu coach de inglés y guía oficial de **Güakytopia**.
+  // Key for persistent memory per student or user
+  const memoryKey = `guaky_memory_${currentStudent?.id || user?.uid || 'guest'}`;
 
-Hablo con total fluidez en **español** y en **inglés**. I can help you with anything across our entire campus!
+  // Adaptive initial message
+  const initialAdaptive = getAdaptiveGreeting({
+    currentStudent,
+    user,
+    audienceTheme,
+    studentName
+  });
 
-Pregúntame o conversemos sobre:
-• **Güakypedia**: Metodología McGraw Hill, 12 niveles, Hour Bag, Pase Digital ($4.99/mes), políticas y pagos en Bs (BCV) o $.
-• **The Hub**: Tu Learning Pathway, libros SuperGoal/MegaGoal, audios nativos y tips de Cokitö.
-• **The Arena**: Misiones diarias (Daily Quests), rachas, juegos arcade y Where's Güaky.
-• **English Practice**: ¡Charlemos en inglés para soltar la lengua y perfeccionar tu vocabulario!
-• **Welcome Lounge de WhatsApp**: Soporte directo con la academia.`,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  const [quickChips, setQuickChips] = useState<string[]>(initialAdaptive.chips);
+
+  const [messages, setMessages] = useState<ChatMessage[]>(() => {
+    try {
+      const saved = localStorage.getItem(memoryKey);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
+        }
+      }
+    } catch (e) {
+      console.warn('Could not read Guaky memory:', e);
     }
-  ]);
+
+    return [
+      {
+        id: 'welcome',
+        role: 'assistant',
+        text: initialAdaptive.text,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      }
+    ];
+  });
+
+  // Track if we loaded past memory
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(memoryKey);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 1) {
+          setHasResumedMemory(true);
+        }
+      }
+    } catch {}
+  }, [memoryKey]);
+
+  // Persist messages to memory
+  useEffect(() => {
+    if (messages.length > 0) {
+      try {
+        localStorage.setItem(memoryKey, JSON.stringify(messages));
+      } catch (e) {
+        console.warn('Could not persist Guaky memory:', e);
+      }
+    }
+  }, [messages, memoryKey]);
+
+  // Update quick chips if user profile changes and no active custom session
+  useEffect(() => {
+    const updated = getAdaptiveGreeting({
+      currentStudent,
+      user,
+      audienceTheme,
+      studentName
+    });
+    setQuickChips(updated.chips);
+  }, [currentStudent?.id, currentStudent?.levelId, audienceTheme]);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -120,8 +410,44 @@ Pregúntame o conversemos sobre:
   }, [messages, isOpen, isMinimized]);
 
   const handleSendMessage = async (textToSend?: string) => {
-    const query = (textToSend || input).trim();
+    let query = (textToSend || input).trim();
     if (!query || isLoading) return;
+
+    // Check if the user typed a single number (1, 2, 3, 4)
+    // If so, map it to the corresponding numbered option in the last assistant message
+    const isSingleDigit = /^[1-9]$/.test(query);
+    if (isSingleDigit) {
+      const lastAssistant = [...messages].reverse().find(m => m.role === 'assistant');
+      if (lastAssistant) {
+        const lines = lastAssistant.text.split('\n');
+        const match = lines.find(l => {
+          const t = l.trim();
+          return t.startsWith(`${query}.`) || t.startsWith(`${query})`);
+        });
+        if (match) {
+          const cleanOption = match.replace(/^\d+[\.\)]\s*/, '').trim();
+          query = cleanOption;
+        }
+      }
+    }
+
+    // Direct platform actions triggered by option text
+    const lowerQuery = query.toLowerCase();
+    if (lowerQuery.includes('güakypack') || lowerQuery.includes('guakypack') || lowerQuery.includes('abrir pack') || lowerQuery.includes('ver mi pack')) {
+      if (onOpenGuakypack) {
+        onOpenGuakypack();
+      }
+    } else if (lowerQuery.includes('classroom') && onNavigateToTab) {
+      onNavigateToTab('classroom');
+    } else if (lowerQuery.includes('hub') && onNavigateToTab) {
+      onNavigateToTab('pathway');
+    } else if (lowerQuery.includes('lab') && onNavigateToTab) {
+      onNavigateToTab('lab');
+    } else if (lowerQuery.includes('arena') && onNavigateToTab) {
+      onNavigateToTab('duolingo');
+    } else if (lowerQuery.includes('güakypedia') && onNavigateToTab) {
+      onNavigateToTab('guakypedia');
+    }
 
     const userMessage: ChatMessage = {
       id: `user_${Date.now()}`,
@@ -135,6 +461,22 @@ Pregúntame o conversemos sobre:
     setInput('');
     setIsLoading(true);
 
+    // Build real-time platform & student context to feed the AI
+    const levelId = currentStudent?.levelId || 'level_1';
+    const levelNum = parseInt(levelId.replace('level_', ''), 10) || 1;
+    const studentContext = {
+      studentName: currentStudent?.name || studentName || user?.displayName || 'Explorador',
+      isLoggedIn: Boolean(user || currentStudent),
+      levelId: levelId,
+      levelNumber: levelNum,
+      streak: currentStudent?.streak || 0,
+      xp: currentStudent?.xp || 0,
+      currentUnit: currentStudent?.currentUnit || 1,
+      audienceTheme,
+      activeTab,
+      isDigitalPass: currentStudent?.isDigitalPass || false
+    };
+
     try {
       const response = await fetch('/api/chat', {
         method: 'POST',
@@ -143,12 +485,13 @@ Pregúntame o conversemos sobre:
           messages: newHistory.map(m => ({
             role: m.role,
             text: m.text
-          }))
+          })),
+          context: studentContext
         })
       });
 
       if (!response.ok) {
-        throw new Error('Error al conectar con Güaky');
+        throw new Error('Error al conectar con Güaky The Macaw');
       }
 
       const data = await response.json();
@@ -178,24 +521,28 @@ Pregúntame o conversemos sobre:
   };
 
   const handleResetChat = () => {
+    try {
+      localStorage.removeItem(memoryKey);
+    } catch {}
+    setHasResumedMemory(false);
+
+    const freshAdaptive = getAdaptiveGreeting({
+      currentStudent,
+      user,
+      audienceTheme,
+      studentName
+    });
+
+    setQuickChips(freshAdaptive.chips);
     setMessages([
       {
         id: `welcome_${Date.now()}`,
         role: 'assistant',
-        text: `¡Conversación reiniciada! 🦜 ¿En qué otra consulta sobre Güakytopia te puedo colaborar? / How else can I help you today?`,
+        text: freshAdaptive.text,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       }
     ]);
   };
-
-  const quickChips = [
-    '¿Cómo funciona el Pase Digital de $4.99?',
-    'What are the 12 levels & McGraw Hill?',
-    '¿Qué es la Hour Bag y el Escudo de 12h?',
-    'Let’s practice conversational English!',
-    '¿Cómo funcionan las Daily Quests y la Arena?',
-    '👉 Entrar al Welcome Lounge'
-  ];
 
   return (
     <>
@@ -207,13 +554,13 @@ Pregúntame o conversemos sobre:
             setIsMinimized(false);
           }}
           className="fixed bottom-20 md:bottom-6 right-4 sm:right-6 z-50 w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-white p-1 shadow-2xl hover:shadow-[#2EC4B6]/40 transition-all hover:scale-110 active:scale-95 group border-2 border-[#2EC4B6] flex items-center justify-center cursor-pointer"
-          title="Güaky 🦜 • Asistente y Guía Oficial"
-          aria-label="Abrir chat con Güaky"
+          title="Güaky The Macaw 🦜 • Guía Oficial y Coach"
+          aria-label="Abrir chat con Güaky The Macaw"
         >
           <div className="w-full h-full rounded-full overflow-hidden flex items-center justify-center bg-gradient-to-br from-teal-50 to-amber-50">
             <img 
               src="/guaky-chat.png" 
-              alt="Güaky" 
+              alt="Güaky The Macaw" 
               className="w-full h-full object-contain transform group-hover:rotate-6 transition-transform" 
               onError={(e) => {
                 e.currentTarget.style.display = 'none';
@@ -237,16 +584,16 @@ Pregúntame o conversemos sobre:
         <div className={`fixed z-50 transition-all duration-300 ${
           isMinimized 
             ? 'bottom-20 md:bottom-6 right-4 sm:right-6 w-72 bg-white rounded-2xl shadow-xl border border-slate-200' 
-            : 'bottom-20 md:bottom-6 right-3 sm:right-6 w-[calc(100vw-24px)] sm:w-[400px] h-[540px] max-h-[82vh] bg-white rounded-3xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden animate-fadeIn'
+            : 'bottom-20 md:bottom-6 right-3 sm:right-6 w-[calc(100vw-24px)] sm:w-[410px] h-[550px] max-h-[82vh] bg-white rounded-3xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden animate-fadeIn'
         }`}>
           
           {/* Header */}
-          <div className="p-3.5 bg-gradient-to-r from-[#243447] via-[#1F4959] to-[#2EC4B6] text-white flex items-center justify-between shadow-xs">
+          <div className="p-3 bg-gradient-to-r from-[#243447] via-[#1F4959] to-[#2EC4B6] text-white flex items-center justify-between shadow-xs">
             <div className="flex items-center gap-2.5 min-w-0">
               <div className="w-9 h-9 rounded-2xl bg-white p-1 border border-white/40 shadow-xs shrink-0 overflow-hidden flex items-center justify-center">
                 <img 
                   src="/guaky-chat.png" 
-                  alt="Güaky" 
+                  alt="Güaky The Macaw" 
                   className="w-full h-full object-contain" 
                   onError={(e) => {
                     e.currentTarget.style.visibility = 'hidden';
@@ -256,14 +603,14 @@ Pregúntame o conversemos sobre:
               <div className="min-w-0">
                 <div className="flex items-center gap-1.5">
                   <h3 className="text-xs sm:text-sm font-black text-white truncate">
-                    Güaky el Macaw 🦜
+                    Güaky The Macaw 🦜
                   </h3>
                   <span className="text-[9px] font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 px-1.5 py-0.2 rounded-full">
-                    Activo
+                    Online
                   </span>
                 </div>
                 <p className="text-[10px] text-teal-100 truncate">
-                  Guía Oficial de Güakytopia
+                  Tu compañero de inglés • Güakytopia
                 </p>
               </div>
             </div>
@@ -271,21 +618,21 @@ Pregúntame o conversemos sobre:
             <div className="flex items-center gap-1">
               <button
                 onClick={handleResetChat}
-                className="p-1.5 text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
-                title="Reiniciar chat"
+                className="p-1.5 text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors cursor-pointer"
+                title="Nueva conversación / Reiniciar"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
               </button>
               <button
                 onClick={() => setIsMinimized(!isMinimized)}
-                className="p-1.5 text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+                className="p-1.5 text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors cursor-pointer"
                 title={isMinimized ? 'Maximizar' : 'Minimizar'}
               >
                 {isMinimized ? <Maximize2 className="w-3.5 h-3.5" /> : <Minimize2 className="w-3.5 h-3.5" />}
               </button>
               <button
                 onClick={() => setIsOpen(false)}
-                className="p-1.5 text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+                className="p-1.5 text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors cursor-pointer"
                 title="Cerrar chat"
               >
                 <X className="w-4 h-4" />
@@ -295,6 +642,22 @@ Pregúntame o conversemos sobre:
 
           {!isMinimized && (
             <>
+              {/* Memory Resume Banner */}
+              {hasResumedMemory && (
+                <div className="px-3 py-1.5 bg-gradient-to-r from-teal-50 to-emerald-50 border-b border-teal-100 flex items-center justify-between text-[11px] text-teal-900">
+                  <div className="flex items-center gap-1 font-semibold truncate">
+                    <Brain className="w-3.5 h-3.5 text-teal-600 shrink-0" />
+                    <span className="truncate">Memoria activa • Continuando charla</span>
+                  </div>
+                  <button
+                    onClick={handleResetChat}
+                    className="text-[10px] font-bold text-teal-700 hover:text-teal-900 hover:underline shrink-0 ml-2"
+                  >
+                    Empezar nuevo tema
+                  </button>
+                </div>
+              )}
+
               {/* Messages Thread (Scrollable) */}
               <div className="flex-1 overflow-y-auto p-4 space-y-3.5 bg-slate-50/60 text-xs">
                 {messages.map((m) => {
@@ -304,12 +667,12 @@ Pregúntame o conversemos sobre:
                       key={m.id}
                       className={`flex flex-col ${isUser ? 'items-end' : 'items-start'} space-y-1`}
                     >
-                      <div className="flex items-end gap-1.5 max-w-[88%]">
+                      <div className="flex items-end gap-1.5 max-w-[90%]">
                         {!isUser && (
                           <div className="w-6 h-6 rounded-full bg-white border border-teal-200 p-0.5 flex items-center justify-center shrink-0 shadow-2xs overflow-hidden">
                             <img 
                               src="/guaky-chat.png" 
-                              alt="Güaky" 
+                              alt="Güaky The Macaw" 
                               className="w-full h-full object-contain" 
                               onError={(e) => {
                                 e.currentTarget.style.visibility = 'hidden';
@@ -318,13 +681,17 @@ Pregúntame o conversemos sobre:
                           </div>
                         )}
                         <div
-                          className={`p-3 rounded-2xl leading-relaxed whitespace-pre-wrap ${
+                          className={`p-3 rounded-2xl leading-relaxed ${
                             isUser
-                              ? 'bg-[#2EC4B6] text-slate-950 rounded-br-xs shadow-xs font-semibold'
+                              ? 'bg-[#2EC4B6] text-slate-950 rounded-br-xs shadow-xs'
                               : 'bg-white text-slate-800 border border-slate-200/90 rounded-bl-xs shadow-xs'
                           }`}
                         >
-                          {m.text}
+                          <FormattedChatMessage 
+                            text={m.text} 
+                            isUser={isUser}
+                            onSelectOption={(optionText) => handleSendMessage(optionText)}
+                          />
 
                           {/* Interactive WhatsApp Direct Action Card */}
                           {!isUser && m.showWhatsAppButton && (
@@ -361,7 +728,7 @@ Pregúntame o conversemos sobre:
                     <div className="w-5 h-5 rounded-full bg-white border border-teal-200 p-0.5 flex items-center justify-center overflow-hidden">
                       <img 
                         src="/guaky-chat.png" 
-                        alt="Güaky" 
+                        alt="Güaky The Macaw" 
                         className="w-full h-full object-contain" 
                         onError={(e) => {
                           e.currentTarget.style.visibility = 'hidden';
@@ -372,7 +739,7 @@ Pregúntame o conversemos sobre:
                       <span className="w-1.5 h-1.5 rounded-full bg-[#2EC4B6] animate-bounce" />
                       <span className="w-1.5 h-1.5 rounded-full bg-[#FF6B4A] animate-bounce [animation-delay:0.2s]" />
                       <span className="w-1.5 h-1.5 rounded-full bg-[#FFD166] animate-bounce [animation-delay:0.4s]" />
-                      <span className="text-[11px] text-slate-500 ml-1">Güaky está pensando...</span>
+                      <span className="text-[11px] text-slate-500 ml-1">Güaky The Macaw está pensando...</span>
                     </div>
                   </div>
                 )}
@@ -386,7 +753,7 @@ Pregúntame o conversemos sobre:
                   <button
                     key={idx}
                     onClick={() => handleSendMessage(chip)}
-                    className="px-2.5 py-1 bg-slate-100 hover:bg-teal-50 hover:text-teal-700 text-slate-600 rounded-lg text-[10px] font-semibold whitespace-nowrap transition-colors"
+                    className="px-2.5 py-1 bg-slate-100 hover:bg-teal-50 hover:text-teal-700 text-slate-600 rounded-lg text-[10px] font-semibold whitespace-nowrap transition-colors cursor-pointer"
                   >
                     {chip}
                   </button>
@@ -405,14 +772,14 @@ Pregúntame o conversemos sobre:
                   type="text"
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
-                  placeholder="Pregúntame en español o ask me in English..."
+                  placeholder="Escribe tu mensaje o presiona 1, 2, 3..."
                   className="flex-1 p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:bg-white focus:ring-2 focus:ring-[#2EC4B6] focus:outline-hidden"
                   disabled={isLoading}
                 />
                 <button
                   type="submit"
                   disabled={!input.trim() || isLoading}
-                  className="p-2.5 bg-[#2EC4B6] hover:bg-[#259C90] text-slate-950 font-bold rounded-xl shadow-xs transition-colors disabled:opacity-40"
+                  className="p-2.5 bg-[#2EC4B6] hover:bg-[#259C90] text-slate-950 font-bold rounded-xl shadow-xs transition-colors disabled:opacity-40 cursor-pointer"
                   title="Enviar"
                 >
                   <Send className="w-4 h-4" />

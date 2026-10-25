@@ -42,6 +42,7 @@ interface GuakypediaViewProps {
   onNavigateToTab: (tab: string) => void;
   onOpenPricingModal: () => void;
   onOpenCouponModal: () => void;
+  onOpenGuakypack?: () => void;
   studyTheme?: StudyThemeId;
 }
 
@@ -220,6 +221,7 @@ export const GuakypediaView: React.FC<GuakypediaViewProps> = ({
   onNavigateToTab,
   onOpenPricingModal,
   onOpenCouponModal,
+  onOpenGuakypack,
   studyTheme = 'official'
 }) => {
   const isKids = audienceTheme === 'kids';
