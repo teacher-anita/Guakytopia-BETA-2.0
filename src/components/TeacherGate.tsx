@@ -158,19 +158,6 @@ export const TeacherGate: React.FC<TeacherGateProps> = ({
               <span>Ingresar al Portal Institucional</span>
             </button>
 
-            {/* Quick Test Button for Teacher Cokitö */}
-            <div className="pt-2">
-              <button
-                type="button"
-                onClick={() => onAuthenticated('teacher')}
-                className="w-full py-2.5 px-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 rounded-xl font-black text-xs shadow-sm flex items-center justify-center gap-2 transition-all"
-              >
-                <span>🦉 Probar Directo como Teacher Cokitö (PIN 3223)</span>
-              </button>
-              <p className="text-[10px] text-slate-400 text-center mt-1">
-                Credencial oficial: Usuario: <code className="text-slate-700 font-bold">cokito</code> | Clave: <code className="text-slate-700 font-bold">3223</code>
-              </p>
-            </div>
           </form>
 
           <div className="relative py-2 text-center">
