@@ -244,9 +244,9 @@ export const LanguageLab: React.FC<LanguageLabProps> = ({
 
     if (isCorrect) {
       if (!wasAlreadyCorrect) {
-        if (currentStudent) {
-          onAwardXp(currentStudent.id, 10);
-          trackStudentAction(
+        onAwardXp(currentStudent?.id || 'guest', 10);
+        if (currentStudent && currentStudent.id !== 'guest') {
+          void trackStudentAction(
             currentStudent, 
             'lab', 
             'Ejercicio resuelto en Lab', 

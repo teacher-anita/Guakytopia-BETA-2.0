@@ -102,16 +102,25 @@ export default function App() {
   const [teachers, setTeachers] = useState<Teacher[]>(() => getLocalTeachers());
   const [slots, setSlots] = useState<ScheduleSlot[]>(() => getLocalSlots());
 
-  // A remembered profile is only a convenience after student authentication, never proof of identity.
-  // Visitors always start as guests even if this browser previously selected Ana or another student.
+  // Persistent student authentication across browser sessions
   const [currentStudentId, setCurrentStudentId] = useState<string>(() => {
-    const hasStudentSession = sessionStorage.getItem('cokito_student_auth') === 'true';
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const studentParam = urlParams.get('student') || urlParams.get('email') || urlParams.get('alumno') || urlParams.get('alumna');
+      if (studentParam) {
+        localStorage.setItem('cokito_url_student_param', studentParam);
+      }
+    } catch {}
+
+    const hasStudentSession = 
+      localStorage.getItem('cokito_student_auth') === 'true' || 
+      sessionStorage.getItem('cokito_student_auth') === 'true';
     const saved = hasStudentSession ? localStorage.getItem('cokito_active_student_id') : null;
     return saved || 'guest';
   });
 
   useEffect(() => {
-    if (currentStudentId) {
+    if (currentStudentId && currentStudentId !== 'guest') {
       localStorage.setItem('cokito_active_student_id', currentStudentId);
     }
   }, [currentStudentId]);
@@ -142,6 +151,39 @@ export default function App() {
       if (typeof unsubStudents === 'function') unsubStudents();
     };
   }, []);
+
+  // Magic Link: Auto-login student from URL query parameter (e.g. ?student=felkisramos@hotmail.com)
+  useEffect(() => {
+    if (students.length === 0) return;
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const param = urlParams.get('student') || urlParams.get('email') || urlParams.get('alumno') || urlParams.get('alumna') || localStorage.getItem('cokito_url_student_param');
+      if (param) {
+        const clean = param.trim().toLowerCase();
+        const found = students.find(s => 
+          s.id.toLowerCase() === clean ||
+          s.email?.toLowerCase() === clean ||
+          s.name?.toLowerCase() === clean ||
+          s.username?.toLowerCase() === clean ||
+          `${s.name || ''} ${s.lastName || ''}`.trim().toLowerCase() === clean
+        );
+        if (found) {
+          setCurrentStudentId(found.id);
+          setIsStudentAuthenticated(true);
+          localStorage.setItem('cokito_student_auth', 'true');
+          sessionStorage.setItem('cokito_student_auth', 'true');
+          localStorage.setItem('cokito_active_student_id', found.id);
+          localStorage.removeItem('cokito_url_student_param');
+          // Clean URL without reloading page
+          if (window.history.replaceState) {
+            const cleanUrl = window.location.pathname;
+            window.history.replaceState({}, document.title, cleanUrl);
+          }
+          trackStudentAction(found, 'hub', 'Acceso directo mediante enlace oficial de alumno');
+        }
+      }
+    } catch {}
+  }, [students]);
 
   // Real-time Firestore Sync for Schedule Slots
   useEffect(() => {
@@ -325,20 +367,41 @@ export default function App() {
 
     // 2. Student Authentication
     const matched = students.find(s => 
-      s.email.toLowerCase() === clean || 
-      s.name.toLowerCase() === clean ||
+      s.email?.toLowerCase() === clean || 
+      s.name?.toLowerCase() === clean ||
       s.username?.toLowerCase() === clean ||
       s.cedula?.toLowerCase() === clean ||
-      `${s.name} ${s.lastName || ''}`.trim().toLowerCase() === clean
+      `${s.name || ''} ${s.lastName || ''}`.trim().toLowerCase() === clean
     );
 
     if (matched) {
       // If student has a password set and user provided a password, verify it; otherwise permit direct email session
       if (!matched.password || !cleanPass || cleanPass === matched.password) {
+        // Migrate any accumulated guest XP so no progress is ever lost
+        let newXp = matched.xp || 0;
+        if (guestXp > 0) {
+          newXp += guestXp;
+          setGuestXp(0);
+          try {
+            localStorage.removeItem('guakytopia_guest_xp');
+          } catch {}
+        }
+        const updated: Student = {
+          ...matched,
+          xp: newXp
+        };
+        if (newXp !== matched.xp) {
+          void saveStudent(updated);
+        }
+
         setCurrentStudentId(matched.id);
         setIsStudentAuthenticated(true);
+        localStorage.setItem('cokito_student_auth', 'true');
         sessionStorage.setItem('cokito_student_auth', 'true');
+        localStorage.setItem('cokito_active_student_id', matched.id);
         setIsProfileOpen(false);
+
+        void trackStudentAction(updated, 'hub', 'Inicio de sesión exitoso en campus');
         return true;
       }
     } else if (clean.includes('@') && clean.includes('.')) {
@@ -361,19 +424,26 @@ export default function App() {
         registeredAt: new Date().toISOString().split('T')[0],
         currentUnit: 1,
         completedHours: 0,
-        xp: 100,
+        xp: Math.max(100, guestXp),
         streak: 1,
         league: 'Bronce',
         rating: { fluency: 3, grammar: 3, vocabulary: 3, pronunciation: 3 },
         notes: 'Acceso directo con correo electrónico',
         assignedSlots: []
       };
+      setGuestXp(0);
+      try {
+        localStorage.removeItem('guakytopia_guest_xp');
+      } catch {}
       void saveStudent(guestStudent);
       setStudents(prev => [...prev, guestStudent]);
       setCurrentStudentId(guestStudent.id);
       setIsStudentAuthenticated(true);
+      localStorage.setItem('cokito_student_auth', 'true');
       sessionStorage.setItem('cokito_student_auth', 'true');
+      localStorage.setItem('cokito_active_student_id', guestStudent.id);
       setIsProfileOpen(false);
+      void trackStudentAction(guestStudent, 'hub', 'Registro y primer acceso');
       return true;
     }
     return false;
@@ -384,7 +454,9 @@ export default function App() {
     setUser(null);
     setCurrentStudentId('guest');
     setIsStudentAuthenticated(false);
+    localStorage.removeItem('cokito_student_auth');
     sessionStorage.removeItem('cokito_student_auth');
+    localStorage.removeItem('cokito_active_student_id');
     sessionStorage.removeItem('cokito_teacher_auth');
     setIsTeacherAuthenticated(false);
   };
@@ -529,27 +601,35 @@ export default function App() {
     await saveStudent(updatedStudent);
 
     // Bidirectional sync with agenda slots
-    const studentAssigned = updatedStudent.assignedSlots || [];
+    const studentAssigned = Array.isArray(updatedStudent.assignedSlots) 
+      ? updatedStudent.assignedSlots.filter((a): a is string => typeof a === 'string' && a.trim().length > 0)
+      : [];
     const updatedSlots = slots.map(slot => {
       // Check if slot matches any assignment string
       const isAssignedToThis = studentAssigned.some(assignment => {
+        if (!assignment || typeof assignment !== 'string') return false;
         const clean = assignment.toLowerCase().trim();
-        const slotId = slot.id.toLowerCase();
-        if (clean === slotId) return true;
-        const tag = `${slot.day}-${slot.startTime}`.toLowerCase();
+        const slotId = (slot.id || '').toLowerCase();
+        if (slotId && clean === slotId) return true;
+        const tag = `${slot.day || ''}-${slot.startTime || ''}`.toLowerCase();
         if (clean === tag) return true;
 
+        const slotDay = (slot.day || '').toLowerCase();
+        if (!slotDay) return false;
+
         // Text parsing: e.g. "Todos los Lunes de 17:00 a 18:00 (Semanal)" or "Lunes y Miércoles de 5 a 6"
-        const mentionsDay = clean.includes(slot.day.toLowerCase()) || 
-          (slot.day === 'Lunes' && clean.includes('lun')) ||
-          (slot.day === 'Martes' && clean.includes('mar')) ||
-          (slot.day === 'Miércoles' && clean.includes('mie')) ||
-          (slot.day === 'Jueves' && clean.includes('jue')) ||
-          (slot.day === 'Viernes' && clean.includes('vie')) ||
-          (slot.day === 'Sábado' && clean.includes('sab'));
+        const mentionsDay = clean.includes(slotDay) || 
+          (slotDay === 'lunes' && clean.includes('lun')) ||
+          (slotDay === 'martes' && clean.includes('mar')) ||
+          (slotDay === 'miércoles' && clean.includes('mie')) ||
+          (slotDay === 'jueves' && clean.includes('jue')) ||
+          (slotDay === 'viernes' && clean.includes('vie')) ||
+          (slotDay === 'sábado' && clean.includes('sab'));
         if (!mentionsDay) return false;
         
+        if (!slot.startTime) return false;
         const hourNum = parseInt(slot.startTime.split(':')[0], 10);
+        if (isNaN(hourNum)) return false;
         const hour12 = hourNum > 12 ? hourNum - 12 : hourNum;
         const matchesHour = clean.includes(`${hourNum}:00`) || 
           clean.includes(`de ${hourNum}`) || 
@@ -868,7 +948,7 @@ export default function App() {
             onAwardXp={handleAwardXp}
             activeRole={isTeacherAuthenticated ? 'teacher' : 'student'}
             audienceTheme={audienceTheme}
-            canSyncArenaLives={!isTeacherAuthenticated && Boolean(user && currentStudent && user.email?.toLowerCase() === currentStudent.email.toLowerCase())}
+            canSyncArenaLives={!isTeacherAuthenticated && Boolean(user && currentStudent && user.email?.toLowerCase() === currentStudent.email?.toLowerCase())}
             onOpenGuakypack={() => setIsGuakypackOpen(true)}
             studyTheme={studyTheme}
           />

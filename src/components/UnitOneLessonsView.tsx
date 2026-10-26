@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { Student } from '../types';
 import { downloadUnitPdf, downloadUnitAudio } from '../services/materialDownloader';
+import { trackStudentAction } from '../services/telemetryService';
 
 interface UnitOneLessonsViewProps {
   currentStudent: Student | null;
@@ -59,8 +60,11 @@ export const UnitOneLessonsView: React.FC<UnitOneLessonsViewProps> = ({
       }
     }));
 
-    if (isCorrect && !wasAlreadyCorrect && currentStudent) {
-      onAwardXp(currentStudent.id, 10);
+    if (isCorrect && !wasAlreadyCorrect) {
+      onAwardXp(currentStudent?.id || 'guest', 10);
+      if (currentStudent && currentStudent.id !== 'guest') {
+        void trackStudentAction(currentStudent, 'classroom', 'Ejercicio resuelto en Unidad 1', `Pregunta: ${questionId}`);
+      }
     }
   };
 

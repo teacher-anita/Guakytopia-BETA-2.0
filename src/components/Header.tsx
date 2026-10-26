@@ -211,29 +211,43 @@ export const Header: React.FC<HeaderProps> = ({
                   </div>
 
                   {/* 8. Profile / Avatar Button con foto o inicial */}
-                  <button
-                    onClick={onOpenProfile}
-                    className="flex items-center p-0.5 sm:p-1 hover:bg-slate-100 rounded-xl transition-colors focus:outline-hidden"
-                    title="Ver mi perfil de estudiante"
-                  >
-                    {currentStudent ? (
+                  {currentStudent ? (
+                    <button
+                      onClick={onOpenProfile}
+                      className="flex items-center gap-1.5 p-0.5 sm:p-1 hover:bg-slate-100 rounded-xl transition-colors focus:outline-hidden"
+                      title={`Perfil activo: ${currentStudent.name} (Toca para ver tu cuenta)`}
+                    >
                       <img
                         src={currentStudent.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${currentStudent.name}`}
                         alt={currentStudent.name}
-                        className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border border-slate-300 object-cover"
+                        className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-emerald-400 object-cover shadow-2xs"
                       />
-                    ) : user ? (
+                      <span className="hidden md:inline text-xs font-black text-slate-800 max-w-[90px] truncate">
+                        {currentStudent.name.split(' ')[0]}
+                      </span>
+                    </button>
+                  ) : user ? (
+                    <button
+                      onClick={onOpenProfile}
+                      className="flex items-center p-0.5 sm:p-1 hover:bg-slate-100 rounded-xl transition-colors focus:outline-hidden"
+                      title="Ver mi perfil"
+                    >
                       <img
                         src={user.photoURL || `https://api.dicebear.com/7.x/initials/svg?seed=${user.displayName || user.email}`}
                         alt={user.displayName || 'Usuario'}
                         className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border border-slate-300 object-cover"
                       />
-                    ) : (
-                      <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-slate-100 border border-slate-300 flex items-center justify-center text-slate-500">
-                        <UserIcon className="w-4 h-4" />
-                      </div>
-                    )}
-                  </button>
+                    </button>
+                  ) : (
+                    <button
+                      onClick={onOpenProfile}
+                      className="flex items-center gap-1.5 px-2.5 py-1.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-xl text-xs font-black shadow-xs transition-all active:scale-95"
+                      title="Iniciar sesión en tu cuenta"
+                    >
+                      <UserIcon className="w-3.5 h-3.5" />
+                      <span className="hidden sm:inline">Iniciar Sesión</span>
+                    </button>
+                  )}
 
                   {/* Teacher Logout si está autenticado */}
                   {isTeacherAuthenticated && (

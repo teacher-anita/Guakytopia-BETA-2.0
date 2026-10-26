@@ -74,7 +74,7 @@ export const MonthScheduleView: React.FC<MonthScheduleViewProps> = ({
   };
 
   const studentSessions: BookedSession[] = student?.bookedSessions || [];
-  const studentSlots = student?.assignedSlots || [];
+  const studentSlots = (student?.assignedSlots || []).filter((s): s is string => typeof s === 'string');
   const hasMonWed = Boolean(
     studentSlots.some(s => s.toLowerCase().includes('lun') || s.toLowerCase().includes('mie')) ||
     (student?.preferredTimeSlot?.toLowerCase().includes('lun') && student?.preferredTimeSlot?.toLowerCase().includes('mie'))

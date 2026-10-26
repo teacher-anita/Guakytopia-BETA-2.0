@@ -86,6 +86,7 @@ export const StudentMasterDossierModal: React.FC<StudentMasterDossierModalProps>
   const [customUsernameInput, setCustomUsernameInput] = useState<string>(student.username || student.email.split('@')[0] || '');
   const [customPasswordInput, setCustomPasswordInput] = useState<string>(student.customPassword || student.password || student.temporaryPassword || 'ingles2026');
   const [credSuccessMsg, setCredSuccessMsg] = useState<string | null>(null);
+  const [copiedMagicLink, setCopiedMagicLink] = useState(false);
 
   // Inline fast schedule manager state
   const [isAddingInlineSlot, setIsAddingInlineSlot] = useState(false);
@@ -801,6 +802,72 @@ Como "Cokitö", el cerebro pedagógico institucional de Güakytopia, dame una re
                         </span>
                       </div>
                     </div>
+                  </div>
+                </div>
+
+                {/* Enlace Mágico Directo para WhatsApp y Conexión de Alumno */}
+                <div className="bg-gradient-to-r from-emerald-50 via-teal-50 to-cyan-50 p-5 rounded-3xl border border-emerald-200/90 shadow-sm space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold">
+                        <Smartphone className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <h4 className="text-xs font-black text-emerald-950 uppercase tracking-wide">
+                          Enlace Mágico de Acceso 1-Clic para {student.name}
+                        </h4>
+                        <p className="text-[11px] text-emerald-800">
+                          {telemetry.totalInteractions > 0 
+                            ? `🟢 Alumno activo en el campus (${telemetry.totalInteractions} interacciones registradas)` 
+                            : '🟡 Pendiente por primer ingreso desde su teléfono/computadora'}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <p className="text-xs text-slate-700">
+                    Envía este enlace personal a <strong>{student.name}</strong> por WhatsApp. Al abrirlo, su dispositivo iniciará sesión automáticamente de forma permanente y todas sus horas de práctica, retos y estrellas se registrarán en su expediente.
+                  </p>
+
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 pt-1">
+                    <div className="flex-1 px-3 py-2 bg-white rounded-xl border border-emerald-300 text-xs font-mono text-slate-700 truncate select-all">
+                      {typeof window !== 'undefined' ? `${window.location.origin}/?student=${encodeURIComponent(student.email || student.id)}` : ''}
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const link = `${window.location.origin}/?student=${encodeURIComponent(student.email || student.id)}`;
+                        navigator.clipboard?.writeText(link);
+                        setCopiedMagicLink(true);
+                        setTimeout(() => setCopiedMagicLink(false), 2500);
+                      }}
+                      className="px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-colors shadow-xs"
+                    >
+                      {copiedMagicLink ? (
+                        <>
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                          <span>¡Copiado!</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-3.5 h-3.5" />
+                          <span>Copiar Enlace</span>
+                        </>
+                      )}
+                    </button>
+
+                    <a
+                      href={`https://wa.me/${(student.phone || '').replace(/\D/g, '')}?text=${encodeURIComponent(
+                        `¡Hola ${student.name}! 🦜 Te saluda la Directora Waky / Teacher Cokitö de Güakytopia.\n\nAquí tienes tu acceso directo al Campus:\n${typeof window !== 'undefined' ? `${window.location.origin}/?student=${encodeURIComponent(student.email || student.id)}` : ''}\n\nAl tocar el enlace, tu sesión iniciará automáticamente y todos tus avances, retos y horas se guardarán en tu expediente oficial. ¡Start where you are. Keep going!`
+                      )}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-black flex items-center justify-center gap-1.5 transition-colors shadow-xs"
+                    >
+                      <MessageCircle className="w-3.5 h-3.5" />
+                      <span>Enviar por WhatsApp</span>
+                    </a>
                   </div>
                 </div>
 

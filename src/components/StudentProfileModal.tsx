@@ -388,7 +388,7 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({
                       <label htmlFor="student-login-password" className="block text-[11px] font-bold text-slate-700">
                         Contraseña o PIN (opcional):
                       </label>
-                      <span className="text-[10px] text-slate-400">PIN Directora: 0112</span>
+                      <span className="text-[10px] text-slate-400">Si no tienes clave, déjalo vacío</span>
                     </div>
                     <div className="relative">
                       <input

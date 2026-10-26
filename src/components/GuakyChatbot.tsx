@@ -28,6 +28,7 @@ import { OFFICIAL_PAGO_MOVIL } from '../services/currencyService';
 import { Student, AudienceTheme } from '../types';
 import { User } from 'firebase/auth';
 import { stopAllSpeech } from '../services/speechService';
+import { trackStudentAction } from '../services/telemetryService';
 
 export interface ChatMessage {
   id: string;
@@ -808,6 +809,10 @@ export const GuakyChatbot: React.FC<GuakyChatbotProps> = ({
     setMessages(newHistory);
     setInput('');
     setIsLoading(true);
+
+    if (currentStudent && currentStudent.id && currentStudent.id !== 'guest') {
+      void trackStudentAction(currentStudent, 'classroom', 'Chat con Güaky', query.slice(0, 70));
+    }
 
     // Build real-time platform & student context to feed the AI
     const levelId = currentStudent?.levelId || 'level_1';

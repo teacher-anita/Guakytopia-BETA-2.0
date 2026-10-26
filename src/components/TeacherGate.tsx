@@ -50,7 +50,7 @@ export const TeacherGate: React.FC<TeacherGateProps> = ({
       return;
     }
 
-    setErrorMessage('Credenciales institucionales inválidas. Ingresa con usuario "cokito" y PIN 3223.');
+    setErrorMessage('Credenciales institucionales inválidas. Por favor verifica tus datos de acceso o contacta a la coordinación.');
   };
 
   const isTeacherGoogle = user && (user.email === 'anateresa.csb@gmail.com' || user.email?.includes('anateresa'));

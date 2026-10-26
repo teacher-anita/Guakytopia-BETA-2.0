@@ -550,7 +550,8 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
 
       {/* 2.2 STUDENT OFFICIAL ASSIGNED SCHEDULE CARD */}
       {effectiveStudent && activeRole === 'student' && (() => {
-        const studentSlots = slots.filter(s => s.status === 'booked' && (s.studentId === effectiveStudent.id || (s.studentName && s.studentName.toLowerCase().includes(effectiveStudent.name.toLowerCase()))));
+        const effName = (effectiveStudent.name || '').toLowerCase();
+        const studentSlots = slots.filter(s => s.status === 'booked' && (s.studentId === effectiveStudent.id || (s.studentName && effName && s.studentName.toLowerCase().includes(effName))));
         const assignedList = effectiveStudent.assignedSlots || [];
         if (studentSlots.length === 0 && assignedList.length === 0) return null;
 
