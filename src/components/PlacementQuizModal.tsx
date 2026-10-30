@@ -29,19 +29,30 @@ export const PlacementQuizModal: React.FC<PlacementQuizModalProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [completedResult, setCompletedResult] = useState<ReturnType<typeof evaluatePlacementScore> | null>(null);
 
+  // Clean reset every time the modal opens so repeating or reopening never gets stuck
+  React.useEffect(() => {
+    if (isOpen) {
+      setCurrentIdx(0);
+      setAnswers({});
+      setFillInput('');
+      setCompletedResult(null);
+      setIsSubmitting(false);
+    }
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
-  const currentQ = PLACEMENT_TEST_QUESTIONS[currentIdx];
-  const progressPct = Math.round(((currentIdx + 1) / PLACEMENT_TEST_QUESTIONS.length) * 100);
+  const currentQ = PLACEMENT_TEST_QUESTIONS[currentIdx] || PLACEMENT_TEST_QUESTIONS[0];
+  const progressPct = Math.min(100, Math.round(((currentIdx + 1) / PLACEMENT_TEST_QUESTIONS.length) * 100));
 
   const handleSelectOption = (option: string) => {
-    // Extract choice letter like "a" or the full string
+    if (!currentQ) return;
     const key = option.trim().charAt(0).toLowerCase();
     setAnswers(prev => ({ ...prev, [currentQ.id]: key }));
   };
 
   const handleFillSubmit = () => {
-    if (!fillInput.trim()) return;
+    if (!currentQ || !fillInput.trim()) return;
     setAnswers(prev => ({ ...prev, [currentQ.id]: fillInput.trim().toLowerCase() }));
   };
 
@@ -50,16 +61,19 @@ export const PlacementQuizModal: React.FC<PlacementQuizModalProps> = ({
       setCurrentIdx(prev => prev + 1);
       setFillInput('');
     } else {
-      // Finished all 25 questions!
-      const evalResult = evaluatePlacementScore(answers);
-      setCompletedResult(evalResult);
       try {
+        const evalResult = evaluatePlacementScore(answers);
+        setCompletedResult(evalResult);
         confetti({
           particleCount: 100,
           spread: 70,
           origin: { y: 0.6 }
         });
-      } catch {}
+      } catch (err) {
+        console.error('Error evaluando prueba:', err);
+        const fallbackResult = evaluatePlacementScore(answers);
+        setCompletedResult(fallbackResult);
+      }
     }
   };
 

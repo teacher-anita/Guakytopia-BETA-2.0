@@ -1035,8 +1035,18 @@ Como "Cokitö", el cerebro pedagógico institucional de Güakytopia, dame una re
                        student.paymentStatus === 'trial_24h' ? '⏱️ Pase de Cortesía 24h' : 'Pendiente de Aprobación'}
                     </div>
                     <p className="text-[11px] text-slate-500">
-                      Método: {student.paymentMethod || 'Registro en línea'}
+                      Método: {student.paymentMethod === 'paypal' ? 'PayPal (USD)' : student.paymentMethod === 'pagomovil' ? 'Pago Móvil (Bs)' : student.paymentMethod || 'Registro en línea'}
                     </p>
+                    {student.paypalRef && (
+                      <p className="text-[10px] font-bold text-blue-700 truncate" title={student.paypalRef}>
+                        PayPal Ref: {student.paypalRef}
+                      </p>
+                    )}
+                    {student.pagoMovilRef && (
+                      <p className="text-[10px] font-bold text-emerald-700 truncate" title={student.pagoMovilRef}>
+                        Pago Móvil Ref: {student.pagoMovilRef}
+                      </p>
+                    )}
                   </div>
 
                   <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-1">

@@ -135,7 +135,7 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
                 : 'bg-amber-400 text-slate-950 shadow-sm'
             }`}>
               <Sparkles className="w-3.5 h-3.5" />
-              <span>{isKids ? '🕹️ GÜAKYTOPIA JUNIOR 12+ • ARCADE EDITION' : 'GÜAKYTOPIA • CAMPUS DIGITAL'}</span>
+              <span>{isKids ? '🕹️ GÜAKYTOPIA (GUAKYTOPIA) JUNIOR 12+ • ARCADE EDITION' : 'GÜAKYTOPIA (GUAKYTOPIA) • CAMPUS DIGITAL'}</span>
             </div>
             <span className="text-xs text-teal-300 font-bold bg-teal-500/20 px-2.5 py-0.5 rounded-full border border-teal-400/30 hidden sm:inline">
               {isKids ? '⚡ Sube de nivel en inglés jugando' : 'McGraw Hill + Habit Lab'}
@@ -153,7 +153,7 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
           </h1>
 
           <p className="text-amber-200 font-mono text-xs sm:text-sm tracking-wide">
-            «Open the World. Start where you are. Keep going.»
+            «Güakytopia (Guakytopia) • Open the World. Start where you are. Keep going.»
           </p>
 
           <p className="text-xs sm:text-sm text-slate-200 leading-relaxed font-normal">

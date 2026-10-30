@@ -5,6 +5,7 @@ import { PathwayUnit } from '../data/pathwayData';
 import { Student } from '../types';
 import { User } from 'firebase/auth';
 import { recordAcademicEvent } from '../services/academicEvents';
+import { trackStudentAction } from '../services/telemetryService';
 
 interface UnitQuizModalProps {
   unit: PathwayUnit;
@@ -53,8 +54,18 @@ export const UnitQuizModal: React.FC<UnitQuizModalProps> = ({
       setIsCompleted(true);
       const finalScore = correctCount + (selectedOption === currentQ.correctIndex ? 1 : 0);
       onQuizFinished(finalScore, unit.quizQuestions.length);
+
+      // Track student interaction in Firestore telemetry
+      if (currentStudent && currentStudent.id && currentStudent.id !== 'guest') {
+        void trackStudentAction(
+          currentStudent,
+          'hub',
+          'Quiz de Unidad Completado',
+          `Unidad ${unit.unitNumber}: ${finalScore}/${unit.quizQuestions.length} pts (${Math.round((finalScore / unit.quizQuestions.length) * 100)}%)`
+        );
+      }
+
       // Capture the assessment result only for a Firebase-authenticated student.
-      // The writer remains disabled by default until database/rules authorization is reviewed.
       if (currentStudent && user && activeRole === 'student') {
         void recordAcademicEvent({
           schemaVersion: 1,

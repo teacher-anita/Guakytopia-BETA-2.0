@@ -46,7 +46,7 @@ import {
   getLocalTeachers,
   subscribeToCoupons 
 } from './services/db';
-import { ShieldCheck, Calendar } from 'lucide-react';
+import { ShieldCheck, Calendar, Globe, ExternalLink, FlaskConical } from 'lucide-react';
 import { GuakyChatbot } from './components/GuakyChatbot';
 import { fetchLiveBcvRate, initMidnightBcvScheduler } from './services/currencyService';
 import { trackStudentAction } from './services/telemetryService';
@@ -375,8 +375,16 @@ export default function App() {
     );
 
     if (matched) {
-      // If student has a password set and user provided a password, verify it; otherwise permit direct email session
-      if (!matched.password || !cleanPass || cleanPass === matched.password) {
+      // Check password: allow matched.password, matched.customPassword, matched.temporaryPassword, default 'ingles2026', or director master PIN '0112'
+      const assignedPass = (matched.password || matched.customPassword || matched.temporaryPassword || '').toLowerCase().trim();
+      const isPasswordValid = 
+        !assignedPass || 
+        !cleanPass || 
+        cleanPass === assignedPass || 
+        cleanPass === 'ingles2026' || 
+        cleanPass === '0112';
+
+      if (isPasswordValid) {
         // Migrate any accumulated guest XP so no progress is ever lost
         let newXp = matched.xp || 0;
         if (guestXp > 0) {
@@ -390,6 +398,7 @@ export default function App() {
           ...matched,
           xp: newXp
         };
+        setStudents(prev => prev.map(s => s.id === updated.id ? updated : s));
         if (newXp !== matched.xp) {
           void saveStudent(updated);
         }
@@ -709,53 +718,82 @@ export default function App() {
     await deleteTeacher(teacherId);
   };
 
-  const handlePaymentSuccess = async (method: string, reference: string) => {
+  const handlePaymentSuccess = async (
+    method: string, 
+    reference: string, 
+    guestData?: { name: string; lastName: string; email: string; phone: string; password?: string }
+  ) => {
+    const isPaypal = method.toLowerCase().includes('paypal');
+    const isPagoMovil = method.toLowerCase().includes('pago móvil') || method.toLowerCase().includes('pagomovil');
+    const assignedMethod: 'paypal' | 'pagomovil' | 'cash' = isPaypal ? 'paypal' : isPagoMovil ? 'pagomovil' : 'cash';
+
+    const isDirectCapture = isPaypal && reference.startsWith('ID:');
+    const paymentStatusVal: 'fully_paid' | 'pending_approval' = isDirectCapture ? 'fully_paid' : 'pending_approval';
+
     // If student exists, upgrade them to enrolled with digital pass
     if (currentStudent && currentStudent.id !== 'guest') {
       const updated: Student = {
         ...currentStudent,
         status: 'enrolled',
-        plan: 'basic',
-        xp: (currentStudent.xp || 0) + 200,
-        notes: `${currentStudent.notes || ''} | Pase Digital $5 activado vía ${method} (Ref: ${reference})`
+        plan: currentStudent.plan || 'basic',
+        paymentMethod: assignedMethod,
+        paypalRef: isPaypal ? reference : currentStudent.paypalRef,
+        pagoMovilRef: isPagoMovil ? reference : currentStudent.pagoMovilRef,
+        paymentStatus: paymentStatusVal,
+        xp: (currentStudent.xp || 0) + 250,
+        notes: `${currentStudent.notes || ''} | Pago ${isDirectCapture ? 'DIRECTO CON TARJETA' : 'reportado'} vía ${method} (Ref: ${reference})`
       };
       setStudents(prev => prev.map(s => s.id === updated.id ? updated : s));
       await saveStudent(updated);
     } else {
       const newStudentId = `student_${Date.now()}`;
+      const studentName = guestData?.name || user?.displayName || 'Alumno Güakytopia';
+      const studentLastName = guestData?.lastName || '';
+      const studentEmail = guestData?.email || user?.email || `alumno_${Date.now()}@guakytopia.com`;
+      const studentPhone = guestData?.phone || '';
+
       const newStudent: Student = {
         id: newStudentId,
-        name: user?.displayName || 'Alumno Cokitö',
-        lastName: '',
-        email: user?.email || 'alumno@cokito.com',
-        phone: '',
+        name: studentName,
+        lastName: studentLastName,
+        email: studentEmail,
+        phone: studentPhone,
+        password: guestData?.password,
         age: 25,
         isKid: false,
-        schoolOrProfession: 'Estudiante Digital',
+        schoolOrProfession: 'Estudiante Campus Digital',
         learningGoal: 'Aprender inglés a mi propio ritmo',
-        avatar: user?.photoURL || `https://api.dicebear.com/7.x/micah/svg?seed=PaseDigital`,
+        avatar: user?.photoURL || `https://api.dicebear.com/7.x/micah/svg?seed=${encodeURIComponent(studentName)}`,
         plan: 'basic',
         modality: 'online',
         groupSize: 'individual',
         preferredTimeSlot: 'Autónomo Asincrónico',
         status: 'enrolled',
+        paymentMethod: assignedMethod,
+        paypalRef: isPaypal ? reference : undefined,
+        pagoMovilRef: isPagoMovil ? reference : undefined,
+        paymentStatus: paymentStatusVal,
         levelId: 'level_1',
         placementTestScore: 0,
-        placementTestDiagnosis: 'Pase Digital $5 Activado (Prueba diagnóstica pendiente por realizar a tu propio ritmo)',
+        placementTestDiagnosis: 'Pase Digital Activado vía Pago (Prueba diagnóstica pendiente por realizar)',
         placementTestDate: new Date().toISOString().split('T')[0],
         registeredAt: new Date().toISOString().split('T')[0],
         currentUnit: 1,
         completedHours: 0,
-        xp: 300,
+        xp: 350,
         streak: 1,
         league: 'Bronce',
         rating: { fluency: 3, grammar: 3, vocabulary: 3, pronunciation: 3 },
-        notes: `Pase Digital $5 activado vía ${method} (Ref: ${reference})`,
+        notes: `Cuenta creada y Pase Activado vía ${method} (Ref: ${reference}) para ${studentName} ${studentLastName}`,
         assignedSlots: []
       };
       setStudents(prev => [...prev, newStudent]);
       setCurrentStudentId(newStudent.id);
+      setIsStudentAuthenticated(true);
+      sessionStorage.setItem('cokito_student_auth', 'true');
+      localStorage.setItem('cokito_active_student_id', newStudent.id);
       await saveStudent(newStudent);
+      void trackStudentAction(newStudent, 'hub', `Cuenta creada e inscrita vía pago ${method}`);
     }
     setIsPaymentModalOpen(false);
     setActiveTab('pathway');
@@ -1173,6 +1211,15 @@ export default function App() {
         onPaymentSuccess={handlePaymentSuccess}
         initialPlanName={checkoutPlan.title}
         initialAmountUsd={checkoutPlan.amount}
+        currentStudent={currentStudent}
+        onOpenLogin={() => {
+          setIsPaymentModalOpen(false);
+          setIsProfileOpen(true);
+        }}
+        onOpenFullRegistration={() => {
+          setIsPaymentModalOpen(false);
+          setActiveTab('register');
+        }}
       />
 
       {/* Coupon / Beca Modal */}
@@ -1189,11 +1236,23 @@ export default function App() {
       {/* Standalone Placement Quiz Modal */}
       <PlacementQuizModal
         isOpen={isPlacementQuizOpen}
-        studentName="Aspirante"
+        studentName={currentStudent?.name || 'Aspirante'}
         onClose={() => setIsPlacementQuizOpen(false)}
-        onFinishTest={() => {
+        onFinishTest={(result) => {
           setIsPlacementQuizOpen(false);
-          setActiveTab('register');
+          if (currentStudent && currentStudent.id !== 'guest') {
+            handleUpdateStudent({
+              ...currentStudent,
+              placementTestScore: result.score,
+              placementTestDiagnosis: `Puntaje: ${result.score}/${result.total}. Sugerencia: ${result.suggestedLevelName}. ${result.diagnosisText}`,
+              placementTestDate: new Date().toISOString().split('T')[0],
+              levelId: result.suggestedLevelId,
+              xp: (currentStudent.xp || 0) + 200
+            });
+            setActiveTab('pathway');
+          } else {
+            setActiveTab('register');
+          }
         }}
       />
 
@@ -1228,45 +1287,126 @@ export default function App() {
 
       {/* Footer */}
       <footer className="bg-white border-t border-slate-200 py-6 text-xs text-slate-500 text-center">
-        <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <img 
-              src="/guakytopia-nombre.png" 
-              alt="Güakytopia" 
-              className="h-5 w-auto object-contain" 
-              onError={(e) => {
-                e.currentTarget.style.visibility = 'hidden';
-              }}
-            />
-            <p>© 2026 Güakytopia • Open the World. Start where you are. Keep going.</p>
+        <div className="max-w-7xl mx-auto px-4 space-y-4">
+          
+          {/* Cokito's Lab Unified Authorship & Credit Banner */}
+          <div className="rounded-xl bg-gradient-to-r from-emerald-50/70 via-white to-teal-50/60 border border-emerald-300/80 px-3.5 py-2.5 sm:px-4 sm:py-3 shadow-xs">
+            <div className="flex flex-col lg:flex-row items-center justify-between gap-3.5 sm:gap-4 text-left">
+              
+              {/* Left Column: Periodic Table Badge & 2-Line Text */}
+              <div className="flex items-center gap-3.5 w-full lg:w-auto">
+                {/* Element Badge */}
+                <a
+                  href="https://cokitos-lab-international.vercel.app"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="relative flex flex-col justify-between w-11 h-13 sm:w-12 sm:h-14 p-1 rounded-lg bg-gradient-to-br from-emerald-600 via-teal-900 to-slate-950 border border-emerald-400 shadow-[0_0_12px_rgba(16,185,129,0.35)] text-white hover:scale-105 transition-transform shrink-0 select-none group"
+                  title="Cokito's Lab International • Laboratorio de Software & Soluciones Tecnológicas"
+                >
+                  <div className="text-[8px] font-mono leading-none text-emerald-300 font-bold">
+                    31
+                  </div>
+                  <div className="text-center font-black text-base sm:text-lg tracking-tighter leading-none text-white group-hover:text-emerald-300 transition-colors">
+                    CL
+                  </div>
+                  <div className="text-center text-[7px] font-bold tracking-widest uppercase text-emerald-300/90 leading-none">
+                    LAB
+                  </div>
+                </a>
+
+                {/* Copy Text in exactly 2 lines */}
+                <div className="space-y-0.5 text-xs">
+                  <p className="text-slate-800 font-medium leading-snug">
+                    Esta solución tecnológica fue desarrollada por{' '}
+                    <a
+                      href="https://cokitos-lab-international.vercel.app"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-emerald-700 hover:text-emerald-800 font-bold underline decoration-emerald-400 decoration-2 underline-offset-2 transition-colors"
+                    >
+                      Cokito's Lab
+                    </a>
+                  </p>
+                  <p className="text-slate-500 text-[11px] sm:text-xs leading-snug">
+                    ¿Quieres una plataforma a la medida para tu negocio? ¡Tú también puedes tener la tuya!
+                  </p>
+                </div>
+              </div>
+
+              {/* Right Column: 2 Action Buttons */}
+              <div className="flex items-center gap-2.5 w-full sm:w-auto justify-end shrink-0">
+                {/* Button 1: Web Oficial */}
+                <a
+                  href="https://cokitos-lab-international.vercel.app"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white hover:bg-emerald-50 text-emerald-800 hover:text-emerald-900 text-xs font-bold border border-emerald-300 shadow-xs transition-all whitespace-nowrap"
+                >
+                  <Globe className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>Web Oficial</span>
+                  <ExternalLink className="w-3 h-3 text-emerald-500" />
+                </a>
+
+                {/* Button 2: WhatsApp Lab (Breaking Bad x Dexter's Lab style) */}
+                <a
+                  href="https://wa.me/584224612534?text=Hola%20Cokito%27s%20Lab,%20vi%20la%20plataforma%20de%20G%C3%BCakytopia%20y%20quiero%20crear%20una%20soluci%C3%B3n%20tecnol%C3%B3gica%20para%20mi%20empresa"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-gradient-to-r from-slate-950 via-[#03241b] to-slate-950 hover:from-slate-900 hover:via-[#053629] hover:to-slate-900 text-white text-xs font-black border-2 border-emerald-400/90 shadow-[0_0_15px_rgba(16,185,129,0.3)] hover:shadow-[0_0_20px_rgba(16,185,129,0.5)] transition-all whitespace-nowrap group"
+                >
+                  <div className="relative flex items-center justify-center">
+                    <FlaskConical className="w-4 h-4 text-lime-400 transition-transform group-hover:rotate-12" />
+                    <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                  </div>
+                  <span>¡Quiero mi plataforma!</span>
+                </a>
+              </div>
+
+            </div>
           </div>
-          <div className="flex items-center gap-4">
-            <span className="flex items-center gap-1 text-[#2EC4B6] font-semibold">
-              <ShieldCheck className="w-4 h-4" />
-              Privacidad y Confidencialidad Garantizada
-            </span>
-            <span>•</span>
-            <button
-              onClick={() => setActiveTab('guakypedia')}
-              className="text-amber-600 hover:underline font-black flex items-center gap-1"
-            >
-              <span>🧭 Güakypedia Oficial</span>
-            </button>
-            <span>•</span>
-            <button
-              onClick={() => setIsThemeModalOpen(true)}
-              className="text-[#2EC4B6] hover:underline font-bold"
-            >
-              🎨 Personalizar Ambiente
-            </button>
-            <span>•</span>
-            <button
-              onClick={() => setIsOptimizerOpen(true)}
-              className="text-[#243447] hover:underline font-bold"
-            >
-              Análisis Pedagógico de Tiempos
-            </button>
+
+          {/* Copyright & Secondary Navigation Links */}
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-1">
+            <div className="flex items-center gap-3">
+              <img 
+                src="/guakytopia-nombre.png" 
+                alt="Güakytopia (Guakytopia)" 
+                className="h-5 w-auto object-contain" 
+                onError={(e) => {
+                  e.currentTarget.style.visibility = 'hidden';
+                }}
+              />
+              <p>© 2026 Güakytopia (Guakytopia) • Open the World. Academia de Inglés de Teacher Cokitö. Start where you are. Keep going.</p>
+            </div>
+            <div className="flex items-center gap-4">
+              <span className="flex items-center gap-1 text-[#2EC4B6] font-semibold">
+                <ShieldCheck className="w-4 h-4" />
+                Privacidad y Confidencialidad Garantizada
+              </span>
+              <span>•</span>
+              <button
+                onClick={() => setActiveTab('guakypedia')}
+                className="text-amber-600 hover:underline font-black flex items-center gap-1"
+              >
+                <span>🧭 Güakypedia Oficial</span>
+              </button>
+              <span>•</span>
+              <button
+                onClick={() => setIsThemeModalOpen(true)}
+                className="text-[#2EC4B6] hover:underline font-bold"
+              >
+                🎨 Personalizar Ambiente
+              </button>
+              <span>•</span>
+              <button
+                onClick={() => setIsOptimizerOpen(true)}
+                className="text-[#243447] hover:underline font-bold"
+              >
+                Análisis Pedagógico de Tiempos
+              </button>
+            </div>
           </div>
+
         </div>
       </footer>
 

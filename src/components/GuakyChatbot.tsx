@@ -731,8 +731,14 @@ export const GuakyChatbot: React.FC<GuakyChatbotProps> = ({
             onAwardXp(20, 'Pronunciation Mirror • Precisión fonética');
             setHasAwardedVoiceXp(true);
           }
+          if (currentStudent && currentStudent.id && currentStudent.id !== 'guest') {
+            void trackStudentAction(currentStudent, 'lab', 'Práctica de Voz Aprobada', `Precisión ${score}% en: "${targetPhrase}"`);
+          }
         } else if (score >= 50) {
           setVoiceStudioFeedback(`¡Buen intento (${score}%)! Revisa el tip fonético arriba y vuelve a grabarte.`);
+          if (currentStudent && currentStudent.id && currentStudent.id !== 'guest') {
+            void trackStudentAction(currentStudent, 'lab', 'Práctica de Voz', `Intento (${score}%) en: "${targetPhrase}"`);
+          }
         } else {
           setVoiceStudioFeedback(`Detectamos (${score}%): "${spoken}". Intenta pronunciar más cerca del micrófono y a ritmo constante.`);
         }

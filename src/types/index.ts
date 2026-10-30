@@ -128,6 +128,8 @@ export interface Student {
   pagoMovilBank?: string;
   pagoMovilAmountBs?: number;
   pagoMovilDate?: string;
+  paypalRef?: string;
+  paypalEmail?: string;
   depositAmountUsd?: number; // e.g. 5 USD
   balanceDueUsd?: number;    // e.g. remaining balance for private classes or group
   preferredSlotId?: string;

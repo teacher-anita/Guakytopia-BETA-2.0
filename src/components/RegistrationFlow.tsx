@@ -27,14 +27,20 @@ import {
   ExternalLink,
   Copy,
   MessageCircle,
-  Gift
+  Gift,
+  ShieldCheck
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { Student, ScheduleSlot, ClassModality, GroupSize, AudienceTheme } from '../types';
 import { PlacementQuizModal } from './PlacementQuizModal';
 import { generateEmailTemplate, sendGmailEmail } from '../services/gmailNotifier';
+import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js';
 import { 
   OFFICIAL_PAGO_MOVIL, 
+  OFFICIAL_PAYPAL,
+  PAYPAL_CLIENT_ID,
+  getPayPalMeUrl,
+  getFullPayPalCopyText,
   convertUsdToBs, 
   getBcvExchangeRate, 
   fetchLiveBcvRate,
@@ -237,6 +243,10 @@ export const RegistrationFlow: React.FC<RegistrationFlowProps> = ({
   const [showPagoMovilBox, setShowPagoMovilBox] = useState(false);
   const [pagoMovilRef, setPagoMovilRef] = useState('');
   const [pagoMovilBank, setPagoMovilBank] = useState('Banco de Venezuela');
+  const [step4PaymentMethod, setStep4PaymentMethod] = useState<'paypal' | 'pagomovil'>('paypal');
+  const [paypalTransactionRef, setPaypalTransactionRef] = useState('');
+  const [paypalSenderEmail, setPaypalSenderEmail] = useState('');
+  const [showPaypalQrStep4, setShowPaypalQrStep4] = useState(false);
   const [payFullPrivate, setPayFullPrivate] = useState(false);
   const [isTrialActivated, setIsTrialActivated] = useState(false);
   const [pagoMovilSubmitted, setPagoMovilSubmitted] = useState(false);
@@ -310,24 +320,61 @@ export const RegistrationFlow: React.FC<RegistrationFlowProps> = ({
     }
   };
 
-  const handlePaypalStep4 = () => {
-    try {
-      window.open('https://paypal.me/anateresacsb/5', '_blank');
-    } catch {}
+  const handlePayPalCaptureSuccessStep4 = (txId: string, payerEmail: string, calculatedDueUsd: number) => {
     if (!registeredStudent) return;
+    const isDeposit = calculatedDueUsd === 5 && selectedPlanId !== 'digital_5';
+    const remaining = isDeposit ? (currentPlan.priceNumber - 5) : 0;
+    const finalRef = `ID: ${txId}${payerEmail ? ` (${payerEmail})` : ''}`;
+
+    const updated: Student = {
+      ...registeredStudent,
+      status: 'enrolled',
+      paymentStatus: isDeposit ? 'deposit_5_paid' : 'fully_paid',
+      paymentMethod: 'paypal',
+      paypalRef: finalRef,
+      paypalEmail: payerEmail || undefined,
+      depositAmountUsd: calculatedDueUsd,
+      balanceDueUsd: remaining,
+      xp: (registeredStudent.xp || 0) + 300,
+      notes: `${registeredStudent.notes || ''} | Pago con Tarjeta/PayPal APROBADO: ${finalRef} ($${calculatedDueUsd} USD a ${OFFICIAL_PAYPAL.email}). ${isDeposit ? 'Apartado de cupo pagado con tarjeta (saldo pendiente).' : 'Pago total completado con tarjeta.'}`
+    };
+    setRegisteredStudent(updated);
+    onRegisterComplete(updated, selectedSlotIds);
+    setPagoMovilSubmitted(false);
+    setStep4Success(`🎉 ¡Pago con tarjeta procesado exitosamente por PayPal! Tu acceso completo a Güakytopia está activo.`);
+    try { confetti({ particleCount: 130, spread: 85, origin: { y: 0.6 } }); } catch {}
+  };
+
+  const handleReportPaypalStep4 = (e: React.FormEvent, calculatedDueUsd: number) => {
+    e.preventDefault();
+    const cleanRef = paypalTransactionRef.trim() || paypalSenderEmail.trim();
+    if (!cleanRef || !registeredStudent) {
+      alert('Por favor ingresa tu ID de transacción de PayPal o el correo con el que enviaste el pago.');
+      return;
+    }
+    const isDeposit = calculatedDueUsd === 5 && selectedPlanId !== 'digital_5';
+    const remaining = isDeposit ? (currentPlan.priceNumber - 5) : 0;
+    const finalRef = paypalTransactionRef.trim() 
+      ? `ID: ${paypalTransactionRef.trim()}${paypalSenderEmail.trim() ? ` (${paypalSenderEmail.trim()})` : ''}`
+      : `Cuenta: ${paypalSenderEmail.trim()}`;
+
     const updated: Student = {
       ...registeredStudent,
       status: 'pending_evaluation',
       paymentStatus: 'pending_approval',
       paymentMethod: 'paypal',
-      depositAmountUsd: 5,
-      xp: registeredStudent.xp + 100,
-      notes: `${registeredStudent.notes || ''} | Pago de $5 reportado vía PayPal Checkout (anateresa.csb@gmail.com)`
+      paypalRef: finalRef,
+      paypalEmail: paypalSenderEmail.trim() || undefined,
+      depositAmountUsd: calculatedDueUsd,
+      balanceDueUsd: remaining,
+      xp: (registeredStudent.xp || 0) + 150,
+      notes: `${registeredStudent.notes || ''} | Pago PayPal: ${finalRef} ($${calculatedDueUsd} USD a ${OFFICIAL_PAYPAL.email}). ${isDeposit ? 'Apartado de cupo con $5 (Saldo restante pendiente).' : 'Pago total reportado.'}`
     };
     setRegisteredStudent(updated);
     onRegisterComplete(updated, selectedSlotIds);
     setPagoMovilSubmitted(true);
-    setStep4Success('¡Pago reportado vía PayPal! La Directora Waky está verificando la transacción.');
+    setStep4Success(`¡Comprobante de PayPal (${finalRef}) recibido! La Directora Waky está verificando tu pago.`);
+    setShowPagoMovilBox(false);
     try { confetti({ particleCount: 110, spread: 75, origin: { y: 0.6 } }); } catch {}
   };
 
@@ -1868,16 +1915,16 @@ export const RegistrationFlow: React.FC<RegistrationFlowProps> = ({
                     </form>
                   </div>
 
-                  {/* OPTION 2: PAYMENT VALIDATION (PAGO MÓVIL BANCO PROVINCIAL O DIVISAS) */}
+                  {/* OPTION 2: PAYMENT VALIDATION (PAYPAL USD O PAGO MÓVIL BS) */}
                   <div className="p-5 bg-slate-50 border border-slate-200 rounded-2xl space-y-4">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                       <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-xs">
-                          <Smartphone className="w-4 h-4" />
+                        <div className="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+                          <Banknote className="w-4 h-4" />
                         </div>
                         <div>
                           <h4 className="text-sm font-black text-slate-900">
-                            Opción 2: Pago Móvil Oficial (Banco de Venezuela)
+                            Opción 2: Abono / Pago Oficial de Inscripción
                           </h4>
                           <p className="text-[11px] text-slate-500">
                             {isDigital ? 'Pase Digital Autónomo ($5/mes)' :
@@ -1892,9 +1939,40 @@ export const RegistrationFlow: React.FC<RegistrationFlowProps> = ({
                           ${calculatedDueUsd} USD
                         </span>
                         <span className="block text-[10px] text-slate-500 font-semibold mt-0.5">
-                          Tasa BCV: Bs. {bcvRate.toFixed(2)}
+                          Tasa BCV: Bs. {bcvRate.toFixed(2)} ({step4Conversion.formattedBs})
                         </span>
                       </div>
+                    </div>
+
+                    {/* Method Selector Tabs: 1. PayPal (USD) / 2. Pago Móvil (Bs) */}
+                    <div className="grid grid-cols-2 gap-2 p-1 bg-slate-200/70 rounded-xl text-xs font-bold">
+                      <button
+                        type="button"
+                        onClick={() => setStep4PaymentMethod('paypal')}
+                        className={`py-2 px-3 rounded-lg flex items-center justify-center gap-1.5 transition-all ${
+                          step4PaymentMethod === 'paypal'
+                            ? 'bg-white text-blue-900 shadow-xs ring-1 ring-blue-500/20 font-black'
+                            : 'text-slate-600 hover:text-slate-900'
+                        }`}
+                      >
+                        <svg className="w-4 h-4 text-[#0079C1] fill-current" viewBox="0 0 24 24">
+                          <path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944 3.72a.786.786 0 0 1 .775-.652h6.812c3.275 0 5.617 1.343 6.074 4.364.28 1.85-.246 3.447-1.565 4.747-1.34 1.32-3.23 2.012-5.618 2.012H8.818l-.946 5.99-.044.254a.64.64 0 0 1-.633.535l-.119.367zm2.493-9.068h1.853c2.25 0 3.79-.824 4.34-2.316.368-.997.23-1.927-.41-2.766-.63-.824-1.748-1.238-3.323-1.238H9.06l-1.49 8.32h2zm.12 7.068h2.008l1.09-6.9h-1.853l-1.245 6.9z" />
+                        </svg>
+                        <span>1. PayPal (USD)</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setStep4PaymentMethod('pagomovil')}
+                        className={`py-2 px-3 rounded-lg flex items-center justify-center gap-1.5 transition-all ${
+                          step4PaymentMethod === 'pagomovil'
+                            ? 'bg-white text-emerald-900 shadow-xs ring-1 ring-emerald-500/20 font-black'
+                            : 'text-slate-600 hover:text-slate-900'
+                        }`}
+                      >
+                        <Smartphone className="w-4 h-4 text-emerald-600" />
+                        <span>2. Pago Móvil (Bs BCV)</span>
+                      </button>
                     </div>
 
                     {/* Private Class Toggle (Pay $5 deposit vs pay full) */}
@@ -1938,154 +2016,329 @@ export const RegistrationFlow: React.FC<RegistrationFlowProps> = ({
                       </div>
                     )}
 
-                    {/* Bank Details Card */}
-                    <div className="p-4 bg-white border border-emerald-200 rounded-xl space-y-2.5 text-xs">
-                      {/* BOTÓN COPIAR TODOS LOS DATOS JUNTOS (1 SOLO CLIC) */}
-                      <button
-                        type="button"
-                        onClick={() => handleCopy(getFullPagoMovilCopyText(step4Conversion.formattedBs, 'Inscripción Güakytopia'), 'todos_datos')}
-                        className="w-full py-2.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white font-black rounded-xl text-xs transition-all shadow-xs flex items-center justify-center gap-2 hover:scale-[1.01]"
-                      >
-                        <Copy className="w-4 h-4" />
-                        <span>Copiar todos los datos juntos (1 clic)</span>
-                      </button>
+                    {/* TAB CONTENT 1: PAYPAL */}
+                    {step4PaymentMethod === 'paypal' && (
+                      <div className="space-y-3 animate-fadeIn">
+                        {/* PayPal Info Card */}
+                        <div className="p-4 bg-blue-50 border border-blue-200 rounded-xl space-y-2.5 text-xs">
+                          <div className="flex items-center justify-between">
+                            <span className="font-bold text-blue-950 flex items-center gap-1.5">
+                              <Lock className="w-3.5 h-3.5 text-blue-700" />
+                              <span>Datos Oficiales PayPal Güakytopia</span>
+                            </span>
+                            <strong className="text-blue-900 font-black text-sm">${calculatedDueUsd} USD</strong>
+                          </div>
 
-                      <div className="flex justify-between items-center">
-                        <span className="text-slate-500">Banco Receptor:</span>
-                        <div className="flex items-center gap-1">
-                          <strong className="text-slate-900">{OFFICIAL_PAGO_MOVIL.bankName} ({OFFICIAL_PAGO_MOVIL.bankCode})</strong>
+                          <div className="space-y-1.5 bg-white p-3 rounded-xl border border-blue-200/90 text-slate-700 font-medium">
+                            <div className="flex justify-between items-center">
+                              <span className="text-slate-500">Cuenta PayPal Receptor:</span>
+                              <div className="flex items-center gap-1">
+                                <strong className="text-blue-950 font-bold">{OFFICIAL_PAYPAL.email}</strong>
+                                <button
+                                  type="button"
+                                  onClick={() => handleCopy(OFFICIAL_PAYPAL.email, 'paypal_reg_email')}
+                                  className="text-blue-600 hover:text-blue-800 p-0.5"
+                                  title="Copiar correo"
+                                >
+                                  <Copy className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            </div>
+
+                            <div className="flex justify-between items-center pt-1 border-t border-slate-100">
+                              <span className="text-slate-500">Titular:</span>
+                              <strong className="text-slate-900">{OFFICIAL_PAYPAL.recipientName}</strong>
+                            </div>
+
+                            <div className="flex justify-between items-center pt-1 border-t border-slate-100">
+                              <span className="text-slate-500">Monto Exacto:</span>
+                              <div className="flex items-center gap-1">
+                                <strong className="text-emerald-700 font-black text-sm">${calculatedDueUsd}.00 USD</strong>
+                                <button
+                                  type="button"
+                                  onClick={() => handleCopy(`${calculatedDueUsd}.00`, 'paypal_reg_amt')}
+                                  className="text-blue-600 hover:text-blue-800 p-0.5"
+                                  title="Copiar monto"
+                                >
+                                  <Copy className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+
+                          {copiedKey && (
+                            <p className="text-[10px] text-emerald-700 font-bold text-center">
+                              {copiedKey === 'paypal_reg_all' ? '¡Todos los datos copiados!' : '¡Dato copiado al portapapeles!'}
+                            </p>
+                          )}
+                        </div>
+
+                        {/* OFFICIAL PAYPAL SMART BUTTONS (CREDIT / DEBIT CARD & PAYPAL) */}
+                        <div className="bg-white p-4 rounded-2xl border border-blue-200/90 shadow-xs space-y-3">
+                          <div className="flex items-center justify-between text-xs font-bold text-slate-900">
+                            <span className="flex items-center gap-1.5">
+                              <Lock className="w-3.5 h-3.5 text-emerald-600" />
+                              <span>Pagar con Tarjeta Internacional o PayPal:</span>
+                            </span>
+                            <span className="text-emerald-700 font-black text-sm bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-200">
+                              ${calculatedDueUsd} USD
+                            </span>
+                          </div>
+
+                          <div className="min-h-[140px] pt-1 relative">
+                            <PayPalScriptProvider
+                              options={{
+                                clientId: PAYPAL_CLIENT_ID,
+                                currency: 'USD',
+                                intent: 'capture',
+                                components: 'buttons',
+                                'disable-funding': 'paylater,venmo'
+                              }}
+                            >
+                              <PayPalButtons
+                                key={`paypal_reg_${calculatedDueUsd}_${selectedPlanId}`}
+                                style={{
+                                  layout: 'vertical',
+                                  color: 'gold',
+                                  shape: 'pill',
+                                  label: 'pay',
+                                  height: 44
+                                }}
+                                createOrder={(_data, actions) => {
+                                  return actions.order.create({
+                                    intent: 'CAPTURE',
+                                    purchase_units: [
+                                      {
+                                        description: `Inscripción Güakytopia - ${registeredStudent.name} (${currentPlan.title})`,
+                                        amount: {
+                                          currency_code: 'USD',
+                                          value: calculatedDueUsd.toFixed(2)
+                                        }
+                                      }
+                                    ]
+                                  });
+                                }}
+                                onApprove={async (data, actions) => {
+                                  try {
+                                    const details = await actions.order?.capture();
+                                    const txId = details?.id || data.orderID || `PP-${Date.now()}`;
+                                    const payerEmail = details?.payer?.email_address || '';
+                                    handlePayPalCaptureSuccessStep4(txId, payerEmail, calculatedDueUsd);
+                                  } catch (err: any) {
+                                    console.error('Error al capturar orden PayPal en registro:', err);
+                                    setStep4Error('El cobro se procesó pero hubo un problema de sincronización. Reporta tu ID de comprobante abajo.');
+                                  }
+                                }}
+                                onError={(err) => {
+                                  console.error('PayPal registration button error:', err);
+                                  setStep4Error('Error en la pasarela de PayPal. Verifica que tu tarjeta acepte pagos internacionales en USD o usa el formulario manual.');
+                                }}
+                                onCancel={() => {
+                                  setStep4Error('Operación cancelada por el usuario.');
+                                }}
+                              />
+                            </PayPalScriptProvider>
+                          </div>
+
+                          <div className="flex items-center justify-center gap-1.5 text-[10px] sm:text-[11px] text-slate-500 pt-1 border-t border-slate-100">
+                            <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                            <span>Cobro directo con tarjeta de débito o crédito internacional (Visa, Mastercard, Amex)</span>
+                          </div>
+                        </div>
+
+                        {/* Collapsible Manual Options */}
+                        <div className="pt-1">
                           <button
                             type="button"
-                            onClick={() => handleCopy(OFFICIAL_PAGO_MOVIL.bankName, 'banco')}
-                            className="text-emerald-600 hover:text-emerald-700 p-0.5"
-                            title="Copiar banco"
+                            onClick={() => setShowPagoMovilBox(!showPagoMovilBox)}
+                            className="text-xs text-blue-700 hover:text-blue-900 font-semibold underline flex items-center gap-1 mx-auto"
                           >
-                            <Copy className="w-3.5 h-3.5" />
+                            <span>{showPagoMovilBox ? '▲ Ocultar transferencia manual' : '▼ ¿Prefieres transferir manualmente o ya enviaste tu pago?'}</span>
                           </button>
+
+                          {showPagoMovilBox && (
+                            <div className="mt-3 p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-4 animate-fadeIn text-xs">
+                              <div className="space-y-1.5">
+                                <a
+                                  href={getPayPalMeUrl(calculatedDueUsd)}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="w-full py-2.5 px-3 bg-[#0070BA] hover:bg-[#003087] text-white rounded-xl font-bold text-xs shadow-xs flex items-center justify-center gap-2 transition-all"
+                                >
+                                  <ExternalLink className="w-3.5 h-3.5 shrink-0" />
+                                  <span>Abrir portal de PayPal para enviar a {OFFICIAL_PAYPAL.email}</span>
+                                </a>
+
+                                <div className="flex items-center justify-between text-[11px] text-slate-600">
+                                  <button
+                                    type="button"
+                                    onClick={() => handleCopy(getFullPayPalCopyText(calculatedDueUsd, `Inscripción Güakytopia - ${registeredStudent.name}`), 'paypal_reg_all')}
+                                    className="text-blue-700 hover:text-blue-900 font-bold underline flex items-center gap-1"
+                                  >
+                                    <Copy className="w-3 h-3" />
+                                    <span>Copiar datos de PayPal</span>
+                                  </button>
+                                  <span className="text-[10px] text-slate-500">Receptor: {OFFICIAL_PAYPAL.email}</span>
+                                </div>
+                              </div>
+
+                              {/* FORM TO SUBMIT PAYPAL TRANSACTION REFERENCE */}
+                              <form 
+                                onSubmit={(e) => handleReportPaypalStep4(e, calculatedDueUsd)}
+                                className="p-3 bg-white border border-blue-200 rounded-xl space-y-2 text-xs"
+                              >
+                                <label className="block text-[11px] font-bold text-blue-950">
+                                  Reportar ID de Transacción previa (Transaction ID):
+                                </label>
+                                <input
+                                  type="text"
+                                  value={paypalTransactionRef}
+                                  onChange={e => setPaypalTransactionRef(e.target.value)}
+                                  placeholder="Ej. 8XF2910484920..."
+                                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-hidden"
+                                />
+                                <button
+                                  type="submit"
+                                  className="w-full py-2.5 bg-slate-900 hover:bg-black text-white rounded-xl font-bold text-xs shadow-xs transition-colors flex items-center justify-center gap-1.5"
+                                >
+                                  <CheckCircle2 className="w-3.5 h-3.5" />
+                                  <span>Validar Comprobante Manual</span>
+                                </button>
+                              </form>
+                            </div>
+                          )}
                         </div>
                       </div>
+                    )}
 
-                      <div className="flex justify-between items-center">
-                        <span className="text-slate-500">Teléfono:</span>
-                        <div className="flex items-center gap-1">
-                          <strong className="text-slate-900">{OFFICIAL_PAGO_MOVIL.phone}</strong>
+                    {/* TAB CONTENT 2: PAGO MÓVIL */}
+                    {step4PaymentMethod === 'pagomovil' && (
+                      <div className="space-y-3 animate-fadeIn">
+                        {/* Bank Details Card */}
+                        <div className="p-4 bg-white border border-emerald-200 rounded-xl space-y-2.5 text-xs">
+                          {/* BOTÓN COPIAR TODOS LOS DATOS JUNTOS (1 SOLO CLIC) */}
                           <button
                             type="button"
-                            onClick={() => handleCopy(OFFICIAL_PAGO_MOVIL.phoneRaw, 'tel')}
-                            className="text-emerald-600 hover:text-emerald-700 p-0.5"
-                            title="Copiar teléfono"
+                            onClick={() => handleCopy(getFullPagoMovilCopyText(step4Conversion.formattedBs, 'Inscripción Güakytopia'), 'todos_datos')}
+                            className="w-full py-2.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white font-black rounded-xl text-xs transition-all shadow-xs flex items-center justify-center gap-2 hover:scale-[1.01]"
                           >
-                            <Copy className="w-3.5 h-3.5" />
+                            <Copy className="w-4 h-4" />
+                            <span>Copiar todos los datos juntos (1 clic)</span>
                           </button>
-                        </div>
-                      </div>
 
-                      <div className="flex justify-between items-center">
-                        <span className="text-slate-500">Cédula del Titular:</span>
-                        <div className="flex items-center gap-1">
-                          <strong className="text-slate-900">{OFFICIAL_PAGO_MOVIL.cedula}</strong>
-                          <button
-                            type="button"
-                            onClick={() => handleCopy(OFFICIAL_PAGO_MOVIL.cedula.replace(/\D/g, ''), 'ci')}
-                            className="text-emerald-600 hover:text-emerald-700 p-0.5"
-                            title="Copiar cédula"
-                          >
-                            <Copy className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-slate-500">Banco Receptor:</span>
+                            <div className="flex items-center gap-1">
+                              <strong className="text-slate-900">{OFFICIAL_PAGO_MOVIL.bankName} ({OFFICIAL_PAGO_MOVIL.bankCode})</strong>
+                              <button
+                                type="button"
+                                onClick={() => handleCopy(OFFICIAL_PAGO_MOVIL.bankName, 'banco')}
+                                className="text-emerald-600 hover:text-emerald-700 p-0.5"
+                                title="Copiar banco"
+                              >
+                                <Copy className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </div>
 
-                      <div className="flex justify-between items-center pt-1.5 border-t border-slate-100">
-                        <span className="text-slate-500 font-semibold">Monto Exacto a Transferir:</span>
-                        <div className="flex items-center gap-1.5">
-                          <strong className="text-emerald-700 font-extrabold text-sm sm:text-base">
-                            {step4Conversion.formattedBs}
-                          </strong>
-                          <button
-                            type="button"
-                            onClick={() => handleCopy(step4Conversion.bsAmount.toString(), 'monto')}
-                            className="text-emerald-600 hover:text-emerald-700 p-0.5"
-                            title="Copiar monto en Bs"
-                          >
-                            <Copy className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      </div>
-                      {copiedKey && (
-                        <p className="text-[10px] text-emerald-700 font-bold text-center pt-0.5">
-                          {copiedKey === 'todos_datos' ? '¡Todos los datos copiados juntos al portapapeles!' : '¡Dato copiado al portapapeles!'}
-                        </p>
-                      )}
-                    </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-slate-500">Teléfono:</span>
+                            <div className="flex items-center gap-1">
+                              <strong className="text-slate-900">{OFFICIAL_PAGO_MOVIL.phone}</strong>
+                              <button
+                                type="button"
+                                onClick={() => handleCopy(OFFICIAL_PAGO_MOVIL.phoneRaw, 'tel')}
+                                className="text-emerald-600 hover:text-emerald-700 p-0.5"
+                                title="Copiar teléfono"
+                              >
+                                <Copy className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </div>
 
-                    {/* Form to submit payment reference */}
-                    <form 
-                      onSubmit={(e) => handleReportPagoMovilStep4(e, calculatedDueUsd, step4Conversion.bsAmount)} 
-                      className="p-4 bg-emerald-50/60 border border-emerald-200 rounded-xl space-y-3"
-                    >
-                      <h5 className="font-bold text-xs text-slate-800">Reportar Transferencia / Referencia:</h5>
-                      
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-                        <div>
-                          <label className="block text-[11px] font-semibold text-slate-700 mb-1">Banco desde el que pagaste (BCV):</label>
-                          <select
-                            value={pagoMovilBank}
-                            onChange={e => setPagoMovilBank(e.target.value)}
-                            className="w-full p-2.5 bg-white border border-slate-200 rounded-xl font-medium focus:ring-2 focus:ring-emerald-500 focus:outline-hidden"
-                          >
-                            {VENEZUELAN_BANKS.map((b) => (
-                              <option key={b.code} value={b.fullName}>{b.fullName}</option>
-                            ))}
-                            <option value="Otro">Otro Banco Nacional</option>
-                          </select>
+                          <div className="flex justify-between items-center">
+                            <span className="text-slate-500">Cédula del Titular:</span>
+                            <div className="flex items-center gap-1">
+                              <strong className="text-slate-900">{OFFICIAL_PAGO_MOVIL.cedula}</strong>
+                              <button
+                                type="button"
+                                onClick={() => handleCopy(OFFICIAL_PAGO_MOVIL.cedula.replace(/\D/g, ''), 'ci')}
+                                className="text-emerald-600 hover:text-emerald-700 p-0.5"
+                                title="Copiar cédula"
+                              >
+                                <Copy className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </div>
+
+                          <div className="flex justify-between items-center pt-1.5 border-t border-slate-100">
+                            <span className="text-slate-500 font-semibold">Monto Exacto a Transferir:</span>
+                            <div className="flex items-center gap-1.5">
+                              <strong className="text-emerald-700 font-extrabold text-sm sm:text-base">
+                                {step4Conversion.formattedBs}
+                              </strong>
+                              <button
+                                type="button"
+                                onClick={() => handleCopy(step4Conversion.bsAmount.toString(), 'monto')}
+                                className="text-emerald-600 hover:text-emerald-700 p-0.5"
+                                title="Copiar monto en Bs"
+                              >
+                                <Copy className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </div>
+                          {copiedKey && (
+                            <p className="text-[10px] text-emerald-700 font-bold text-center pt-0.5">
+                              {copiedKey === 'todos_datos' ? '¡Todos los datos copiados juntos al portapapeles!' : '¡Dato copiado al portapapeles!'}
+                            </p>
+                          )}
                         </div>
 
-                        <div>
-                          <label className="block text-[11px] font-semibold text-slate-700 mb-1">Número de Referencia:</label>
-                          <input
-                            type="text"
-                            value={pagoMovilRef}
-                            onChange={e => setPagoMovilRef(e.target.value)}
-                            placeholder="Ej. 948201"
-                            className="w-full p-2.5 bg-white border border-slate-200 rounded-xl font-bold"
-                            required
-                          />
-                        </div>
-                      </div>
-
-                      <button
-                        type="submit"
-                        className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-xs shadow-md transition-colors flex items-center justify-center gap-1.5"
-                      >
-                        <CheckCircle2 className="w-4 h-4" />
-                        <span>Enviar Comprobante a Dirección ({step4Conversion.formattedBs})</span>
-                      </button>
-                    </form>
-
-                    {/* International / USD PayPal Option */}
-                    <div className="pt-3 border-t border-slate-200">
-                      <div className="p-3.5 bg-blue-50/80 border border-blue-200 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
-                        <div className="space-y-0.5 text-center sm:text-left">
-                          <span className="font-bold text-blue-950 flex items-center justify-center sm:justify-start gap-1">
-                            <Lock className="w-3.5 h-3.5 text-blue-700" />
-                            <span>¿Estás en el exterior o prefieres pagar en USD?</span>
-                          </span>
-                          <p className="text-[11px] text-blue-800/80">
-                            Paga con tu cuenta PayPal o tarjeta internacional vía PayPal Checkout.
-                          </p>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={handlePaypalStep4}
-                          className="w-full sm:w-auto py-2.5 px-4 bg-[#FFC439] hover:bg-[#F4B41A] text-slate-950 font-black rounded-xl text-xs shadow-xs transition-all flex items-center justify-center gap-1.5 whitespace-nowrap shrink-0 hover:scale-101"
+                        {/* Form to submit Pago Móvil reference */}
+                        <form 
+                          onSubmit={(e) => handleReportPagoMovilStep4(e, calculatedDueUsd, step4Conversion.bsAmount)} 
+                          className="p-4 bg-emerald-50/60 border border-emerald-200 rounded-xl space-y-3"
                         >
-                          <svg className="w-4 h-4 text-[#003087] fill-current" viewBox="0 0 24 24">
-                            <path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944 3.72a.786.786 0 0 1 .775-.652h6.812c3.275 0 5.617 1.343 6.074 4.364.28 1.85-.246 3.447-1.565 4.747-1.34 1.32-3.23 2.012-5.618 2.012H8.818l-.946 5.99-.044.254a.64.64 0 0 1-.633.535l-.119.367zm2.493-9.068h1.853c2.25 0 3.79-.824 4.34-2.316.368-.997.23-1.927-.41-2.766-.63-.824-1.748-1.238-3.323-1.238H9.06l-1.49 8.32h2zm.12 7.068h2.008l1.09-6.9h-1.853l-1.245 6.9z" />
-                          </svg>
-                          <span>Pagar con PayPal (${calculatedDueUsd} USD)</span>
-                        </button>
+                          <h5 className="font-bold text-xs text-slate-800">Reportar Transferencia / Referencia:</h5>
+                          
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                            <div>
+                              <label className="block text-[11px] font-semibold text-slate-700 mb-1">Banco desde el que pagaste (BCV):</label>
+                              <select
+                                value={pagoMovilBank}
+                                onChange={e => setPagoMovilBank(e.target.value)}
+                                className="w-full p-2.5 bg-white border border-slate-200 rounded-xl font-medium focus:ring-2 focus:ring-emerald-500 focus:outline-hidden"
+                              >
+                                {VENEZUELAN_BANKS.map((b) => (
+                                  <option key={b.code} value={b.fullName}>{b.fullName}</option>
+                                ))}
+                                <option value="Otro">Otro Banco Nacional</option>
+                              </select>
+                            </div>
+
+                            <div>
+                              <label className="block text-[11px] font-semibold text-slate-700 mb-1">Número de Referencia:</label>
+                              <input
+                                type="text"
+                                value={pagoMovilRef}
+                                onChange={e => setPagoMovilRef(e.target.value)}
+                                placeholder="Ej. 948201"
+                                className="w-full p-2.5 bg-white border border-slate-200 rounded-xl font-bold"
+                                required
+                              />
+                            </div>
+                          </div>
+
+                          <button
+                            type="submit"
+                            className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-xs shadow-md transition-colors flex items-center justify-center gap-1.5"
+                          >
+                            <CheckCircle2 className="w-4 h-4" />
+                            <span>Enviar Comprobante a Dirección ({step4Conversion.formattedBs})</span>
+                          </button>
+                        </form>
                       </div>
-                    </div>
+                    )}
                   </div>
 
                   {/* OPTION 3: RETENTION HERO BUTTON - 24 HOURS COURTESY TRIAL (NO STUDENTS LOST!) */}

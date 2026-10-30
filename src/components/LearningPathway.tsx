@@ -33,6 +33,7 @@ import { UnitQuizModal } from './UnitQuizModal';
 import { UnitOneMasterClass } from './UnitOneMasterClass';
 import { downloadUnitPdf, downloadUnitAudio } from '../services/materialDownloader';
 import { formatSlotLabel } from '../utils/scheduleFormatter';
+import { trackStudentAction } from '../services/telemetryService';
 
 interface LearningPathwayProps {
   currentStudent: Student | null;
@@ -383,19 +384,48 @@ ${unit.owlCulture.culturalStory}
         }
         return updated;
       });
+
+      // Synchronize student advancement to Firestore so the Directora sees their new unit!
+      if (currentStudent && onUpdateStudent) {
+        const nextUnit = Math.max(currentStudent.currentUnit || 1, quizUnit.unitNumber + 1);
+        onUpdateStudent({
+          ...currentStudent,
+          currentUnit: nextUnit
+        });
+        void trackStudentAction(
+          currentStudent,
+          'hub',
+          'Quiz Aprobado y Unidad Desbloqueada',
+          `Aprobó Quiz de Unidad ${quizUnit.unitNumber} (${score}/${total} pts) • Avanzó a Unidad ${nextUnit}`
+        );
+      }
+
       setCopiedNotice(`🎉 ¡Aprobaste el Quiz de la Unidad ${quizUnit.unitNumber} (${score}/${total})! Siguiente unidad desbloqueada.`);
       setTimeout(() => setCopiedNotice(null), 5000);
     } else {
+      if (currentStudent && currentStudent.id && currentStudent.id !== 'guest') {
+        void trackStudentAction(
+          currentStudent,
+          'hub',
+          'Intento de Quiz',
+          `Completó Quiz de Unidad ${quizUnit.unitNumber} (${score}/${total} pts)`
+        );
+      }
       setCopiedNotice(`ℹ️ Obtuviste ${score}/${total} (requiere 70% para aprobar). ¡Repite el quiz para desbloquear la siguiente unidad!`);
       setTimeout(() => setCopiedNotice(null), 5000);
     }
   };
 
-  // Check if a unit is unlocked based strictly on having passed the previous unit's quiz!
+  // Check if a unit is unlocked based strictly on having passed the previous unit's quiz or official assigned unit!
   const isUnitUnlocked = (unitIndex: number) => {
     if (isTeacher) return true;
     if (unitIndex === 0) return true; // Unit 1 is always unlocked for enrolled students!
     
+    // If student's official currentUnit in database is already at or past this unit, it is unlocked!
+    if (currentStudent && (currentStudent.currentUnit || 1) > unitIndex) {
+      return true;
+    }
+
     // Previous unit must have passed its quiz
     const prevUnitNumber = unitIndex; // For unit index 1 (Unit 2), previous unit is Unit 1
     const prevQuizKey = `${selectedLevelId}_u${prevUnitNumber}`;

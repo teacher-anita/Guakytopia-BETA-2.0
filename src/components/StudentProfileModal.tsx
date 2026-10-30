@@ -213,6 +213,25 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({
                     "{student.placementTestDiagnosis}"
                   </p>
                 )}
+                {student?.paymentMethod && (
+                  <div className={`mt-2 p-2.5 rounded-xl border text-xs flex items-center justify-between ${
+                    student.paymentMethod === 'paypal' ? 'bg-blue-50 border-blue-200 text-blue-900' : 'bg-emerald-50 border-emerald-200 text-emerald-900'
+                  }`}>
+                    <div className="flex items-center gap-1.5 truncate">
+                      <span className="font-bold shrink-0">
+                        {student.paymentMethod === 'paypal' ? '💳 PayPal' : '📱 Pago Móvil'}
+                      </span>
+                      <span className="text-[10px] text-slate-600 truncate">
+                        ({student.paymentStatus === 'fully_paid' ? 'Validado' : 'Comprobante Registrado'})
+                      </span>
+                    </div>
+                    {(student.paypalRef || student.pagoMovilRef) && (
+                      <span className="text-[10px] font-mono font-bold text-slate-700 bg-white px-2 py-0.5 rounded-md border border-slate-200 shrink-0 max-w-[130px] truncate" title={student.paypalRef || student.pagoMovilRef}>
+                        {student.paypalRef || student.pagoMovilRef}
+                      </span>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Student Actions */}

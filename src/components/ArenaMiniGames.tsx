@@ -348,7 +348,7 @@ export const ArenaMiniGames: React.FC<ArenaMiniGamesProps> = ({ currentStudent, 
     recordLearningSignal(true, word.word);
     setFinished(true);
     setMessage(`Brilliant! +${xp} XP. You spelled it correctly! 🎉`);
-    if (currentStudent && currentStudent.id !== 'guest') onAwardXp(currentStudent.id, xp);
+    onAwardXp(currentStudent?.id || 'guest', xp);
   };
 
   const failAttempt = (text: string) => {

@@ -278,3 +278,59 @@ export const getFullPagoMovilCopyText = (formattedBs: string, concept: string = 
     `Concepto: ${concept}`
   ].join('\n');
 };
+
+export interface OfficialPayPalDetails {
+  email: string;
+  recipientName: string;
+  clientId: string;
+  paypalMeUsername: string;
+  paypalMeBaseUrl: string;
+  directTransferUrl: string;
+  hasActivePayPalMe: boolean;
+}
+
+export const PAYPAL_CLIENT_ID = 'BAAwOd4TNDsLRxPsg-YKt2uUeBMh5MCxaHCkQPRUjgDrUsOd2SB3TUEVWLqVEwSAq0HyKsyNOtMV4QkUnc';
+
+export const OFFICIAL_PAYPAL: OfficialPayPalDetails = {
+  email: 'cokito.vzla@gmail.com',
+  recipientName: 'Ana T Sandoval',
+  clientId: PAYPAL_CLIENT_ID,
+  paypalMeUsername: '',
+  paypalMeBaseUrl: 'https://www.paypal.com/myaccount/transfer/homepage',
+  directTransferUrl: 'https://www.paypal.com/myaccount/transfer/homepage',
+  hasActivePayPalMe: false
+};
+
+// Genera la URL de pago más segura para que nunca dé error 404
+export const getPayPalUrl = (amountUsd?: number): string => {
+  try {
+    const customLink = typeof window !== 'undefined' ? localStorage.getItem('cokito_custom_paypal_link') : null;
+    if (customLink && customLink.trim()) return customLink.trim();
+  } catch {}
+
+  // Si tiene PayPal.Me activado con su handle
+  if (OFFICIAL_PAYPAL.hasActivePayPalMe && OFFICIAL_PAYPAL.paypalMeUsername) {
+    if (amountUsd && amountUsd > 0) {
+      const formatted = Number(amountUsd.toFixed(2));
+      return `https://www.paypal.com/paypalme/${OFFICIAL_PAYPAL.paypalMeUsername}/${formatted}USD`;
+    }
+    return `https://www.paypal.com/paypalme/${OFFICIAL_PAYPAL.paypalMeUsername}`;
+  }
+
+  // Fallback seguro que NUNCA da error 404: portal oficial de envío de PayPal
+  return OFFICIAL_PAYPAL.directTransferUrl;
+};
+
+// Alias compatible para código existente
+export const getPayPalMeUrl = (amountUsd?: number): string => getPayPalUrl(amountUsd);
+
+export const getFullPayPalCopyText = (amountUsd: number, concept: string = 'Inscripción Güakytopia'): string => {
+  return [
+    `PayPal Oficial: ${OFFICIAL_PAYPAL.email}`,
+    `Titular: ${OFFICIAL_PAYPAL.recipientName}`,
+    `Monto: $${amountUsd.toFixed(2)} USD`,
+    `Concepto: ${concept}`,
+    `Instrucción: Envía $${amountUsd.toFixed(2)} USD a la cuenta ${OFFICIAL_PAYPAL.email} en PayPal.`
+  ].join('\n');
+};
+
